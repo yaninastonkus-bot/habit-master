@@ -6,170 +6,773 @@
   <title>Habit Master</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
+    :root {
+      --bg: #eaf3ff;
+      --blue-main: #2433f5;
+      --green-panel: #88b566;
+      --pink-panel: #c887b0;
+      --move: #2f3bff;
+      --mind: #7fae67;
+      --create: #e5a8cb;
+      --slow: #6e89d8;
+      --today: #f2e3a2;
+      --white: #ffffff;
+      --border: #d4d4d4;
+      --text: #222222;
+      --muted: #6b7280;
+    }
+
+    * { box-sizing: border-box; }
     body {
+      margin: 0;
       font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .app {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    .login-wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 470px;
+      background: #f7f7f7;
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
       text-align: center;
-      padding: 40px;
-      background: #eaf3ff;
     }
-    .box {
-      max-width: 420px;
-      margin: 40px auto;
-      background: white;
-      padding: 24px;
-      border-radius: 16px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+
+    .login-card h1 {
+      margin: 0 0 14px;
+      font-size: 28px;
     }
+
     input, button {
       width: 100%;
-      padding: 12px;
-      margin-top: 12px;
-      border-radius: 10px;
+      border-radius: 12px;
+      padding: 14px;
       font-size: 16px;
     }
+
     input {
-      border: 1px solid #ccc;
+      border: 1px solid #cfcfcf;
+      margin-top: 14px;
     }
+
     button {
       border: 0;
-      background: #2433F5;
-      color: white;
       cursor: pointer;
+      color: white;
+      margin-top: 14px;
+      font-weight: 700;
     }
-    button.secondary {
-      background: #88B566;
-    }
-    #status {
-      margin-top: 16px;
+
+    .btn-blue { background: var(--blue-main); }
+    .btn-green { background: var(--green-panel); }
+
+    .status {
+      margin-top: 14px;
       font-size: 14px;
+      min-height: 18px;
+    }
+
+    .top {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .sidebar {
+      display: grid;
+      gap: 0;
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .panel {
+      padding: 18px;
+      color: white;
+      font-weight: 700;
+      min-height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .panel.title {
+      background: var(--blue-main);
+      min-height: 108px;
+      font-size: 28px;
+    }
+
+    .panel.green { background: var(--green-panel); }
+    .panel.pink {
+      background: var(--pink-panel);
+      justify-content: flex-start;
+      text-align: left;
+    }
+
+    .dashboard {
+      display: grid;
+      gap: 14px;
+    }
+
+    .rings {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+    }
+
+    .ring-card {
+      text-align: center;
+      padding: 8px;
+    }
+
+    .ring-title {
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .ring {
+      width: 82px;
+      height: 82px;
+      border-radius: 50%;
+      margin: 0 auto 10px;
+      position: relative;
+      border: 1px solid #bbb;
+    }
+
+    .ring::after {
+      content: "";
+      position: absolute;
+      inset: 8px;
+      background: var(--bg);
+      border-radius: 50%;
+    }
+
+    .ring-value {
+      font-weight: 700;
+      font-size: 24px;
+    }
+
+    .ring-small {
+      font-size: 20px;
+    }
+
+    .insights {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      margin-top: 8px;
+    }
+
+    .insight {
+      text-align: center;
+      padding: 8px;
+    }
+
+    .subinsights {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    .subinsight {
+      text-align: center;
+      padding: 8px;
+    }
+
+    .tracker {
+      margin-top: 22px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .section {
+      display: grid;
+      gap: 0;
+    }
+
+    .section-head {
+      display: grid;
+      grid-template-columns: 160px repeat(31, 34px) 100px;
+      align-items: center;
+      color: white;
+      font-weight: 700;
+      border: 1px solid var(--border);
+      font-size: 12px;
+    }
+
+    .section-head > div {
+      padding: 4px 6px;
+      text-align: center;
+    }
+
+    .section-name {
+      text-align: left !important;
+      padding-left: 10px !important;
+    }
+
+    .habit-row {
+      display: grid;
+      grid-template-columns: 160px repeat(31, 34px) 100px;
+      align-items: center;
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: white;
+      min-height: 32px;
+      font-size: 14px;
+    }
+
+    .habit-title {
+      padding-left: 10px;
+    }
+
+    .day-cell, .progress-cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .progress-cell {
+      font-weight: 700;
+    }
+
+    .day-btn {
+      width: 18px;
+      height: 18px;
+      border: 2px solid #444;
+      border-radius: 3px;
+      background: white;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .today-col {
+      background: var(--today);
+    }
+
+    .muted {
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .small-btn {
+      width: auto;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: #111827;
+      color: white;
+      border: 0;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    @media (max-width: 1200px) {
+      .top { grid-template-columns: 1fr; }
+      .rings, .insights, .subinsights { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 900px) {
+      .rings, .insights, .subinsights { grid-template-columns: 1fr; }
+      .tracker { overflow-x: auto; }
+      .section, .section-head, .habit-row { width: max-content; }
     }
   </style>
 </head>
 <body>
-  <div class="box">
-    <h1>🔥 Habit Master</h1>
-    <p>Увійди через email, щоб зберігати прогрес.</p>
+  <div id="loginView" class="login-wrap">
+    <div class="login-card">
+      <h1>🔥 Habit Master</h1>
+      <div>Увійди через email, щоб зберігати прогрес.</div>
+      <input id="email" type="email" placeholder="твій email" />
+      <button class="btn-blue" onclick="login()">Login</button>
+      <div id="loginStatus" class="status"></div>
+    </div>
+  </div>
 
-    <input id="email" type="email" placeholder="твій email" />
-    <button onclick="login()">Login</button>
+  <div id="appView" class="app" style="display:none;">
+    <div class="topbar">
+      <button class="small-btn" onclick="logout()">Logout</button>
+    </div>
 
-    <button class="secondary" onclick="check()">✅ Mark done today</button>
+    <div class="top">
+      <div class="sidebar">
+        <div class="panel title">HABIT MASTER</div>
+        <div id="levelPanel" class="panel green"></div>
+        <div id="streakPanel" class="panel green"></div>
+        <div id="motivationPanel" class="panel green"></div>
+        <div class="panel pink">
+          <div>
+            🎯 FOCUS:<br />
+            <input id="focusInput" placeholder="твій фокус" style="margin-top:8px;width:220px;padding:8px;border-radius:8px;border:0;" />
+          </div>
+        </div>
+        <div class="panel pink">🎁 REWARD: merch</div>
+      </div>
 
-    <p id="status"></p>
+      <div class="dashboard">
+        <div class="rings" id="ringsRow"></div>
+        <div class="insights">
+          <div id="strongestInsight" class="insight"></div>
+          <div id="activeInsight" class="insight"></div>
+          <div id="weekInsight" class="insight"></div>
+          <div id="todayGoalInsight" class="insight"></div>
+        </div>
+        <div class="subinsights">
+          <div id="paceInsight" class="subinsight"></div>
+          <div id="topHabitInsight" class="subinsight"></div>
+          <div id="closestWinInsight" class="subinsight"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tracker" id="tracker"></div>
   </div>
 
   <script>
-    const SUPABASE_URL = "https://vnbcelodaueayobcvkjy.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_yfG2qoR_Cx8QKwEbNpzeUA_4VNjItCT";
-
+    const SUPABASE_URL = "ТУТ_ТВІЙ_URL";
+    const SUPABASE_KEY = "ТУТ_ТВІЙ_KEY";
     const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const today = new Date().getDate();
+    const daysInMonth = 31;
+
+    const categoryMeta = {
+      MOVE:   { color: "#2F3BFF", emoji: "🏃", title: "MOVE" },
+      MIND:   { color: "#7FAE67", emoji: "🧠", title: "MIND" },
+      CREATE: { color: "#E5A8CB", emoji: "🎨", title: "CREATE" },
+      SLOW:   { color: "#6E89D8", emoji: "🌿", title: "SLOW" }
+    };
+
+    const defaultHabits = {
+      MOVE: ["10–20 min walk", "Stretching", "Short workout"],
+      MIND: ["Journaling", "Reading", "Meditation"],
+      CREATE: ["Sketching", "Drawing", "New recipe"],
+      SLOW: ["No phone tea", "Early bed", "Self-care"]
+    };
+
+    let currentUser = null;
+    let categories = [];
+    let habits = [];
+    let checkIns = [];
+    let focusText = "";
+
+    function pct(a, b) {
+      return b === 0 ? 0 : Math.round((a / b) * 100);
+    }
+
+    function ringHTML(title, color, value, small = false) {
+      const deg = value * 3.6;
+      return `
+        <div class="ring-card">
+          <div class="ring-title">${title}</div>
+          <div class="ring" style="background: conic-gradient(${color} ${deg}deg, #e5e7eb 0deg);"></div>
+          <div class="${small ? 'ring-value ring-small' : 'ring-value'}">${value}%</div>
+        </div>
+      `;
+    }
 
     async function login() {
       const email = document.getElementById("email").value.trim();
-      const status = document.getElementById("status");
-
+      const status = document.getElementById("loginStatus");
       if (!email) {
         status.innerText = "Введи email";
         return;
       }
 
-      const { error } = await client.auth.signInWithOtp({ email });
+      const { error } = await client.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: window.location.origin
+        }
+      });
 
       if (error) {
         status.innerText = "Помилка логіну: " + error.message;
         return;
       }
 
-      status.innerText = "Лист для входу відправлено 📩 Перевір пошту";
+      status.innerText = "Лист відправлено 📩 Перевір пошту";
     }
 
-    async function check() {
-      const status = document.getElementById("status");
-      const { data: userData, error: userError } = await client.auth.getUser();
+    async function logout() {
+      await client.auth.signOut();
+      location.reload();
+    }
 
-      if (userError || !userData.user) {
-        status.innerText = "Спочатку увійди через email";
-        return;
-      }
+    async function ensureProfile() {
+      await client.from("profiles").upsert({
+        id: currentUser.id,
+        email: currentUser.email
+      });
+    }
 
-      const user = userData.user;
+    async function loadCategories() {
+      const { data, error } = await client
+        .from("categories")
+        .select("*")
+        .order("sort_order", { ascending: true });
 
-      const { error: profileError } = await client.from("profiles").upsert({
-        id: user.id,
-        email: user.email
+      if (error) throw error;
+      categories = data;
+    }
+
+    async function ensureDefaultHabits() {
+      const { data: existing, error: readError } = await client
+        .from("habits")
+        .select("id,title,category_id,sort_order")
+        .eq("user_id", currentUser.id)
+        .order("sort_order", { ascending: true });
+
+      if (readError) throw readError;
+      habits = existing || [];
+
+      if (habits.length > 0) return;
+
+      const inserts = [];
+      categories.forEach((cat) => {
+        defaultHabits[cat.slug].forEach((title, index) => {
+          inserts.push({
+            user_id: currentUser.id,
+            category_id: cat.id,
+            title,
+            sort_order: index + 1
+          });
+        });
       });
 
-      if (profileError) {
-        status.innerText = "Помилка профілю: " + profileError.message;
-        return;
-      }
+      const { error: insertError } = await client.from("habits").insert(inserts);
+      if (insertError) throw insertError;
 
-      const today = new Date().toISOString().slice(0, 10);
-
-      const { data: habits, error: habitsError } = await client
+      const { data: fresh, error: freshError } = await client
         .from("habits")
-        .select("id")
-        .eq("user_id", user.id)
-        .limit(1);
+        .select("id,title,category_id,sort_order")
+        .eq("user_id", currentUser.id)
+        .order("sort_order", { ascending: true });
 
-      if (habitsError) {
-        status.innerText = "Помилка читання habits: " + habitsError.message;
-        return;
-      }
-
-      let habitId;
-
-      if (!habits || habits.length === 0) {
-        const { data: category, error: catError } = await client
-          .from("categories")
-          .select("id")
-          .eq("slug", "MOVE")
-          .single();
-
-        if (catError || !category) {
-          status.innerText = "Помилка categories: " + (catError?.message || "no category");
-          return;
-        }
-
-        const { data: newHabit, error: newHabitError } = await client
-          .from("habits")
-          .insert({
-            user_id: user.id,
-            category_id: category.id,
-            title: "My first habit",
-            sort_order: 1
-          })
-          .select("id")
-          .single();
-
-        if (newHabitError || !newHabit) {
-          status.innerText = "Помилка створення habit: " + (newHabitError?.message || "unknown");
-          return;
-        }
-
-        habitId = newHabit.id;
-      } else {
-        habitId = habits[0].id;
-      }
-
-      const { error: checkError } = await client
-        .from("check_ins")
-        .upsert(
-          {
-            user_id: user.id,
-            habit_id: habitId,
-            check_in_date: today
-          },
-          { onConflict: "habit_id,check_in_date" }
-        );
-
-      if (checkError) {
-        status.innerText = "Помилка check-in: " + checkError.message;
-        return;
-      }
-
-      status.innerText = "Збережено ✅";
+      if (freshError) throw freshError;
+      habits = fresh || [];
     }
+
+    async function loadFocus() {
+      const { data } = await client
+        .from("profiles")
+        .select("focus_text")
+        .eq("id", currentUser.id)
+        .single();
+
+      focusText = data?.focus_text || "";
+      document.getElementById("focusInput").value = focusText;
+    }
+
+    async function saveFocus() {
+      const value = document.getElementById("focusInput").value.trim();
+      await client.from("profiles").update({ focus_text: value }).eq("id", currentUser.id);
+      focusText = value;
+    }
+
+    async function loadCheckIns() {
+      const habitIds = habits.map(h => h.id);
+      if (habitIds.length === 0) {
+        checkIns = [];
+        return;
+      }
+
+      const { data, error } = await client
+        .from("check_ins")
+        .select("id,habit_id,check_in_date")
+        .eq("user_id", currentUser.id);
+
+      if (error) throw error;
+      checkIns = data || [];
+    }
+
+    function habitChecks(habitId) {
+      return checkIns
+        .filter(c => c.habit_id === habitId)
+        .map(c => new Date(c.check_in_date).getDate());
+    }
+
+    async function toggleCheck(habitId, day) {
+      const date = new Date();
+      date.setDate(day);
+      const iso = date.toISOString().slice(0, 10);
+
+      const existing = checkIns.find(c =>
+        c.habit_id === habitId &&
+        new Date(c.check_in_date).getDate() === day
+      );
+
+      if (existing) {
+        const { error } = await client.from("check_ins").delete().eq("id", existing.id);
+        if (error) {
+          alert(error.message);
+          return;
+        }
+      } else {
+        const { error } = await client.from("check_ins").insert({
+          user_id: currentUser.id,
+          habit_id: habitId,
+          check_in_date: iso
+        });
+        if (error) {
+          alert(error.message);
+          return;
+        }
+      }
+
+      await loadCheckIns();
+      renderApp();
+    }
+
+    function getCategoryById(id) {
+      return categories.find(c => c.id === id);
+    }
+
+    function activeDaysSet() {
+      const s = new Set();
+      checkIns.forEach(c => s.add(new Date(c.check_in_date).getDate()));
+      return [...s].sort((a, b) => a - b);
+    }
+
+    function currentStreak(days) {
+      let count = 0;
+      let d = today;
+      const set = new Set(days);
+      while (set.has(d)) {
+        count++;
+        d--;
+      }
+      return count;
+    }
+
+    function bestStreak(days) {
+      if (days.length === 0) return 0;
+      let best = 1;
+      let cur = 1;
+      for (let i = 1; i < days.length; i++) {
+        if (days[i] === days[i - 1] + 1) {
+          cur++;
+          best = Math.max(best, cur);
+        } else {
+          cur = 1;
+        }
+      }
+      return best;
+    }
+
+    function buildDashboard() {
+      const totalDone = checkIns.length;
+      const totalPossible = habits.length * daysInMonth;
+      const totalPercent = pct(totalDone, totalPossible);
+
+      const days = activeDaysSet();
+      const streak = currentStreak(days);
+      const best = bestStreak(days);
+
+      document.getElementById("levelPanel").innerText =
+        `LEVEL: ${totalDone < 50 ? "Novice 🥚" : totalDone < 150 ? "Apprentice 🌱" : "Warrior ⚔️"}`;
+      document.getElementById("streakPanel").innerText =
+        `STREAK: ${streak} DAYS 🔥 • BEST: ${best}`;
+      document.getElementById("motivationPanel").innerText =
+        totalDone === 0 ? "Ready for XP? 🚀" :
+        totalDone < 20 ? "Nice start 🌱" :
+        totalDone < 60 ? "Keep going 💪" :
+        totalDone < 120 ? "Consistency wins ✨" :
+        "Amazing rhythm 🚀";
+
+      const ringParts = [];
+      ringParts.push(ringHTML("🏆 TOTAL", "#CFCFCF", totalPercent));
+
+      const categoryStats = categories.map(cat => {
+        const catHabits = habits.filter(h => h.category_id === cat.id);
+        const done = checkIns.filter(c => catHabits.some(h => h.id === c.habit_id)).length;
+        const percentValue = pct(done, catHabits.length * daysInMonth);
+        ringParts.push(ringHTML(`${cat.slug === "MOVE" ? "🏃" : cat.slug === "MIND" ? "🧠" : cat.slug === "CREATE" ? "🎨" : "🌿"} ${cat.slug}`, cat.color, percentValue, true));
+        return { ...cat, done, percentValue, habits: catHabits };
+      });
+
+      document.getElementById("ringsRow").innerHTML = ringParts.join("");
+
+      const strongest = [...categoryStats].sort((a, b) => b.done - a.done)[0];
+      const activeDays = days.filter(d => d <= today).length;
+
+      const weekNum = Math.floor((today - 1) / 7) + 1;
+      const weekStart = (weekNum - 1) * 7 + 1;
+      const weekEnd = Math.min(weekNum * 7, 31);
+      const weekDone = checkIns.filter(c => {
+        const d = new Date(c.check_in_date).getDate();
+        return d >= weekStart && d <= weekEnd;
+      }).length;
+      const weekGoal = (weekEnd - weekStart + 1) * habits.length;
+
+      const todayDone = checkIns.filter(c => new Date(c.check_in_date).getDate() === today).length;
+      const todayGoal = Math.max(1, Math.ceil((totalPossible - totalDone) / Math.max(1, daysInMonth - today + 1)));
+
+      const topHabit = [...habits].map(h => ({
+        ...h,
+        count: habitChecks(h.id).length
+      })).sort((a, b) => b.count - a.count)[0];
+
+      const closestWin = [...habits].map(h => ({
+        ...h,
+        left: daysInMonth - habitChecks(h.id).length
+      })).sort((a, b) => a.left - b.left)[0];
+
+      const pace = totalDone === 0
+        ? "Start 🚀"
+        : totalDone / totalPossible >= today / daysInMonth
+        ? "On track 👍"
+        : totalDone / totalPossible >= today / daysInMonth - 0.08
+        ? "Close ✨"
+        : "Need a push ⚡";
+
+      document.getElementById("strongestInsight").innerText = `Strongest: ${strongest ? strongest.slug : "-"}`;
+      document.getElementById("activeInsight").innerText = `Active days: ${activeDays}/${today}`;
+      document.getElementById("weekInsight").innerText = `This week: ${weekDone}/${weekGoal}`;
+      document.getElementById("todayGoalInsight").innerText = todayDone > 0 ? "Today: done ✅" : `Today: ${Math.min(3, todayGoal)} check-in(s)`;
+
+      document.getElementById("paceInsight").innerText = pace;
+      document.getElementById("topHabitInsight").innerText = `Top habit: ${topHabit ? topHabit.title : "-"} • ${topHabit ? topHabit.count : 0}`;
+      document.getElementById("closestWinInsight").innerText = `Closest win: ${closestWin ? closestWin.title : "-"} • ${closestWin ? closestWin.left : "-"} left`;
+    }
+
+    function buildTracker() {
+      const tracker = document.getElementById("tracker");
+      tracker.innerHTML = "";
+
+      categories.forEach(cat => {
+        const catHabits = habits
+          .filter(h => h.category_id === cat.id)
+          .sort((a, b) => a.sort_order - b.sort_order);
+
+        const section = document.createElement("div");
+        section.className = "section";
+
+        const head = document.createElement("div");
+        head.className = "section-head";
+        head.style.background = cat.color;
+
+        const name = document.createElement("div");
+        name.className = "section-name";
+        name.textContent = `${cat.slug === "MOVE" ? "🏃" : cat.slug === "MIND" ? "🧠" : cat.slug === "CREATE" ? "🎨" : "🌿"} ${cat.slug}`;
+        head.appendChild(name);
+
+        for (let d = 1; d <= daysInMonth; d++) {
+          const cell = document.createElement("div");
+          cell.textContent = d;
+          if (d === today) cell.classList.add("today-col");
+          head.appendChild(cell);
+        }
+
+        const progress = document.createElement("div");
+        progress.textContent = "PROGRESS";
+        head.appendChild(progress);
+
+        section.appendChild(head);
+
+        catHabits.forEach(habit => {
+          const row = document.createElement("div");
+          row.className = "habit-row";
+
+          const title = document.createElement("div");
+          title.className = "habit-title";
+          title.textContent = habit.title;
+          row.appendChild(title);
+
+          const checkedDays = habitChecks(habit.id);
+
+          for (let d = 1; d <= daysInMonth; d++) {
+            const wrap = document.createElement("div");
+            wrap.className = "day-cell";
+            if (d === today) wrap.classList.add("today-col");
+
+            const btn = document.createElement("button");
+            btn.className = "day-btn";
+            if (checkedDays.includes(d)) {
+              btn.style.background = cat.color;
+              btn.style.borderColor = cat.color;
+            }
+            btn.onclick = () => toggleCheck(habit.id, d);
+
+            wrap.appendChild(btn);
+            row.appendChild(wrap);
+          }
+
+          const progressCell = document.createElement("div");
+          progressCell.className = "progress-cell";
+          progressCell.style.color = cat.color;
+          progressCell.textContent = `${pct(checkedDays.length, daysInMonth)}%`;
+          row.appendChild(progressCell);
+
+          section.appendChild(row);
+        });
+
+        tracker.appendChild(section);
+      });
+    }
+
+    function renderApp() {
+      buildDashboard();
+      buildTracker();
+    }
+
+    async function bootstrap() {
+      const { data: authData } = await client.auth.getSession();
+      currentUser = authData?.session?.user || null;
+
+      if (!currentUser) {
+        document.getElementById("loginView").style.display = "flex";
+        document.getElementById("appView").style.display = "none";
+        return;
+      }
+
+      document.getElementById("loginView").style.display = "none";
+      document.getElementById("appView").style.display = "block";
+
+      await ensureProfile();
+      await loadCategories();
+      await ensureDefaultHabits();
+      await loadCheckIns();
+      await loadFocus();
+
+      document.getElementById("focusInput").addEventListener("change", saveFocus);
+
+      renderApp();
+    }
+
+    client.auth.onAuthStateChange(async () => {
+      await bootstrap();
+    });
+
+    bootstrap();
   </script>
 </body>
 </html>
