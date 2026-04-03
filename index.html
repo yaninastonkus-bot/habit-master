@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Habit Master</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+</head>
+<body style="font-family:sans-serif; text-align:center; padding:40px;">
+
+<h1>🔥 Habit Master</h1>
+
+<input id="email" placeholder="email" />
+<button onclick="login()">Login</button>
+
+<br><br>
+
+<button onclick="check()">✅ Mark done today</button>
+
+<p id="status"></p>
+
+<script>
+const supabase = supabase.createClient(
+  "https://vnbcelodaueayobcvkjy.supabase.co",
+  "sb_publishable_yfG2qoR_Cx8QKwEbNpzeUA_4VNjItCT "
+)
+
+async function login() {
+  const email = document.getElementById('email').value
+  await supabase.auth.signInWithOtp({ email })
+  alert("Check your email 📩")
+}
+
+async function check() {
+  const user = (await supabase.auth.getUser()).data.user
+  if (!user) return alert("login first")
+
+  await supabase.from('check_ins').insert({
+    user_id: user.id,
+    habit_id: "demo",
+    check_in_date: new Date().toISOString()
+  })
+
+  document.getElementById('status').innerText = "Saved ✅"
+}
+</script>
+
+</body>
+</html>
