@@ -1,47 +1,175 @@
 <!DOCTYPE html>
-<html>
+<html lang="uk">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Habit Master</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 40px;
+      background: #eaf3ff;
+    }
+    .box {
+      max-width: 420px;
+      margin: 40px auto;
+      background: white;
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 12px;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+    input {
+      border: 1px solid #ccc;
+    }
+    button {
+      border: 0;
+      background: #2433F5;
+      color: white;
+      cursor: pointer;
+    }
+    button.secondary {
+      background: #88B566;
+    }
+    #status {
+      margin-top: 16px;
+      font-size: 14px;
+    }
+  </style>
 </head>
-<body style="font-family:sans-serif; text-align:center; padding:40px;">
+<body>
+  <div class="box">
+    <h1>🔥 Habit Master</h1>
+    <p>Увійди через email, щоб зберігати прогрес.</p>
 
-<h1>🔥 Habit Master</h1>
+    <input id="email" type="email" placeholder="твій email" />
+    <button onclick="login()">Login</button>
 
-<input id="email" placeholder="email" />
-<button onclick="login()">Login</button>
+    <button class="secondary" onclick="check()">✅ Mark done today</button>
 
-<br><br>
+    <p id="status"></p>
+  </div>
 
-<button onclick="check()">✅ Mark done today</button>
+  <script>
+    const SUPABASE_URL = "https://vnbcelodaueayobcvkjy.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_yfG2qoR_Cx8QKwEbNpzeUA_4VNjItCT";
 
-<p id="status"></p>
+    const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-<script>
-const supabase = supabase.createClient(
-  "https://vnbcelodaueayobcvkjy.supabase.co",
-  "sb_publishable_yfG2qoR_Cx8QKwEbNpzeUA_4VNjItCT "
-)
+    async function login() {
+      const email = document.getElementById("email").value.trim();
+      const status = document.getElementById("status");
 
-async function login() {
-  const email = document.getElementById('email').value
-  await supabase.auth.signInWithOtp({ email })
-  alert("Check your email 📩")
-}
+      if (!email) {
+        status.innerText = "Введи email";
+        return;
+      }
 
-async function check() {
-  const user = (await supabase.auth.getUser()).data.user
-  if (!user) return alert("login first")
+      const { error } = await client.auth.signInWithOtp({ email });
 
-  await supabase.from('check_ins').insert({
-    user_id: user.id,
-    habit_id: "demo",
-    check_in_date: new Date().toISOString()
-  })
+      if (error) {
+        status.innerText = "Помилка логіну: " + error.message;
+        return;
+      }
 
-  document.getElementById('status').innerText = "Saved ✅"
-}
-</script>
+      status.innerText = "Лист для входу відправлено 📩 Перевір пошту";
+    }
 
+    async function check() {
+      const status = document.getElementById("status");
+      const { data: userData, error: userError } = await client.auth.getUser();
+
+      if (userError || !userData.user) {
+        status.innerText = "Спочатку увійди через email";
+        return;
+      }
+
+      const user = userData.user;
+
+      const { error: profileError } = await client.from("profiles").upsert({
+        id: user.id,
+        email: user.email
+      });
+
+      if (profileError) {
+        status.innerText = "Помилка профілю: " + profileError.message;
+        return;
+      }
+
+      const today = new Date().toISOString().slice(0, 10);
+
+      const { data: habits, error: habitsError } = await client
+        .from("habits")
+        .select("id")
+        .eq("user_id", user.id)
+        .limit(1);
+
+      if (habitsError) {
+        status.innerText = "Помилка читання habits: " + habitsError.message;
+        return;
+      }
+
+      let habitId;
+
+      if (!habits || habits.length === 0) {
+        const { data: category, error: catError } = await client
+          .from("categories")
+          .select("id")
+          .eq("slug", "MOVE")
+          .single();
+
+        if (catError || !category) {
+          status.innerText = "Помилка categories: " + (catError?.message || "no category");
+          return;
+        }
+
+        const { data: newHabit, error: newHabitError } = await client
+          .from("habits")
+          .insert({
+            user_id: user.id,
+            category_id: category.id,
+            title: "My first habit",
+            sort_order: 1
+          })
+          .select("id")
+          .single();
+
+        if (newHabitError || !newHabit) {
+          status.innerText = "Помилка створення habit: " + (newHabitError?.message || "unknown");
+          return;
+        }
+
+        habitId = newHabit.id;
+      } else {
+        habitId = habits[0].id;
+      }
+
+      const { error: checkError } = await client
+        .from("check_ins")
+        .upsert(
+          {
+            user_id: user.id,
+            habit_id: habitId,
+            check_in_date: today
+          },
+          { onConflict: "habit_id,check_in_date" }
+        );
+
+      if (checkError) {
+        status.innerText = "Помилка check-in: " + checkError.message;
+        return;
+      }
+
+      status.innerText = "Збережено ✅";
+    }
+  </script>
 </body>
 </html>
