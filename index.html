@@ -404,30 +404,36 @@
     .ring {
       width: 112px;
       height: 112px;
-      border-radius: 50%;
       position: relative;
-      border: 2px solid rgba(255,255,255,0.05);
-      background: conic-gradient(from -90deg, #23232a 0deg, #23232a 360deg);
-      overflow: hidden;
+      flex: 0 0 auto;
     }
-    .ring::after {
-      content: '';
-      position: absolute;
-      inset: 13px;
-      border-radius: 50%;
-      background: #050505;
-      border: 1px solid rgba(255,255,255,0.04);
+    .ring svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+      overflow: visible;
     }
-    .ring-value {
-      font-size: 24px;
-      font-weight: 800;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 2;
-      letter-spacing: -0.05em;
+    .ring-track {
+      fill: none;
+      stroke: #2a2a34;
+      stroke-width: 10;
     }
+    .ring-progress {
+      fill: none;
+      stroke: var(--card-blue);
+      stroke-width: 10;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.25s ease;
+    }
+    .ring-progress.total {
+      stroke: var(--accent-lime);
+    }
+    .ring-hole {
+      fill: #050505;
+      stroke: rgba(255,255,255,0.04);
+      stroke-width: 1;
+    }
+    
     .ring-meta {
       display: flex;
       justify-content: space-between;
@@ -1180,6 +1186,26 @@
       };
     }
 
+    function makeRing(percent, variant = 'category', size = 112) {
+      const safePercent = Math.max(0, Math.min(100, Number(percent) || 0));
+      const stroke = 10;
+      const center = size / 2;
+      const radius = center - stroke / 2 - 1;
+      const circumference = 2 * Math.PI * radius;
+      const dashoffset = circumference * (1 - safePercent / 100);
+      const progressClass = variant === 'total' ? 'ring-progress total' : 'ring-progress';
+
+      return `
+        <div class="ring" style="width:${size}px; height:${size}px;">
+          <svg viewBox="0 0 ${size} ${size}" aria-hidden="true">
+            <circle class="ring-track" cx="${center}" cy="${center}" r="${radius}"></circle>
+            <circle class="${progressClass}" cx="${center}" cy="${center}" r="${radius}" stroke-dasharray="${circumference}" stroke-dashoffset="${dashoffset}"></circle>
+            <circle class="ring-hole" cx="${center}" cy="${center}" r="${radius - stroke + 2}"></circle>
+          </svg>
+          <div class="ring-value">${safePercent}%</div>
+        </div>`;
+    }
+
     function renderAll(){
       renderDashboard();
       renderTracker();
@@ -1208,9 +1234,7 @@
       const totalPerc = totalChecks ? Math.round((totalDone / totalChecks) * 100) : 0;
       getEl('totalProgressWrap').innerHTML = `
         <div class="ring-card" style="min-height:260px; border-color: rgba(184,242,58,0.4);">
-          <div class="ring" style="width:140px; height:140px; background: conic-gradient(from -90deg, var(--accent-lime) 0deg, var(--accent-lime) ${totalPerc * 3.6}deg, #23232a ${totalPerc * 3.6}deg, #23232a 360deg);">
-            <div class="ring-value" style="font-size:34px;">${totalPerc}%</div>
-          </div>
+          ${makeRing(totalPerc, 'total', 140)}
           <div class="ring-meta">
             <div>
               <div class="ring-title">TOTAL</div>
@@ -1242,9 +1266,7 @@
         const isFoc = selectedFocuses.includes(cat.slug);
         html += `
           <div class="ring-card" style="${isFoc ? 'border-color: rgba(184,242,58,0.7); box-shadow: inset 0 0 0 1px rgba(184,242,58,0.22);' : ''}">
-            <div class="ring" style="background: conic-gradient(from -90deg, var(--card-blue) 0deg, var(--card-blue) ${perc * 3.6}deg, #23232a ${perc * 3.6}deg, #23232a 360deg);">
-              <div class="ring-value">${perc}%</div>
-            </div>
+            ${makeRing(perc, 'category', 112)}
             <div class="ring-meta">
               <div>
                 <div class="ring-title">${cat.slug}</div>
