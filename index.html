@@ -43,14 +43,15 @@
     .ring-value{font-size:22px; font-weight:800; position:absolute; z-index:10; top:50%; left:50%; transform:translate(-50%, -50%);}
     .side-block{color:#fff; min-height:75px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:15px; font-size:17px; font-weight:700; border-radius:22px; margin-bottom:12px;}
     
-    /* Focus Dropdown */
-    .focus-input { 
-      background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); 
-      color: #fff; width: 100%; border-radius: 10px; padding: 10px; 
-      font-family: inherit; font-size: 16px; text-align: center; font-weight: 800;
-      cursor: pointer; outline: none; appearance: none; text-align-last: center;
+    /* Оновлений Focus: Чіпи для множинного вибору */
+    .focus-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 10px; }
+    .focus-chip {
+      background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);
+      color: #fff; border-radius: 12px; padding: 8px 12px;
+      font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; user-select: none;
     }
-    .focus-input option { color: var(--text); background: #fff; font-weight: 600;}
+    .focus-chip:hover { background: rgba(255,255,255,0.3); }
+    .focus-chip.active { background: #fff; color: var(--pink); border-color: #fff; }
 
     /* Tracker */
     .tracker-section{overflow-x:auto; margin-bottom:25px; background:#fff; border-radius:20px; border:1px solid var(--border); padding-bottom:5px; -webkit-overflow-scrolling: touch;}
@@ -66,11 +67,9 @@
     .spaces-sidebar { display: flex; flex-direction: column; gap: 10px; }
     .space-btn{width:100%; border:1px solid var(--border); border-radius:18px; padding:16px; text-align:left; font-size:16px; font-weight:700; cursor:pointer; background:#fff; box-shadow: var(--shadow); transition: 0.2s;}
     .chat-box { height: 500px; overflow-y: auto; background: #f8fbff; border-radius: 22px; padding: 20px; display: flex; flex-direction: column; gap: 12px; border: 1px solid var(--border); }
-    
     .msg { max-width: 85%; padding: 14px 18px; padding-right: 65px; border-radius: 20px; background: #fff; box-shadow: 0 3px 10px rgba(0,0,0,0.04); color: var(--text); position: relative; word-wrap: break-word; line-height:1.4;}
     .msg.own { align-self: flex-end; background: var(--blue); color: #fff; }
     .post-img { max-width: 100%; border-radius: 14px; margin-top: 10px; display: block; border: 1px solid rgba(0,0,0,0.1); }
-    
     .action-btns { position: absolute; top: 12px; right: 12px; display: flex; gap: 5px; }
     .action-btn { cursor: pointer; opacity: 0.8; font-size: 14px; transition: 0.2s; user-select: none; background: rgba(255,255,255,0.7); border-radius: 6px; padding: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display:flex; align-items:center; justify-content:center;}
     .action-btn:hover { opacity: 1; transform: scale(1.1); background: #fff; }
@@ -104,7 +103,7 @@
 
   <div id="authView" class="auth-shell">
     <div class="auth-card">
-      <h1 style="margin:0 0 10px 0;">🔥 ek-habit-tracker</h1>
+      <h1 style="margin:0 0 10px 0;">🔥 EK Habit Tracker</h1>
       <p style="color:var(--muted); margin-bottom:20px;">Увійдіть або створіть акаунт</p>
       
       <input id="emailInput" class="input" type="email" placeholder="Email" style="margin-bottom:12px;"/>
@@ -144,14 +143,13 @@
             </div>
             
             <div class="card" style="background:var(--pink); color:#fff; padding: 20px 15px; border-radius: 22px; text-align:center;">
-              <div style="font-size: 14px; margin-bottom: 8px; opacity: 0.9; font-weight:700;">🎯 YOUR FOCUS:</div>
-              <select id="focusInput" class="focus-input" onchange="saveFocus()">
-                <option value="" disabled selected>Обери напрямок...</option>
-                <option value="MOVE">🏃 MOVE</option>
-                <option value="MIND">🧠 MIND</option>
-                <option value="CREATE">🎨 CREATE</option>
-                <option value="SLOW">🌿 SLOW</option>
-              </select>
+              <div style="font-size: 14px; margin-bottom: 12px; opacity: 0.9; font-weight:700;">🎯 YOUR FOCUS:</div>
+              <div class="focus-chips" id="focusChipsContainer">
+                <div class="focus-chip" data-val="MOVE" onclick="toggleFocusChip('MOVE')">🏃 MOVE</div>
+                <div class="focus-chip" data-val="MIND" onclick="toggleFocusChip('MIND')">🧠 MIND</div>
+                <div class="focus-chip" data-val="CREATE" onclick="toggleFocusChip('CREATE')">🎨 CREATE</div>
+                <div class="focus-chip" data-val="SLOW" onclick="toggleFocusChip('SLOW')">🌿 SLOW</div>
+              </div>
               <hr style="border:0; border-top:1px solid rgba(255,255,255,0.3); margin:15px 0;">
               <div style="font-size: 15px; font-weight:800;">🎁 REWARD: <span style="opacity:0.9; font-weight:normal;">merch</span></div>
             </div>
@@ -215,6 +213,7 @@
 
     let currentUser = null, categories = [], habits = [], checkIns = [], posts = [], selectedSpace = "";
     let editingPostId = null;
+    let selectedFocuses = []; // Масив для зберігання обраних фокусів
 
     const TODAY_DAY = new Date().getDate();
 
@@ -234,6 +233,30 @@
 
     const getEl = id => document.getElementById(id);
     function getMeta(slug) { return META[slug?.toUpperCase()] || { emoji: "📌", color: "#6f7f98" }; }
+
+    // --- Функції Фокусу ---
+    function toggleFocusChip(val) {
+      const idx = selectedFocuses.indexOf(val);
+      if (idx > -1) {
+        selectedFocuses.splice(idx, 1);
+      } else {
+        selectedFocuses.push(val);
+      }
+      updateFocusUI();
+      saveFocus();
+    }
+
+    function updateFocusUI() {
+      const chips = document.querySelectorAll('.focus-chip');
+      chips.forEach(chip => {
+        if(selectedFocuses.includes(chip.dataset.val)) {
+          chip.classList.add('active');
+        } else {
+          chip.classList.remove('active');
+        }
+      });
+      renderDashboard(); // Оновлюємо кільця
+    }
 
     function updateFileName() {
       const file = getEl('fileInput').files[0];
@@ -321,14 +344,17 @@
     async function loadProfile() {
       try {
         const { data } = await sb.from('profiles').select('focus_text').eq('id', currentUser.id).single();
-        if(data && data.focus_text) getEl('focusInput').value = data.focus_text;
+        if(data && data.focus_text) {
+            selectedFocuses = data.focus_text.split(',').filter(Boolean); // Розбиваємо рядок в масив
+            updateFocusUI();
+        }
       } catch(e) { console.warn("Профіль не знайдено, ігноруємо."); }
     }
 
     async function saveFocus() {
       try {
-        await sb.from('profiles').upsert({ id: currentUser.id, focus_text: getEl('focusInput').value });
-        renderDashboard(); 
+        const focusStr = selectedFocuses.join(','); // Зберігаємо масив як рядок
+        await sb.from('profiles').upsert({ id: currentUser.id, focus_text: focusStr });
       } catch(e) { console.error("Помилка збереження фокусу", e); }
     }
 
@@ -482,7 +508,6 @@
       
       const totalPossible = habits.length * 31;
       const totalPerc = totalPossible > 0 ? Math.min(100, Math.round((checkIns.length / totalPossible) * 100)) : 0;
-      const currentFocus = getEl('focusInput').value; 
 
       let ringsHtml = `<div class="card ring-card" style="border: 2px solid var(--blue)"><div style="font-weight:800; font-size:14px; color:var(--blue)">🏆 TOTAL PROGRESS</div><div class="ring" style="background: conic-gradient(var(--blue) ${totalPerc*3.6}deg, #dfe3ea 0deg);"><div class="ring-value">${totalPerc}%</div></div></div>`;
 
@@ -491,7 +516,8 @@
         const done = checkIns.filter(c => catHabits.some(h => h.id === c.habit_id)).length;
         const perc = (catHabits.length * 31) > 0 ? Math.min(100, Math.round((done / (catHabits.length * 31)) * 100)) : 0;
         
-        const isFocused = cat.slug === currentFocus;
+        // Підсвітка обраних фокусів
+        const isFocused = selectedFocuses.includes(cat.slug);
         const ringStyle = isFocused ? `transform: scale(1.05); box-shadow: 0 0 20px ${cat.color}60; border: 2px solid ${cat.color};` : '';
         const focusBadge = isFocused ? `<span style="font-size:14px;">🎯</span> ` : '';
 
