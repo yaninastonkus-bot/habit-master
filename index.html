@@ -33,9 +33,10 @@
     .auth-card{width:100%; max-width:450px; background:var(--card); border-radius:24px; padding:40px; border:1px solid var(--border); text-align:center;}
     .auth-card h1 { font-size: 38px; font-weight: 800; letter-spacing: -2px; margin-bottom: 20px; }
     .input,.textarea{width:100%; border:1px solid var(--border); border-radius:12px; padding:16px; font-size:16px; background:#1a1a1a; color:#fff; font-family: inherit; outline:none;}
+    .input:focus { border-color: var(--blue); }
     .button{border:0; border-radius:100px; padding:14px 24px; font-size:16px; font-weight:700; cursor:pointer; transition:0.3s; display:inline-flex; align-items:center; justify-content:center;}
     .button.primary{background:var(--green);color:#000}
-    .button.dark{background:transparent; color:#fff; border:1px solid var(--border);}
+    .button.dark{background:transparent; color:#fff; border: 1px solid var(--border);}
     
     /* Layout */
     .app{max-width:1400px; margin:0 auto; padding:40px 20px;}
@@ -57,7 +58,7 @@
     
     /* Focus Chips */
     .focus-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 15px; }
-    .focus-chip { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color:#fff; border-radius:100px; padding:10px 18px; font-size:13px; font-weight:700; cursor:pointer; transition:0.2s; }
+    .focus-chip { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color:#fff; border-radius:100px; padding:10px 18px; font-size: 13px; font-weight:700; cursor:pointer; transition:0.2s; }
     .focus-chip.active { background: var(--green); color:#000; border-color:var(--green); }
 
     /* Tracker */
@@ -83,6 +84,7 @@
     .chat-box { height: 500px; overflow-y: auto; background: #080808; border-radius: 24px; padding: 24px; display: flex; flex-direction: column; gap: 12px; border: 1px solid var(--border); }
     .msg { max-width: 80%; padding: 16px 20px; border-radius: 20px; background: #1a1a1a; border: 1px solid var(--border); color: var(--text); position: relative; }
     .msg.own { align-self: flex-end; background: var(--blue); border: none; }
+    .chat-img { width: 100%; border-radius: 12px; margin-top: 10px; display: block; border: 1px solid rgba(255,255,255,0.1); }
     
     @media (max-width: 768px) {
       .app { padding: 20px 12px; }
@@ -169,13 +171,9 @@
 
     <div id="settingsView" class="view">
        <div class="card">
-           <h2 style="font-size:32px; font-weight:800;">Налаштування</h2>
+           <h2 style="margin:0 0 24px 0; font-size:32px; font-weight:800;">Налаштування</h2>
            <p style="color:var(--muted)">Email: <strong style="color:#fff;" id="userEmailLabel"></strong></p>
            <button class="button primary" style="width:auto;" onclick="alert('Сповіщення активовано!')">🔔 Enable Notifications</button>
-           <div id="adminSection" class="hidden" style="margin-top:40px; border-top:1px solid #222; padding-top:24px;">
-              <h3 style="color:var(--green)">👑 Admin Panel</h3>
-              <div id="adminStats" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:16px;"></div>
-           </div>
        </div>
     </div>
   </div>
@@ -184,8 +182,6 @@
     const SUPABASE_URL = "https://vnbcelodaueayobcvkjy.supabase.co";
     const SUPABASE_KEY = "sb_publishable_yfG2qoR_Cx8QKwEbNpzeUA_4VNjItCT";
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    const OWNER_EMAIL = "yaninastonkus@gmail.com"; 
 
     let currentUser = null, categories = [], habits = [], checkIns = [], posts = [], selectedSpace = "GENERAL", selectedFocuses = [];
     const TODAY_DAY = new Date().getDate();
@@ -200,6 +196,15 @@
     const getEl = id => document.getElementById(id);
     function togglePassword() { const i = getEl('passwordInput'); i.type = i.type==='password'?'text':'password'; }
     function updateFileName() { const file = getEl('fileInput').files[0]; getEl('fileNameDisplay').innerText = file ? "📎 " + file.name : ''; }
+
+    // Форматування дати без часових поясів
+    function getLocalDateStr(day) {
+        const d = new Date();
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const dayStr = String(day).padStart(2, '0');
+        return `${y}-${m}-${dayStr}`;
+    }
 
     async function signIn(){
       const { error } = await sb.auth.signInWithPassword({ email: getEl('emailInput').value, password: getEl('passwordInput').value });
@@ -216,7 +221,6 @@
       currentUser = data.session?.user; if(!currentUser) return;
       getEl('authView').classList.add('hidden'); getEl('appView').classList.remove('hidden');
       getEl('userEmailLabel').innerText = currentUser.email;
-      if(currentUser.email === OWNER_EMAIL) getEl('adminSection').classList.remove('hidden');
       await refreshData();
     }
 
@@ -248,7 +252,7 @@
       if(confirm("Видалити звичку?")) { await sb.from('habits').delete().eq('id', id); refreshData(); }
     }
     async function toggleCheck(hId, day){
-      const dStr = new Date(new Date().getFullYear(), new Date().getMonth(), day).toISOString().split('T')[0];
+      const dStr = getLocalDateStr(day);
       const exist = checkIns.find(c => c.habit_id === hId && c.check_in_date === dStr);
       if(exist) await sb.from('check_ins').delete().eq('id', exist.id);
       else await sb.from('check_ins').insert({user_id:currentUser.id, habit_id:hId, check_in_date:dStr});
@@ -263,16 +267,24 @@
     }
 
     async function createPost(){
-      const b = getEl('postInput').value; if(!b) return;
+      const b = getEl('postInput').value; const file = getEl('fileInput').files[0];
+      if(!b && !file) return;
+      let url = null;
+      if(file){
+        const path = `${currentUser.id}/c_${Date.now()}.png`;
+        const { error: upErr } = await sb.storage.from('community').upload(path, file);
+        if(!upErr) url = sb.storage.from('community').getPublicUrl(path).data.publicUrl;
+      }
       const cat = categories.find(c => c.slug === selectedSpace);
-      await sb.from('community_posts').insert({user_id:currentUser.id, body:b, category_id:cat?cat.id:null, user_email:currentUser.email});
-      getEl('postInput').value = ""; refreshData();
+      await sb.from('community_posts').insert({user_id:currentUser.id, body:b, category_id:cat?cat.id:null, user_email:currentUser.email, media_url: url});
+      getEl('postInput').value = ""; getEl('fileInput').value = ""; getEl('fileNameDisplay').innerText = "";
+      refreshData();
     }
 
     function renderAll(){
       const streak = calculateStreak();
       getEl('streakPanel').innerText = `🔥 ${streak} DAYS STREAK`;
-      getEl('levelPanel').innerText = `🏆 ${streak > 10 ? 'WARRIOR' : 'NOVICE'} LEVEL`;
+      getEl('levelPanel').innerText = streak > 10 ? `🏆 WARRIOR LEVEL` : `🏆 NOVICE LEVEL`;
       getEl('activeVal').innerText = [...new Set(checkIns.map(c => c.check_in_date))].length;
       
       // Rings
@@ -316,7 +328,11 @@
       const spaces = [{slug:'GENERAL'}, ...categories];
       getEl('spacesWrap').innerHTML = spaces.map(s => `<button class="space-btn ${selectedSpace===s.slug?'active':''}" onclick="selectedSpace='${s.slug}'; renderAll();">${s.slug}</button>`).join('');
       const filtered = posts.filter(p => (categories.find(c => c.id === p.category_id)?.slug || 'GENERAL') === selectedSpace);
-      getEl('postsWrap').innerHTML = filtered.map(p => `<div class="msg ${p.user_id===currentUser.id?'own':''}"><b>${p.user_email}</b><br>${p.body}</div>`).join('');
+      getEl('postsWrap').innerHTML = filtered.map(p => `
+        <div class="msg ${p.user_id===currentUser.id?'own':''}">
+          <b>${p.user_email}</b><br>${p.body}
+          ${p.media_url ? `<img src="${p.media_url}" class="chat-img">` : ''}
+        </div>`).join('');
       getEl('postsWrap').scrollTop = 9999;
       
       document.querySelectorAll('.focus-chip').forEach(c => c.classList.toggle('active', selectedFocuses.includes(c.dataset.val)));
@@ -325,8 +341,8 @@
     function calculateStreak() {
       const dates = [...new Set(checkIns.map(c => c.check_in_date))].sort().reverse();
       if(!dates.length) return 0;
-      let s = 0, now = new Date().toISOString().split('T')[0];
-      for(let d of dates) { if(d === now || d === new Date(Date.now()-86400000).toISOString().split('T')[0]) { s++; now = new Date(new Date(d).getTime()-86400000).toISOString().split('T')[0]; } else break; }
+      let s = 0, now = getLocalDateStr(new Date().getDate());
+      for(let d of dates) { if(d === now || d === getLocalDateStr(new Date(Date.now()-86400000).getDate())) { s++; now = getLocalDateStr(new Date(new Date(d).getTime()-86400000).getDate()); } else break; }
       return s;
     }
 
