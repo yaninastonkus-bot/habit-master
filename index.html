@@ -24,22 +24,21 @@
     .button.green{background:var(--green);color:#fff}
     .button.dark{background:var(--dark);color:#fff}
     .app{max-width:1480px; margin:0 auto; padding:20px;}
-    .topbar{display:grid; grid-template-columns:repeat(5,1fr) auto; gap:12px; margin-bottom:18px;}
+    .topbar{display:grid; grid-template-columns:repeat(4,1fr) auto; gap:12px; margin-bottom:18px;}
     .tab{background:rgba(255,255,255,.72); border:1px solid var(--border); border-radius:16px; padding:16px 18px; text-align:center; cursor:pointer; font-weight:600;}
     .tab.active{background:#fff; font-weight:800;}
     .view{display:none} .view.active{display:block}
     .card{background:var(--card); border-radius:28px; box-shadow:var(--shadow); padding:22px; margin-bottom:20px;}
-    .today-row{background:#fff; border:1px solid var(--border); border-radius:18px; padding:16px; display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
-    .tracker-section{overflow-x:auto; margin-bottom:20px;}
-    .tracker-head,.tracker-row{display:grid; grid-template-columns:170px repeat(31, 34px) 104px; align-items:center;}
-    .tracker-head{color:#fff; font-size:12px; font-weight:700; background: var(--blue);}
-    .tracker-row{background:#fff; border-bottom:1px solid var(--border);}
-    .checkbox{width:18px; height:18px; border:2px solid #4b5563; border-radius:4px; cursor:pointer;}
+    .stats-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:20px; margin-top:20px;}
+    .tracker-section{overflow-x:auto; margin-bottom:20px; background:#fff; border-radius:18px; border:1px solid var(--border);}
+    .tracker-head,.tracker-row{display:grid; grid-template-columns:200px repeat(31, 35px) 80px; align-items:center;}
+    .tracker-head{color:#fff; font-size:12px; font-weight:700; height:40px;}
+    .tracker-row{border-bottom:1px solid var(--border); height:45px; font-size:14px;}
+    .checkbox{width:20px; height:20px; border:2px solid #cbd5e1; border-radius:6px; cursor:pointer; transition:0.2s;}
     .community-layout{display:grid; grid-template-columns:260px 1fr; gap:20px;}
-    .space-btn{width:100%; border:0; border-radius:18px; padding:14px 16px; text-align:left; font-size:16px; font-weight:700; cursor:pointer; background:#fff; margin-bottom:8px;}
+    .space-btn{width:100%; border:0; border-radius:18px; padding:14px 16px; text-align:left; font-size:16px; font-weight:700; cursor:pointer; background:#fff; margin-bottom:8px; box-shadow:var(--shadow);}
     .post{margin-top:14px; border:1px solid var(--border);}
-    .post-meta{font-size:14px; color:var(--muted); margin-bottom:8px;}
-    .post-body{font-size:16px; line-height:1.5;}
+    .post-meta{font-size:13px; color:var(--muted); margin-bottom:8px; display:flex; justify-content:space-between;}
   </style>
 </head>
 <body>
@@ -55,14 +54,12 @@
           <button class="button green" onclick="signUp()">Зареєструватися</button>
         </div>
       </div>
-      <div id="authStatus" class="status" style="margin-top:15px;"></div>
     </div>
   </div>
 
   <div id="appView" class="app hidden">
     <div class="topbar">
       <div class="tab active" data-view="dashboardView">Dashboard</div>
-      <div class="tab" data-view="todayView">Today</div>
       <div class="tab" data-view="trackerView">Tracker</div>
       <div class="tab" data-view="communityView">Community</div>
       <div class="tab" data-view="settingsView">Settings</div>
@@ -70,28 +67,29 @@
     </div>
 
     <div id="dashboardView" class="view active">
-       <div class="card">Вітаємо у Habit Master! Виберіть вкладку для роботи.</div>
-       <div id="ringsWrap" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:15px;"></div>
-    </div>
-
-    <div id="todayView" class="view">
-        <div class="card">
-            <h2 style="margin-top:0">Today's Habits</h2>
-            <div id="todayList"></div>
-        </div>
+       <div class="card" style="background:var(--blue); color:#fff; text-align:center;">
+         <h1 style="margin:0">HABIT MASTER ANALYTICS</h1>
+       </div>
+       <div id="statsGrid" class="stats-grid">
+         <div class="card"><div style="color:var(--muted)">Active Days</div><div id="activeVal" style="font-size:24px; font-weight:800;">0</div></div>
+         <div class="card"><div style="color:var(--muted)">Current Streak</div><div id="streakVal" style="font-size:24px; font-weight:800;">0</div></div>
+         <div class="card"><div style="color:var(--muted)">Total Check-ins</div><div id="totalVal" style="font-size:24px; font-weight:800;">0</div></div>
+         <div class="card"><div style="color:var(--muted)">Month Progress</div><div id="progressVal" style="font-size:24px; font-weight:800;">0%</div></div>
+       </div>
+       <div id="ringsWrap" class="stats-grid"></div>
     </div>
 
     <div id="trackerView" class="view">
-      <div id="trackerWrap" class="card" style="padding:0; overflow:hidden;"></div>
+      <div id="trackerWrap"></div>
     </div>
 
     <div id="communityView" class="view">
       <div class="community-layout">
-        <div id="spacesWrap" class="spaces"></div>
+        <div id="spacesWrap"></div>
         <div>
           <div class="card">
-            <h3 id="communityTitle">Community</h3>
-            <textarea id="postInput" class="textarea" placeholder="Напиши щось для спільноти..."></textarea>
+            <h3 id="communityTitle" style="margin-top:0">Community</h3>
+            <textarea id="postInput" class="textarea" placeholder="Поділися перемогою..."></textarea>
             <button class="button primary" style="margin-top:10px; width:100%" onclick="createPost()">Опублікувати</button>
           </div>
           <div id="postsWrap"></div>
@@ -101,7 +99,8 @@
 
     <div id="settingsView" class="view">
        <div class="card">
-           <h3>Налаштування</h3>
+           <h2 style="margin-top:0">Settings</h2>
+           <p>Ваш email: <strong id="userEmailLabel"></strong></p>
            <button class="button dark" onclick="logout()">Вийти з акаунту</button>
        </div>
     </div>
@@ -112,7 +111,7 @@
     const SUPABASE_KEY = "sb_publishable_yfG2qoR_Cx8QKwEbNpzeUA_4VNjItCT";
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    let currentUser, profile, categories = [], habits = [], checkIns = [], posts = [], selectedSpace = "MOVE";
+    let currentUser, categories = [], habits = [], checkIns = [], posts = [], selectedSpace = "MOVE";
 
     const META = {
       MOVE: { color: "#2F39F6", emoji: "🏃" },
@@ -128,24 +127,22 @@
       SLOW: ["No phone tea", "Early bed", "Self-care"]
     };
 
-    // --- Auth Functions ---
     async function signUp(){
       const email = document.getElementById('emailInput').value;
       const password = document.getElementById('passwordInput').value;
-      const { data, error } = await sb.auth.signUp({ email, password });
-      if(error) alert(error.message); else alert("Перевір пошту або увійди!");
+      const { error } = await sb.auth.signUp({ email, password });
+      if(error) alert(error.message); else alert("Готово! Увійдіть.");
     }
 
     async function signIn(){
       const email = document.getElementById('emailInput').value;
       const password = document.getElementById('passwordInput').value;
-      const { data, error } = await sb.auth.signInWithPassword({ email, password });
+      const { error } = await sb.auth.signInWithPassword({ email, password });
       if(error) alert(error.message); else bootstrap();
     }
 
     function logout(){ sb.auth.signOut(); location.reload(); }
 
-    // --- Data Logic ---
     async function bootstrap(){
       const { data } = await sb.auth.getSession();
       currentUser = data.session?.user;
@@ -153,9 +150,10 @@
 
       document.getElementById('authView').classList.add('hidden');
       document.getElementById('appView').classList.remove('hidden');
+      document.getElementById('userEmailLabel').innerText = currentUser.email;
 
       await loadCategories();
-      await ensureDefaultHabits();
+      await cleanAndLoadHabits(); // Чистка дублікатів тут
       await loadCheckIns();
       await loadPosts();
       renderAll();
@@ -166,13 +164,22 @@
       categories = data || [];
     }
 
-    async function ensureDefaultHabits(){
-      // 1. Отримуємо існуючі звички
+    async function cleanAndLoadHabits(){
       const { data: existing } = await sb.from('habits').select('*').eq('user_id', currentUser.id);
-      habits = existing || [];
+      
+      // Логіка видалення дублікатів у базі
+      const seen = new Set();
+      const duplicates = [];
+      existing.forEach(h => {
+        if(seen.has(h.title)) duplicates.push(h.id);
+        else seen.add(h.title);
+      });
 
-      // 2. Якщо порожньо, додаємо дефолтні БЕЗ ДУБЛІКАТІВ
-      if(habits.length === 0){
+      if(duplicates.length > 0) {
+        await sb.from('habits').delete().in('id', duplicates);
+        const { data: cleaned } = await sb.from('habits').select('*').eq('user_id', currentUser.id);
+        habits = cleaned;
+      } else if(existing.length === 0) {
         let toInsert = [];
         categories.forEach(cat => {
           (DEFAULT_HABITS[cat.slug] || []).forEach(hName => {
@@ -181,7 +188,9 @@
         });
         await sb.from('habits').insert(toInsert);
         const { data: fresh } = await sb.from('habits').select('*').eq('user_id', currentUser.id);
-        habits = fresh || [];
+        habits = fresh;
+      } else {
+        habits = existing;
       }
     }
 
@@ -191,21 +200,15 @@
     }
 
     async function loadPosts(){
-      // Спрощений запит без складних Join для стабільності
       const { data } = await sb.from('community_posts').select('*').order('created_at', { ascending: false });
       posts = data || [];
     }
 
     async function toggleCheck(habitId, day){
-      const date = new Date(); date.setDate(day);
-      const dateStr = date.toISOString().split('T')[0];
+      const dateStr = new Date(new Date().getFullYear(), new Date().getMonth(), day+1).toISOString().split('T')[0];
       const exist = checkIns.find(c => c.habit_id === habitId && c.check_in_date === dateStr);
-      
-      if(exist){
-        await sb.from('check_ins').delete().eq('id', exist.id);
-      } else {
-        await sb.from('check_ins').insert({ user_id: currentUser.id, habit_id: habitId, check_in_date: dateStr });
-      }
+      if(exist) await sb.from('check_ins').delete().eq('id', exist.id);
+      else await sb.from('check_ins').insert({ user_id: currentUser.id, habit_id: habitId, check_in_date: dateStr });
       await loadCheckIns();
       renderAll();
     }
@@ -214,38 +217,34 @@
       const body = document.getElementById('postInput').value.trim();
       if(!body) return;
       const cat = categories.find(c => c.slug === selectedSpace);
-      await sb.from('community_posts').insert({
-        user_id: currentUser.id,
-        category_id: cat.id,
-        body: body,
-        user_email: currentUser.email // Зберігаємо імейл для відображення
-      });
+      await sb.from('community_posts').insert({ user_id: currentUser.id, category_id: cat.id, body: body, user_email: currentUser.email });
       document.getElementById('postInput').value = '';
       await loadPosts();
       renderCommunity();
     }
 
-    // --- Rendering ---
     function renderAll(){
-        renderToday();
+        renderDashboard();
         renderTracker();
         renderCommunity();
         bindTabs();
     }
 
-    function renderToday(){
-        const list = document.getElementById('todayList');
-        list.innerHTML = habits.map(h => {
-            const cat = categories.find(c => c.id === h.category_id);
-            const isDone = checkIns.some(c => c.habit_id === h.id && c.check_in_date === new Date().toISOString().split('T')[0]);
-            return `
-              <div class="today-row">
-                <div><strong>${h.title}</strong><br><small>${cat?.slug}</small></div>
-                <button class="button" style="background:${isDone? (cat?.color || '#eee') : '#eee'}; color:${isDone?'#fff':'#000'}" 
-                        onclick="toggleCheck('${h.id}', ${new Date().getDate()})">
-                  ${isDone ? 'Done' : 'Check in'}
-                </button>
-              </div>`;
+    function renderDashboard(){
+        const activeDays = [...new Set(checkIns.map(c => c.check_in_date))].length;
+        document.getElementById('activeVal').innerText = activeDays;
+        document.getElementById('totalVal').innerText = checkIns.length;
+        document.getElementById('progressVal').innerText = Math.round((checkIns.length / (habits.length * 31)) * 100) + "%";
+        
+        const ringsWrap = document.getElementById('ringsWrap');
+        ringsWrap.innerHTML = categories.map(cat => {
+            const catHabits = habits.filter(h => h.category_id === cat.id);
+            const done = checkIns.filter(c => catHabits.some(h => h.id === c.habit_id)).length;
+            const perc = Math.round((done / (catHabits.length * 31)) * 100);
+            return `<div class="card" style="border-left:8px solid ${cat.color}">
+                      <div style="font-size:14px; color:var(--muted)">${META[cat.slug].emoji} ${cat.slug}</div>
+                      <div style="font-size:22px; font-weight:800">${perc}%</div>
+                    </div>`;
         }).join('');
     }
 
@@ -256,25 +255,25 @@
             return `
               <div class="tracker-section">
                 <div class="tracker-head" style="background:${cat.color}">
-                  <div style="padding-left:10px">${META[cat.slug].emoji} ${cat.slug}</div>
+                  <div style="padding-left:15px; display:flex; align-items:center;">${META[cat.slug].emoji} ${cat.slug}</div>
                   ${Array.from({length:31}, (_,i)=>`<div>${i+1}</div>`).join('')}
-                  <div>%</div>
+                  <div style="text-align:center">%</div>
                 </div>
                 ${catHabits.map(h => {
                     const hChecks = checkIns.filter(c => c.habit_id === h.id);
-                    const percent = Math.round((hChecks.length / 31) * 100);
                     return `
                       <div class="tracker-row">
-                        <div style="padding-left:10px">${h.title}</div>
+                        <div style="padding-left:15px; font-weight:600">${h.title}</div>
                         ${Array.from({length:31}, (_,i)=>{
                             const day = i+1;
                             const dStr = new Date(new Date().getFullYear(), new Date().getMonth(), day+1).toISOString().split('T')[0];
                             const checked = hChecks.some(c => c.check_in_date === dStr);
                             return `<div style="display:flex; justify-content:center">
-                                      <div class="checkbox" style="background:${checked?cat.color:'transparent'}" onclick="toggleCheck('${h.id}', ${day})"></div>
+                                      <div class="checkbox" style="${checked?`background:${cat.color}; border-color:${cat.color}`:''}" 
+                                           onclick="toggleCheck('${h.id}', ${day})"></div>
                                     </div>`;
                         }).join('')}
-                        <div style="text-align:center; font-weight:bold; color:${cat.color}">${percent}%</div>
+                        <div style="text-align:center; font-weight:bold; color:${cat.color}">${Math.round((hChecks.length/31)*100)}%</div>
                       </div>`;
                 }).join('')}
               </div>`;
@@ -282,28 +281,20 @@
     }
 
     function renderCommunity(){
-        const spaces = document.getElementById('spacesWrap');
-        const postsList = document.getElementById('postsWrap');
-        
-        spaces.innerHTML = categories.map(cat => `
+        document.getElementById('spacesWrap').innerHTML = categories.map(cat => `
             <button class="space-btn" style="${selectedSpace===cat.slug?`background:${cat.color}; color:#fff`:''}" 
                     onclick="selectedSpace='${cat.slug}'; renderCommunity();">
                 ${META[cat.slug].emoji} ${cat.slug}
             </button>
         `).join('');
 
-        const filtered = posts.filter(p => {
-            const cat = categories.find(c => c.id === p.category_id);
-            return cat?.slug === selectedSpace;
-        });
-
-        postsList.innerHTML = filtered.map(p => `
+        const filtered = posts.filter(p => categories.find(c => c.id === p.category_id)?.slug === selectedSpace);
+        document.getElementById('postsWrap').innerHTML = filtered.map(p => `
             <div class="card post">
-                <div class="post-meta">Від: ${p.user_email || 'Анонім'} • ${new Date(p.created_at).toLocaleDateString()}</div>
+                <div class="post-meta"><span>${p.user_email || 'Member'}</span> <span>${new Date(p.created_at).toLocaleDateString()}</span></div>
                 <div class="post-body">${p.body}</div>
             </div>
         `).join('');
-        
         document.getElementById('communityTitle').innerText = `${META[selectedSpace].emoji} ${selectedSpace} community`;
     }
 
