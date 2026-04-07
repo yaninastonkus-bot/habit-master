@@ -407,7 +407,7 @@
       border-radius: 50%;
       position: relative;
       border: 2px solid rgba(255,255,255,0.05);
-      background: conic-gradient(from -90deg, var(--card-blue) 0deg, var(--card-blue) 0deg, #23232a 0deg, #23232a 360deg);
+      background: conic-gradient(from -90deg, #23232a 0deg, #23232a 360deg);
       overflow: hidden;
     }
     .ring::after {
@@ -1208,7 +1208,7 @@
       const totalPerc = totalChecks ? Math.round((totalDone / totalChecks) * 100) : 0;
       getEl('totalProgressWrap').innerHTML = `
         <div class="ring-card" style="min-height:260px; border-color: rgba(184,242,58,0.4);">
-          <div class="ring" style="width:140px; height:140px; background: conic-gradient(from -90deg, var(--accent-lime) 0deg ${totalPerc * 3.6}deg, #23232a ${totalPerc * 3.6}deg 360deg);">
+          <div class="ring" style="width:140px; height:140px; background: conic-gradient(from -90deg, var(--accent-lime) 0deg, var(--accent-lime) ${totalPerc * 3.6}deg, #23232a ${totalPerc * 3.6}deg, #23232a 360deg);">
             <div class="ring-value" style="font-size:34px;">${totalPerc}%</div>
           </div>
           <div class="ring-meta">
@@ -1242,7 +1242,7 @@
         const isFoc = selectedFocuses.includes(cat.slug);
         html += `
           <div class="ring-card" style="${isFoc ? 'border-color: rgba(184,242,58,0.7); box-shadow: inset 0 0 0 1px rgba(184,242,58,0.22);' : ''}">
-            <div class="ring" style="background: conic-gradient(from -90deg, var(--card-blue) 0deg ${perc * 3.6}deg, #23232a ${perc * 3.6}deg 360deg);">
+            <div class="ring" style="background: conic-gradient(from -90deg, var(--card-blue) 0deg, var(--card-blue) ${perc * 3.6}deg, #23232a ${perc * 3.6}deg, #23232a 360deg);">
               <div class="ring-value">${perc}%</div>
             </div>
             <div class="ring-meta">
