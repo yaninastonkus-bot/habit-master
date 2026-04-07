@@ -2,8 +2,8 @@
 <html lang="uk">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EK Habit Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Habit Master Pro</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root{
@@ -17,9 +17,9 @@
     .hidden{display:none !important}
     
     /* Auth */
-    .auth-shell{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;}
+    .auth-shell{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;}
     .auth-card{width:100%; max-width:500px; background:#f7f8fc; border-radius:28px; padding:32px; box-shadow:var(--shadow); text-align:center;}
-    .input,.textarea{width:100%; border:1px solid var(--border); border-radius:14px; padding:14px 16px; font-size:16px; background:#fff;}
+    .input,.textarea{width:100%; border:1px solid var(--border); border-radius:14px; padding:14px 16px; font-size:16px; background:#fff; font-family: inherit;}
     .button{border:0; border-radius:14px; padding:14px 16px; font-size:16px; font-weight:700; cursor:pointer; transition:0.2s;}
     .button.primary{background:var(--blue);color:#fff}
     .button.green{background:var(--green);color:#fff}
@@ -27,8 +27,8 @@
     
     /* Layout */
     .app{max-width:1480px; margin:0 auto; padding:20px;}
-    .topbar{display:grid; grid-template-columns:repeat(4,1fr) auto; gap:12px; margin-bottom:18px;}
-    .tab{background:rgba(255,255,255,.72); border:1px solid var(--border); border-radius:16px; padding:16px 18px; text-align:center; cursor:pointer; font-weight:600;}
+    .topbar{display:flex; gap:10px; margin-bottom:20px; flex-wrap: wrap;}
+    .tab{background:rgba(255,255,255,.72); border:1px solid var(--border); border-radius:16px; padding:14px 18px; text-align:center; cursor:pointer; font-weight:600; flex-grow:1;}
     .tab.active{background:#fff; font-weight:800; border-color: var(--blue);}
     .view{display:none} .view.active{display:block}
     .card{background:var(--card); border-radius:28px; box-shadow:var(--shadow); padding:22px; margin-bottom:20px;}
@@ -43,34 +43,68 @@
     .focus-input { background: rgba(255,255,255,0.2); border: 0; color: #fff; width: 100%; border-radius: 10px; padding: 8px 10px; font-family: inherit; font-size: 16px; text-align: center; font-weight: 800;}
     .focus-input::placeholder { color: rgba(255,255,255,0.6); }
 
-    /* Tracker UI Fix */
-    .tracker-section{overflow-x:auto; margin-bottom:25px; background:#fff; border-radius:20px; border:1px solid var(--border); padding-bottom:5px;}
-    .tracker-head, .tracker-row {
-      display: grid;
-      grid-template-columns: 200px repeat(31, 40px) 70px;
-      align-items: center;
-      min-width: 1510px;
-    }
+    /* Tracker */
+    .tracker-section{overflow-x:auto; margin-bottom:25px; background:#fff; border-radius:20px; border:1px solid var(--border); padding-bottom:5px; -webkit-overflow-scrolling: touch;}
+    .tracker-head, .tracker-row { display: grid; grid-template-columns: 200px repeat(31, 40px) 70px; align-items: center; min-width: 1510px; }
     .tracker-head { color:#fff; font-size:12px; font-weight:700; height:45px; background: #333;}
     .tracker-row { border-bottom: 1px solid #f0f0f0; height:50px; font-size:14px; }
     .tracker-head > div, .tracker-row > div { display: flex; align-items: center; justify-content: center; height: 100%; border-right: 1px solid rgba(0,0,0,0.03); }
-    .today-cell { background: var(--today) !important; color: #000 !important; font-weight: 800;}
+    .today-cell { background: var(--today) !important; color: #000; font-weight: 800;}
     .checkbox{width:22px; height:22px; border:2px solid #cbd5e1; border-radius:7px; cursor:pointer;}
 
     /* Community */
     .community-layout{display:grid; grid-template-columns: 280px 1fr; gap:20px; align-items: start;}
-    .space-btn{width:100%; border:1px solid var(--border); border-radius:18px; padding:16px; text-align:left; font-size:16px; font-weight:700; cursor:pointer; background:#fff; box-shadow: var(--shadow); margin-bottom:10px; transition: 0.2s;}
+    .spaces-sidebar { display: flex; flex-direction: column; gap: 10px; }
+    .space-btn{width:100%; border:1px solid var(--border); border-radius:18px; padding:16px; text-align:left; font-size:16px; font-weight:700; cursor:pointer; background:#fff; box-shadow: var(--shadow); transition: 0.2s;}
     .chat-box { height: 500px; overflow-y: auto; background: #f8fbff; border-radius: 22px; padding: 20px; display: flex; flex-direction: column; gap: 12px; border: 1px solid var(--border); }
-    .msg { max-width: 85%; padding: 14px 18px; border-radius: 20px; background: #fff; box-shadow: 0 3px 10px rgba(0,0,0,0.04); color: var(--text); line-height: 1.4; }
+    .msg { max-width: 85%; padding: 14px 18px; border-radius: 20px; background: #fff; box-shadow: 0 3px 10px rgba(0,0,0,0.04); color: var(--text); line-height: 1.4; word-wrap: break-word;}
     .msg.own { align-self: flex-end; background: var(--blue); color: #fff; }
     .post-img { max-width: 100%; border-radius: 14px; margin-top: 10px; display: block; border: 1px solid rgba(0,0,0,0.1); }
+
+    /* ========================================= */
+    /* МОБІЛЬНА АДАПТАЦІЯ (Екрани до 768px) */
+    /* ========================================= */
+    @media (max-width: 768px) {
+      .app { padding: 12px; }
+      .card { padding: 16px; border-radius: 20px;}
+      .auth-card { padding: 24px; }
+      
+      /* Навігація */
+      .topbar { gap: 8px; }
+      .tab { padding: 12px; font-size: 14px; border-radius: 12px; }
+      .topbar > button { width: 100%; margin-top: 5px; } /* Кнопка виходу на всю ширину */
+
+      /* Дашборд */
+      .dashboard-grid { grid-template-columns: 1fr; gap: 15px; }
+      #ringsWrap { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .ring-card { min-height: 180px; }
+      .ring { width: 90px; height: 90px; }
+      .ring::after { inset: 10px; }
+      .ring-value { font-size: 18px; }
+
+      /* Ком'юніті */
+      .community-layout { grid-template-columns: 1fr; gap: 15px;}
+      .spaces-sidebar { 
+        flex-direction: row; 
+        overflow-x: auto; 
+        padding-bottom: 5px; 
+        -webkit-overflow-scrolling: touch;
+      }
+      .space-btn { min-width: 140px; text-align: center; }
+      .chat-box { height: 400px; padding: 15px; }
+      
+      /* Форма відправки в чаті */
+      #communityView .card > div[style*="display:flex"] { flex-wrap: wrap; }
+      #postInput { width: 100%; }
+      #communityView .card button.primary { width: 100%; }
+    }
   </style>
 </head>
 <body>
 
   <div id="authView" class="auth-shell">
     <div class="auth-card">
-      <h1 style="margin:0 0 10px 0;"> EK Habit Tracker</h1>
+      <h1 style="margin:0 0 10px 0;">🔥 Habit Master</h1>
       <input id="emailInput" class="input" type="email" placeholder="Email" style="margin-bottom:12px;"/>
       <input id="passwordInput" class="input" type="password" placeholder="Пароль" />
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:20px;">
@@ -95,7 +129,7 @@
             <div id="levelPanel" class="side-block" style="background:var(--green)">🏆 LEVEL: Novice 🥚</div>
             <div id="streakPanel" class="side-block" style="background:#ff9800">🔥 STREAK: 0 DAYS</div>
             <div id="motivationPanel" class="side-block" style="background:var(--blue)">✨ Nice start!</div>
-            <div class="card" style="text-align:center">
+            <div class="card" style="text-align:center; padding:15px;">
               <div style="color:var(--muted); font-size:14px; margin-bottom:5px;">Active Days</div>
               <div id="activeVal" style="font-size:32px; font-weight:800">0</div>
             </div>
@@ -107,7 +141,7 @@
               <div style="font-size: 15px; font-weight:800;">🎁 REWARD: <span style="opacity:0.9; font-weight:normal;">merch</span></div>
             </div>
          </div>
-         <div id="ringsWrap" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:15px;"></div>
+         <div id="ringsWrap"></div>
        </div>
     </div>
 
@@ -117,312 +151,4 @@
 
     <div id="communityView" class="view">
       <div class="community-layout">
-        <div id="spacesWrap"></div>
-        <div>
-          <div class="card" style="margin-bottom:15px;">
-            <h3 id="communityTitle" style="margin:0 0 15px 0;">Community</h3>
-            <div id="postsWrap" class="chat-box"></div>
-            <div style="margin-top:15px; display:flex; gap:12px;">
-              <label class="button dark" style="padding:14px; cursor:pointer;">📎<input type="file" id="fileInput" class="hidden"></label>
-              <textarea id="postInput" class="textarea" style="min-height:54px;" placeholder="Поділися успіхом..."></textarea>
-              <button class="button primary" onclick="createPost()">Надіслати</button>
-            </div>
-            <div id="uploadStatus" style="font-size:12px; color:var(--blue); margin-top:5px;"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div id="settingsView" class="view">
-       <div class="card">
-           <h2 style="margin-top:0">Налаштування</h2>
-           <p>Email: <strong id="userEmailLabel"></strong></p>
-           <button class="button primary" onclick="enableNotifications()">🔔 Сповіщення</button>
-           
-           <div id="adminSection" class="hidden" style="margin-top:30px; border-top:2px solid #eee; padding-top:20px;">
-              <h3 style="color:var(--blue)">👑 Панель власника</h3>
-              <div id="adminStats" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:15px;"></div>
-           </div>
-       </div>
-    </div>
-  </div>
-
-  <script>
-    const SUPABASE_URL = "https://vnbcelodaueayobcvkjy.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_yfG2qoR_Cx8QKwEbNpzeUA_4VNjItCT";
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    // ⚠️ ВПИШИ СВІЙ EMAIL ТУТ ДЛЯ АДМІНКИ
-    const OWNER_EMAIL = "yaninastonkus@gmail.com"; 
-
-    let currentUser, categories = [], habits = [], checkIns = [], posts = [], selectedSpace = "";
-    const TODAY_DAY = new Date().getDate();
-
-    const META = {
-      MOVE: { color: "#2F39F6", emoji: "🏃" },
-      MIND: { color: "#7EA765", emoji: "🧠" },
-      CREATE: { color: "#E3AED0", emoji: "🎨" },
-      SLOW: { color: "#6F87D8", emoji: "🌿" }
-    };
-
-    const DEFAULT_HABITS = {
-      MOVE: ["10–20 min walk", "Stretching", "Short workout"],
-      MIND: ["Journaling", "Reading", "Meditation"],
-      CREATE: ["Sketching", "Drawing", "New recipe"],
-      SLOW: ["No phone tea", "Early bed", "Self-care"]
-    };
-
-    // --- Helpers (Safe DOM Access) ---
-    const getEl = id => document.getElementById(id);
-    function getMeta(slug) {
-        return META[slug?.toUpperCase()] || { emoji: "📌", color: "#6f7f98" };
-    }
-
-    // --- Auth ---
-    async function signUp(){
-      const { error } = await sb.auth.signUp({ email: getEl('emailInput').value, password: getEl('passwordInput').value });
-      if(error) alert(error.message); else alert("Акаунт створено! Увійди.");
-    }
-    async function signIn(){
-      const { error } = await sb.auth.signInWithPassword({ email: getEl('emailInput').value, password: getEl('passwordInput').value });
-      if(error) alert(error.message); else bootstrap();
-    }
-    function logout(){ sb.auth.signOut(); location.reload(); }
-
-    // --- Boot ---
-    async function bootstrap(){
-      try {
-        const { data } = await sb.auth.getSession();
-        currentUser = data.session?.user;
-        if(!currentUser) return;
-
-        getEl('authView').classList.add('hidden');
-        getEl('appView').classList.remove('hidden');
-        getEl('userEmailLabel').innerText = currentUser.email;
-
-        if(currentUser.email === OWNER_EMAIL) {
-            getEl('adminSection').classList.remove('hidden');
-        }
-
-        await loadCategories();
-        await syncHabits();
-        await loadCheckIns();
-        await loadPosts();
-        await loadProfile();
-        renderAll();
-      } catch (err) {
-        console.error(err);
-        alert("Помилка завантаження даних. Відкрий консоль (F12) для деталей: " + err.message);
-      }
-    }
-
-    async function loadProfile() {
-      try {
-        const { data } = await sb.from('profiles').select('focus_text').eq('id', currentUser.id).single();
-        if(data) getEl('focusInput').value = data.focus_text || '';
-      } catch(e) {
-        console.warn("Таблиці profiles ще немає або доступ закрито.");
-      }
-    }
-
-    async function saveFocus() {
-      const val = getEl('focusInput').value;
-      const { error } = await sb.from('profiles').upsert({ id: currentUser.id, focus_text: val });
-      if(error) alert("Помилка збереження фокусу: " + error.message);
-    }
-
-    async function loadCategories(){ 
-      const { data } = await sb.from('categories').select('*').order('sort_order'); 
-      categories = data || []; 
-      if (categories.length > 0 && !selectedSpace) {
-          selectedSpace = categories[0].slug;
-      }
-    }
-    
-    async function syncHabits(){
-      const { data } = await sb.from('habits').select('*').eq('user_id', currentUser.id);
-      if(!data || data.length === 0){
-        let ins = [];
-        categories.forEach(c => {
-          const upperSlug = c.slug ? c.slug.toUpperCase() : '';
-          (DEFAULT_HABITS[upperSlug] || []).forEach(t => ins.push({ user_id:currentUser.id, category_id:c.id, title:t }));
-        });
-        if(ins.length > 0) await sb.from('habits').insert(ins);
-      }
-      const { data: fresh } = await sb.from('habits').select('*').eq('user_id', currentUser.id);
-      habits = fresh || [];
-    }
-
-    async function loadCheckIns(){ 
-      const { data } = await sb.from('check_ins').select('*').eq('user_id', currentUser.id); 
-      checkIns = data || []; 
-    }
-
-    async function loadPosts(){ 
-      const { data } = await sb.from('community_posts').select('*').order('created_at', { ascending: true }); 
-      posts = data || []; 
-      renderCommunity();
-    }
-
-    async function toggleCheck(habitId, day){
-      const dateStr = new Date(new Date().getFullYear(), new Date().getMonth(), day+1).toISOString().split('T')[0];
-      const exist = checkIns.find(c => c.habit_id === habitId && c.check_in_date === dateStr);
-      if(exist) await sb.from('check_ins').delete().eq('id', exist.id);
-      else await sb.from('check_ins').insert({ user_id:currentUser.id, habit_id:habitId, check_in_date:dateStr });
-      await loadCheckIns(); renderAll();
-    }
-
-    async function createPost(){
-      const body = getEl('postInput').value.trim();
-      const file = getEl('fileInput').files[0];
-      let fileUrl = null;
-
-      if(!body && !file) return;
-      getEl('uploadStatus').innerText = "⏳ Відправка...";
-
-      try {
-          if(file){
-            const fName = `${currentUser.id}/${Date.now()}_${file.name}`;
-            const { error: upErr } = await sb.storage.from('community').upload(fName, file);
-            if(upErr) throw new Error("Не вдалося завантажити файл: " + upErr.message);
-            fileUrl = sb.storage.from('community').getPublicUrl(fName).data.publicUrl;
-          }
-
-          const catId = categories.find(c => c.slug === selectedSpace)?.id;
-          const { error } = await sb.from('community_posts').insert({ 
-            user_id: currentUser.id, 
-            category_id: catId, 
-            body, media_url: fileUrl, user_email: currentUser.email 
-          });
-
-          if(error) throw error;
-          
-          getEl('postInput').value = ''; getEl('fileInput').value = ''; getEl('uploadStatus').innerText = "";
-          await loadPosts();
-      } catch (e) {
-          alert("Помилка: " + e.message);
-          getEl('uploadStatus').innerText = "";
-      }
-    }
-
-    function getStreak(){
-      const dates = [...new Set(checkIns.map(c => c.check_in_date))].sort().reverse();
-      let streak = 0; let checkDate = new Date().toISOString().split('T')[0];
-      for(let d of dates){
-        if(d === checkDate || d === new Date(Date.now()-86400000).toISOString().split('T')[0]){
-          streak++;
-          checkDate = new Date(new Date(d).getTime()-86400000).toISOString().split('T')[0];
-        } else break;
-      }
-      return streak;
-    }
-
-    function renderAll(){ renderDashboard(); renderTracker(); renderCommunity(); renderAdmin(); bindTabs(); }
-
-    function renderDashboard(){
-      const streak = getStreak();
-      const totalDone = checkIns.length;
-      getEl('streakPanel').innerText = `🔥 STREAK: ${streak} DAYS`;
-      getEl('activeVal').innerText = [...new Set(checkIns.map(c => c.check_in_date))].length;
-      getEl('levelPanel').innerText = `🏆 LEVEL: ${totalDone < 20 ? 'Novice 🥚' : totalDone < 80 ? 'Apprentice 🌱' : 'Warrior ⚔️'}`;
-      
-      const totalPossible = habits.length * 31;
-      const totalPerc = totalPossible > 0 ? Math.min(100, Math.round((totalDone / totalPossible) * 100)) : 0;
-
-      let ringsHtml = `
-        <div class="card ring-card" style="border: 2px solid var(--blue)">
-          <div style="font-weight:800; font-size:14px; color:var(--blue)">🏆 TOTAL PROGRESS</div>
-          <div class="ring" style="background: conic-gradient(var(--blue) ${totalPerc*3.6}deg, #dfe3ea 0deg);"><div class="ring-value">${totalPerc}%</div></div>
-        </div>`;
-
-      ringsHtml += categories.map(cat => {
-        const catHabits = habits.filter(h => h.category_id === cat.id);
-        const done = checkIns.filter(c => catHabits.some(h => h.id === c.habit_id)).length;
-        const maxCat = catHabits.length * 31;
-        const perc = maxCat > 0 ? Math.min(100, Math.round((done / maxCat) * 100)) : 0;
-        const meta = getMeta(cat.slug);
-        
-        return `<div class="card ring-card"><div style="font-weight:800; font-size:14px;">${meta.emoji} ${cat.slug}</div><div class="ring" style="background: conic-gradient(${cat.color} ${perc*3.6}deg, #dfe3ea 0deg);"><div class="ring-value">${perc}%</div></div></div>`;
-      }).join('');
-      getEl('ringsWrap').innerHTML = ringsHtml;
-    }
-
-    function renderTracker(){
-      getEl('trackerWrap').innerHTML = categories.map(cat => {
-        const catHabits = habits.filter(h => h.category_id === cat.id);
-        const meta = getMeta(cat.slug);
-        
-        return `<div class="tracker-section">
-          <div class="tracker-head" style="background:${cat.color}">
-            <div style="justify-content:flex-start; padding-left:15px; border-right: 1px solid rgba(255,255,255,0.2);">${meta.emoji} ${cat.slug}</div>
-            ${Array.from({length:31}, (_,i)=>`<div class="${i+1===TODAY_DAY?'today-cell':''}">${i+1}</div>`).join('')}
-            <div style="border:0">%</div>
-          </div>
-          ${catHabits.map(h => {
-            const hChecks = checkIns.filter(c => c.habit_id === h.id);
-            const perc = Math.round((hChecks.length / 31) * 100);
-            return `<div class="tracker-row">
-              <div style="justify-content:flex-start; padding-left:15px; font-weight:600; border-right: 1px solid #eee;">${h.title}</div>
-              ${Array.from({length:31}, (_,i)=>{
-                const dStr = new Date(new Date().getFullYear(), new Date().getMonth(), i+2).toISOString().split('T')[0];
-                const checked = hChecks.some(c => c.check_in_date === dStr);
-                return `<div class="${i+1===TODAY_DAY?'today-cell':''}"><div class="checkbox" style="${checked?`background:${cat.color}; border-color:${cat.color}`:''}" onclick="toggleCheck('${h.id}', ${i+1})"></div></div>`;
-              }).join('')}
-              <div style="font-weight:bold; color:${cat.color}; border:0">${perc}%</div>
-            </div>`;
-          }).join('')}
-        </div>`;
-      }).join('');
-    }
-
-    function renderCommunity(){
-      getEl('spacesWrap').innerHTML = categories.map(cat => {
-        const meta = getMeta(cat.slug);
-        return `<button class="space-btn" style="${selectedSpace===cat.slug?`background:${cat.color}; color:#fff`:''}" onclick="selectedSpace='${cat.slug}'; renderCommunity();">
-          ${meta.emoji} ${cat.slug}
-        </button>`;
-      }).join('');
-      
-      const filtered = posts.filter(p => categories.find(c => c.id === p.category_id)?.slug === selectedSpace);
-      
-      getEl('postsWrap').innerHTML = filtered.map(p => `<div class="msg ${p.user_id===currentUser.id?'own':''}">
-        <div style="font-size:10px; opacity:0.8; margin-bottom:4px;">${p.user_email || 'Member'}</div>
-        <div>${p.body || ''}</div>${p.media_url ? `<img src="${p.media_url}" class="post-img">` : ''}
-      </div>`).join('');
-      
-      getEl('postsWrap').scrollTop = getEl('postsWrap').scrollHeight;
-      const titleMeta = getMeta(selectedSpace);
-      getEl('communityTitle').innerText = `${titleMeta.emoji} ${selectedSpace} Community`;
-    }
-
-    async function renderAdmin() {
-        if(currentUser.email !== OWNER_EMAIL) return;
-        const { data: allPosts } = await sb.from('community_posts').select('category_id');
-        const stats = {};
-        allPosts?.forEach(p => {
-            const cat = categories.find(c => c.id === p.category_id);
-            if(cat) stats[cat.slug] = (stats[cat.slug] || 0) + 1;
-        });
-        const adminEl = getEl('adminStats');
-        if(adminEl) {
-            adminEl.innerHTML = categories.map(cat => `
-                <div class="card" style="padding:15px; text-align:center; border-bottom: 4px solid ${cat.color}">
-                    <div style="font-size:12px; color:var(--muted)">${cat.slug} Posts</div>
-                    <div style="font-size:20px; font-weight:800">${stats[cat.slug] || 0}</div>
-                </div>`).join('');
-        }
-    }
-
-    function enableNotifications(){ Notification.requestPermission(); }
-    function bindTabs(){ 
-      document.querySelectorAll('.tab').forEach(t => t.onclick = () => { 
-        document.querySelectorAll('.tab, .view').forEach(x => x.classList.remove('active')); 
-        t.classList.add('active'); 
-        getEl(t.dataset.view).classList.add('active'); 
-      }); 
-    }
-    
-    bootstrap();
-  </script>
-</body>
-</html>
+        <div id="spacesWrap" class="spaces-
