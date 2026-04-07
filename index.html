@@ -3,17 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>EK Habit Tracker | Pro</title>
+  <title>EK Habit Tracker | Custom</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0f172a; --card: rgba(30, 41, 59, 0.7); --accent: #3b82f6; --text: #f8fafc;
-      --muted: #94a3b8; --border: rgba(255, 255, 255, 0.1); --glass: blur(15px);
+      --bg: #0f172a;
+      --card: rgba(30, 41, 59, 0.6);
+      --accent: #3b82f6;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --border: rgba(255, 255, 255, 0.08);
+      --glass: blur(12px);
     }
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', sans-serif; }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body { 
-      margin: 0; background: var(--bg); color: var(--text); 
+      margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); 
       background-image: radial-gradient(circle at top right, #1e293b, #0f172a); min-height: 100vh;
     }
     .hidden { display: none !important; }
@@ -22,104 +28,92 @@
     .auth-shell { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
     .auth-card { 
       width: 100%; max-width: 400px; background: var(--card); backdrop-filter: var(--glass);
-      border-radius: 28px; padding: 40px; border: 1px solid var(--border); text-align: center;
+      border-radius: 28px; padding: 40px; border: 1px solid var(--border); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+      text-align: center;
     }
-    .input, .textarea { 
-      width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 14px;
-      padding: 14px 18px; color: #fff; font-size: 16px; transition: 0.3s; margin-bottom: 12px; outline: none;
-    }
-    .input:focus { border-color: var(--accent); background: rgba(0,0,0,0.4); }
 
     /* --- UI ELEMENTS --- */
+    .input { 
+      width: 100%; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 12px;
+      padding: 12px 16px; color: #fff; font-size: 15px; transition: 0.3s; margin-bottom: 10px; font-family: inherit;
+    }
+    .input:focus { border-color: var(--accent); outline: none; background: rgba(15, 23, 42, 0.8); }
+
     .button { 
-      border: 0; border-radius: 14px; padding: 12px 24px; font-size: 14px; font-weight: 700; 
-      cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; justify-content: center;
+      border: 0; border-radius: 12px; padding: 12px 20px; font-size: 14px; font-weight: 700; 
+      cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; justify-content: center; font-family: inherit;
     }
     .button.primary { background: var(--accent); color: #fff; width: 100%; }
     .button.dark { background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--border); }
+    .button.sm { padding: 8px 12px; font-size: 11px; text-transform: uppercase; }
 
     /* --- LAYOUT --- */
-    .app { max-width: 1200px; margin: 0 auto; padding: 30px 20px; }
-    .topbar { display: flex; gap: 20px; margin-bottom: 30px; align-items: center; overflow-x: auto; padding-bottom: 10px; }
-    .nav-logo { font-weight: 800; font-size: 24px; letter-spacing: -1.5px; color: #fff; margin-right: 15px; }
-    .tab { color: var(--muted); font-weight: 600; cursor: pointer; padding: 10px 0; border-bottom: 2px solid transparent; transition: 0.3s; font-size: 13px; text-transform: uppercase; white-space: nowrap; }
+    .app { max-width: 1100px; margin: 0 auto; padding: 30px 20px; }
+    .topbar { display: flex; gap: 20px; margin-bottom: 40px; align-items: center; overflow-x: auto; }
+    .tab { color: var(--muted); font-weight: 600; cursor: pointer; padding: 8px 0; border-bottom: 2px solid transparent; transition: 0.3s; font-size: 13px; text-transform: uppercase; white-space: nowrap; }
     .tab.active { color: #fff; border-bottom-color: var(--accent); }
-    .view { display: none; } .view.active { display: block; }
-    .card { background: var(--card); backdrop-filter: var(--glass); border-radius: 24px; border: 1px solid var(--border); padding: 30px; margin-bottom: 25px; }
+
+    .card { background: var(--card); backdrop-filter: var(--glass); border-radius: 24px; border: 1px solid var(--border); padding: 25px; margin-bottom: 25px; }
 
     /* --- TRACKER --- */
-    .tracker-box { overflow-x: auto; background: rgba(0,0,0,0.2); border-radius: 20px; border: 1px solid var(--border); -webkit-overflow-scrolling: touch; }
-    .tracker-row { display: grid; grid-template-columns: 200px repeat(31, 40px); border-bottom: 1px solid var(--border); align-items: center; }
-    .tracker-cell { height: 50px; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--border); }
-    .habit-name-cell { justify-content: space-between; padding: 0 15px; font-weight: 600; font-size: 14px; color: #fff; text-align: left; }
+    .category-group { margin-bottom: 40px; }
+    .category-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-left: 4px solid var(--accent); padding-left: 15px; }
+    .tracker-container { overflow-x: auto; background: rgba(0,0,0,0.2); border-radius: 20px; border: 1px solid var(--border); }
+    .tracker-row { display: grid; grid-template-columns: 200px repeat(31, 38px); border-bottom: 1px solid var(--border); align-items: center; }
+    .tracker-row:last-child { border: 0; }
+    .tracker-cell { height: 48px; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--border); font-size: 12px; }
+    .habit-title { justify-content: space-between; padding: 0 15px; font-weight: 600; color: #f1f5f9; text-align: left; }
     
-    .square { 
-      width: 22px; height: 22px; border: 2px solid rgba(255,255,255,0.1); border-radius: 6px; 
-      cursor: pointer; transition: 0.15s; background: rgba(255,255,255,0.02);
-    }
-    .square.active { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 12px var(--accent); }
-    .square.today { border-color: var(--accent); border-style: dashed; }
-    .square.disabled { opacity: 0.1; cursor: not-allowed; border-style: dotted; }
+    .check-btn { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.15); border-radius: 5px; cursor: pointer; transition: 0.2s; }
+    .check-btn.active { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 10px rgba(59, 130, 246, 0.4); }
+    .check-btn.disabled { opacity: 0.1; cursor: not-allowed; border-style: dashed; }
 
-    /* --- COMMUNITY --- */
-    .chat-box { height: 450px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; padding-right: 10px; }
-    .msg { max-width: 80%; padding: 15px; border-radius: 20px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); position: relative; }
-    .msg.own { align-self: flex-end; background: var(--accent); border: 0; }
-    .avatar-chat { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; background: #334155; }
-    .space-tab { 
-      padding: 8px 16px; border-radius: 12px; font-size: 11px; font-weight: 700; cursor: pointer; 
-      background: rgba(255,255,255,0.05); border: 1px solid var(--border); white-space: nowrap; transition: 0.2s;
-    }
-    .space-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .del-habit { font-size: 10px; color: var(--muted); opacity: 0; transition: 0.2s; cursor: pointer; }
+    .tracker-row:hover .del-habit { opacity: 1; }
 
-    @media (max-width: 768px) { .tracker-row { grid-template-columns: 150px repeat(31, 40px); } }
+    /* --- CHIPS --- */
+    .chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    @media (max-width: 768px) {
+      .app { padding: 15px; }
+      .dashboard-grid { grid-template-columns: 1fr; }
+      .tracker-row { grid-template-columns: 150px repeat(31, 38px); }
+    }
   </style>
 </head>
 <body>
 
   <div id="authView" class="auth-shell">
     <div class="auth-card">
-      <h1 class="nav-logo" style="font-size: 32px; margin-bottom: 30px;">🔥 EK Tracker</h1>
-      <input id="emailInput" class="input" type="email" placeholder="Електронна пошта" />
-      
-      <div style="position: relative;">
-        <input id="passwordInput" class="input" type="password" placeholder="Пароль (мін. 6 символів)" />
-        <span onclick="togglePass()" style="position:absolute; right:15px; top:14px; cursor:pointer; font-size: 18px; opacity: 0.5; user-select: none;">👁️</span>
-      </div>
-      
-      <div id="authError" style="color:#ef4444; font-size:12px; margin-bottom:15px; min-height: 15px;"></div>
-      <button class="button primary" style="width:100%" onclick="handleSignIn()">Увійти</button>
-      <button class="button dark" style="width:100%; margin-top:10px;" onclick="handleSignUp()">Створити акаунт</button>
+      <h1 style="font-weight:800; letter-spacing:-1px;">EK.</h1>
+      <input id="emailInput" class="input" type="email" placeholder="Email" />
+      <input id="passwordInput" class="input" type="password" placeholder="Password" />
+      <div id="authError" style="color:#ef4444; font-size:11px; margin-bottom:10px;"></div>
+      <button class="button primary" onclick="handleSignIn()">Sign In</button>
+      <button class="button dark" style="width:100%; margin-top:10px;" onclick="handleSignUp()">Register</button>
     </div>
   </div>
 
   <div id="appView" class="app hidden">
     <nav class="topbar">
-      <div class="nav-logo">EK.</div>
-      <div class="tab active" data-view="dashView">Dashboard</div>
+      <div style="font-weight: 800; color: #fff; margin-right: 15px;">EK.</div>
+      <div class="tab active" data-view="dashView">Overview</div>
       <div class="tab" data-view="trackerView">Tracker</div>
       <div class="tab" data-view="chatView">Community</div>
-      <div class="tab" data-view="supportView">Support</div>
       <div class="tab" data-view="profileView">Settings</div>
-      <button class="button dark" style="margin-left:auto; padding:8px 15px; font-size:11px;" onclick="logout()">Вихід</button>
+      <button class="button dark sm" style="margin-left:auto;" onclick="logout()">Exit</button>
     </nav>
 
     <div id="dashView" class="view active">
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
-        <div class="card" style="text-align: center;">
-          <div style="color: var(--muted); font-size: 11px; text-transform: uppercase; font-weight: 800; letter-spacing: 1.5px;">Current Streak</div>
-          <p style="font-size: 56px; font-weight: 800; margin: 10px 0;" id="streakVal">0</p>
-          <div id="levelVal" style="color:var(--accent); font-weight:800; font-size:14px; text-transform: uppercase;">Novice Level 🥚</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;" class="dashboard-grid">
+        <div class="card">
+          <div style="color: var(--muted); font-size: 10px; text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">Streak</div>
+          <div id="streakVal" style="font-size: 48px; font-weight: 800; margin: 10px 0;">0</div>
+          <div id="levelVal" style="font-size: 13px; color: var(--accent);">Novice</div>
         </div>
         <div class="card">
-          <div style="color: var(--muted); font-size: 11px; text-transform: uppercase; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 15px;">Target Focus</div>
-          <div style="display:flex; flex-wrap:wrap; gap:10px;" id="focusChipsContainer">
-            <div class="space-tab" onclick="toggleFocus('MOVE')">🏃 MOVE</div>
-            <div class="space-tab" onclick="toggleFocus('MIND')">🧠 MIND</div>
-            <div class="space-tab" onclick="toggleFocus('CREATE')">🎨 CREATE</div>
-            <div class="space-tab" onclick="toggleFocus('SLOW')">🌿 SLOW</div>
-          </div>
-          <div style="display: flex; gap: 10px; margin-top: 20px; justify-content: center;" id="ringsGrid"></div>
+            <div style="color: var(--muted); font-size: 10px; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; margin-bottom:15px;">Target Focus</div>
+            <div id="ringsWrap" style="display: flex; gap: 10px;"></div>
         </div>
       </div>
     </div>
@@ -130,45 +124,18 @@
 
     <div id="chatView" class="view">
       <div class="card">
-        <div style="display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 10px;">
-          <div class="space-tab active" data-sp="GENERAL" onclick="setSpace('GENERAL')">💬 General</div>
-          <div class="space-tab" data-sp="MOVE" onclick="setSpace('MOVE')">🏃 MOVE</div>
-          <div class="space-tab" data-sp="MIND" onclick="setSpace('MIND')">🧠 MIND</div>
-          <div class="space-tab" data-sp="CREATE" onclick="setSpace('CREATE')">🎨 CREATE</div>
-          <div class="space-tab" data-sp="SLOW" onclick="setSpace('SLOW')">🌿 SLOW</div>
-        </div>
-        <div id="postsWrap" class="chat-box"></div>
-        <div style="display:flex; gap:12px; margin-top:20px;">
-          <label class="button dark" style="padding:12px;">📎<input type="file" id="postFile" class="hidden" onchange="getEl('fileStat').innerText = this.files[0].name"></label>
-          <textarea id="postInput" class="textarea" style="margin:0; height:50px; padding-top:14px;" placeholder="Message..."></textarea>
-          <button class="button primary" style="width:100px;" onclick="sendPost()">Post</button>
-        </div>
-        <div id="fileStat" style="font-size:10px; color:var(--accent); margin-top:5px;"></div>
-      </div>
-    </div>
-
-    <div id="supportView" class="view">
-      <div class="card" style="max-width: 650px; margin: 0 auto;">
-        <h2 style="margin-top:0">Support & Feedback</h2>
-        <textarea id="supportMsg" class="textarea" placeholder="Напишіть нам..."></textarea>
-        <button class="button primary" onclick="sendSupport()">Send Request</button>
-        <div id="adminPanel" class="hidden" style="margin-top:40px; border-top:1px solid var(--border); padding-top:25px;">
-          <h3 style="color:var(--accent); font-size:14px;">👑 Admin Tickets</h3>
-          <div id="adminTickets" style="display:flex; flex-direction:column; gap:10px; margin-top:15px;"></div>
+        <div id="postsWrap" style="height:400px; overflow-y:auto; margin-bottom:20px;"></div>
+        <div style="display:flex; gap:10px;">
+          <input id="postInput" class="input" style="margin:0;" placeholder="Say something..." />
+          <button class="button primary" style="width:80px;" onclick="sendPost()">Post</button>
         </div>
       </div>
     </div>
 
     <div id="profileView" class="view">
-      <div class="card" style="max-width: 500px; margin: 0 auto; text-align: center;">
-        <div style="position: relative; width: 110px; height: 110px; margin: 0 auto 25px;">
-          <img id="profileAvatar" style="width:110px; height:110px; border-radius:50%; object-fit:cover; border:3px solid var(--accent); background:#1e293b;" src="https://ui-avatars.com/api/?name=EK">
-          <label style="position:absolute; bottom:0; right:0; background:var(--accent); width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; border:3px solid var(--bg);">
-            📷<input type="file" class="hidden" id="avatarFile" onchange="uploadAvatar()">
-          </label>
-        </div>
-        <input id="profileName" class="input" style="text-align:center;" placeholder="Твоє ім'я" onchange="saveProfileName()">
-        <p style="color: var(--muted); font-size: 13px;" id="userEmailLabel"></p>
+      <div class="card" style="max-width: 500px; margin: 0 auto; text-align:center;">
+        <input id="userNameInput" class="input" placeholder="Display Name" onchange="saveUserName()" />
+        <p style="color:var(--muted); font-size:12px;" id="userEmailLabel"></p>
       </div>
     </div>
   </div>
@@ -178,232 +145,160 @@
     const SUPABASE_KEY = "sb_publishable_yfG2qoR_Cx8QKwEbNpzeUA_4VNjItCT";
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const OWNER_EMAIL = "yaninastonkus@gmail.com"; 
-
-    let user = null, habits = [], checks = [], posts = [], profile = {}, curSpace = "GENERAL", focuses = [];
-    const cats = [
-      { id: 'MOVE', color: '#3b82f6', emoji: '🏃' },
-      { id: 'MIND', color: '#10b981', emoji: '🧠' },
-      { id: 'CREATE', color: '#f43f5e', emoji: '🎨' },
-      { id: 'SLOW', color: '#8b5cf6', emoji: '🌿' }
+    let user = null, habits = [], checks = [], posts = [], profile = {};
+    const categories = [
+      { id: 'MOVE', color: '#3b82f6' }, { id: 'MIND', color: '#10b981' }, 
+      { id: 'CREATE', color: '#f43f5e' }, { id: 'SLOW', color: '#8b5cf6' }
     ];
 
     async function bootstrap() {
       const { data } = await sb.auth.getSession();
       user = data.session?.user;
       if(!user) return;
-
       getEl('authView').classList.add('hidden');
       getEl('appView').classList.remove('hidden');
       getEl('userEmailLabel').innerText = user.email;
-
-      if(user.email === OWNER_EMAIL) {
-          getEl('adminPanel').classList.remove('hidden');
-          loadAdminTickets();
-      }
       await refreshData();
     }
 
     async function refreshData() {
-      const [h, c, pr, po] = await Promise.all([
-        sb.from('habits').select('*').eq('user_id', user.id),
-        sb.from('check_ins').select('*').eq('user_id', user.id),
-        sb.from('profiles').select('*').eq('id', user.id).single(),
-        sb.from('community_posts').select('*').order('created_at')
-      ]);
-
+      const h = await sb.from('habits').select('*').eq('user_id', user.id);
       habits = h.data || [];
+      const c = await sb.from('check_ins').select('*').eq('user_id', user.id);
       checks = c.data || [];
+      const p = await sb.from('community_posts').select('*').order('created_at');
+      posts = p.data || [];
+      const pr = await sb.from('profiles').select('*').eq('id', user.id).single();
       profile = pr.data || {};
-      posts = po.data || [];
-      focuses = (profile.focus_text || "").split(',').filter(Boolean);
-
-      if(habits.length === 0) {
-        let ins = [];
-        cats.forEach(cat => ins.push({user_id:user.id, title:`Daily ${cat.id}`, category:cat.id, created_at: new Date().toISOString()}));
-        await sb.from('habits').insert(ins);
-        const { data: freshH } = await sb.from('habits').select('*').eq('user_id', user.id);
-        habits = freshH;
-      }
       renderAll();
     }
 
-    // --- TRACKER & DASHBOARD ---
-    async function toggleCheck(hId, day) {
-      const d = new Date(new Date().getFullYear(), new Date().getMonth(), day + 1).toISOString().split('T')[0];
-      const exist = checks.find(c => c.habit_id === hId && c.check_in_date === d);
-      if(exist) await sb.from('check_ins').delete().eq('id', exist.id);
-      else await sb.from('check_ins').insert({user_id:user.id, habit_id:hId, check_in_date:d});
+    // --- LOGIC ---
+    async function addHabit(catId) {
+      const title = prompt(`Add new habit to ${catId}:`);
+      if(!title) return;
+      await sb.from('habits').insert({
+        user_id: user.id,
+        title: title,
+        category: catId,
+        created_at: new Date().toISOString()
+      });
       await refreshData();
     }
 
-    async function addHabit(catId) {
-      const t = prompt(`Додати звичку до ${catId}:`);
-      if(t) { await sb.from('habits').insert({user_id:user.id, title:t, category:catId, created_at: new Date().toISOString()}); await refreshData(); }
-    }
-
     async function deleteHabit(id) {
-        if(confirm("Видалити цю звичку?")) { await sb.from('habits').delete().eq('id', id); await refreshData(); }
+      if(!confirm("Delete this habit?")) return;
+      await sb.from('habits').delete().eq('id', id);
+      await refreshData();
     }
 
-    async function toggleFocus(id) {
-      const idx = focuses.indexOf(id);
-      if(idx > -1) focuses.splice(idx, 1); else focuses.push(id);
-      await sb.from('profiles').upsert({ id: user.id, focus_text: focuses.join(',') });
-      renderAll();
+    async function toggleCheck(habitId, day) {
+      const dateStr = new Date(new Date().getFullYear(), new Date().getMonth(), day + 1).toISOString().split('T')[0];
+      const exist = checks.find(c => c.habit_id === habitId && c.check_in_date === dateStr);
+      if(exist) await sb.from('check_ins').delete().eq('id', exist.id);
+      else await sb.from('check_ins').insert({ user_id: user.id, habit_id: habitId, check_in_date: dateStr });
+      await refreshData();
+    }
+
+    // --- RENDERERS ---
+    function renderAll() {
+      renderTracker();
+      renderDash();
+      renderChat();
+    }
+
+    function renderTracker() {
+      const now = new Date();
+      getEl('trackerSections').innerHTML = categories.map(cat => {
+        const catHabits = habits.filter(h => h.category === cat.id);
+        return `
+          <div class="category-group">
+            <div class="category-header">
+              <span style="font-weight:800; font-size:18px;">${cat.id}</span>
+              <button class="button dark sm" onclick="addHabit('${cat.id}')">+ Add Habit</button>
+            </div>
+            <div class="tracker-container">
+              <div class="tracker-row" style="background: rgba(255,255,255,0.02); height: 35px; color: var(--muted); font-size:10px; font-weight:800;">
+                <div class="tracker-cell habit-title">Habit Name</div>
+                ${Array.from({length:31}, (_,i) => `<div class="tracker-cell">${i+1}</div>`).join('')}
+              </div>
+              ${catHabits.map(h => {
+                const habitStartDay = new Date(h.created_at).getDate();
+                const habitStartMonth = new Date(h.created_at).getMonth();
+                const currentMonth = now.getMonth();
+
+                return `
+                  <div class="tracker-row">
+                    <div class="tracker-cell habit-title">
+                      ${h.title} <span class="del-habit" onclick="deleteHabit('${h.id}')">✕</span>
+                    </div>
+                    ${Array.from({length:31}, (_, i) => {
+                      const dayNum = i + 1;
+                      const isLocked = (currentMonth === habitStartMonth && dayNum < habitStartDay);
+                      const isChecked = checks.some(c => c.habit_id === h.id && new Date(c.check_in_date).getDate() === dayNum);
+                      
+                      return `
+                        <div class="tracker-cell">
+                          <div class="check-btn ${isChecked?'active':''} ${isLocked?'disabled':''}" 
+                               onclick="${isLocked?'':`toggleCheck('${h.id}', ${i})`}"></div>
+                        </div>
+                      `;
+                    }).join('')}
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderDash() {
+      getEl('streakVal').innerText = calculateStreak();
+      getEl('ringsWrap').innerHTML = categories.map(cat => {
+        const catHabits = habits.filter(h => h.category === cat.id);
+        const done = checks.filter(c => catHabits.some(h => h.id === c.habit_id)).length;
+        const total = catHabits.length * 31;
+        const perc = total > 0 ? Math.round((done/total)*100) : 0;
+        return `<div style="width:40px; height:40px; border-radius:50%; background:conic-gradient(${cat.color} ${perc*3.6}deg, rgba(255,255,255,0.05) 0deg); display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800;">${perc}%</div>`;
+      }).join('');
+    }
+
+    function renderChat() {
+      getEl('postsWrap').innerHTML = posts.map(p => `
+        <div class="msg ${p.user_id===user.id?'own':''}">
+          <div style="font-size:10px; font-weight:800; margin-bottom:5px; opacity:0.7;">${p.user_email}</div>
+          <div style="font-size:14px;">${p.body}</div>
+        </div>
+      `).join('');
+      getEl('postsWrap').scrollTop = getEl('postsWrap').scrollHeight;
     }
 
     function calculateStreak() {
       const dates = [...new Set(checks.map(c => c.check_in_date))].sort().reverse();
       if(!dates.length) return 0;
-      let s = 0, now = new Date().toISOString().split('T')[0];
-      for(let d of dates) { if(d === now || d === new Date(Date.now()-86400000).toISOString().split('T')[0]) { s++; now = new Date(new Date(d).getTime()-86400000).toISOString().split('T')[0]; } else break; }
+      let s = 0, checkDate = new Date().toISOString().split('T')[0];
+      for(let d of dates) {
+        if(d === checkDate || d === new Date(Date.now()-86400000).toISOString().split('T')[0]) {
+          s++; checkDate = new Date(new Date(d).getTime()-86400000).toISOString().split('T')[0];
+        } else break;
+      }
       return s;
     }
 
-    // --- COMMUNITY ---
-    function setSpace(space) {
-        curSpace = space;
-        document.querySelectorAll('[data-sp]').forEach(t => t.classList.toggle('active', t.dataset.sp === space));
-        renderChat();
-    }
-
-    async function sendPost() {
-      const b = getEl('postInput').value.trim();
-      const file = getEl('postFile').files[0];
-      if(!b && !file) return;
-
-      let url = null;
-      if(file) {
-        const path = `${user.id}/c_${Date.now()}.png`;
-        await sb.storage.from('community').upload(path, file);
-        url = sb.storage.from('community').getPublicUrl(path).data.publicUrl;
-      }
-
-      await sb.from('community_posts').insert({
-        user_id: user.id, body: b, space: curSpace, media_url: url, user_email: profile.username || user.email
-      });
-      getEl('postInput').value = ""; getEl('postFile').value = ""; getEl('fileStat').innerText = "";
-      await refreshData();
-    }
-
-    // --- SUPPORT ---
-    async function sendSupport() {
-      const m = getEl('supportMsg').value;
-      if(!m) return;
-      await sb.from('support_tickets').insert({user_id:user.id, user_email:user.email, message:m});
-      alert("Надіслано адміну!"); getEl('supportMsg').value = "";
-      if(user.email === OWNER_EMAIL) loadAdminTickets();
-    }
-
-    async function loadAdminTickets() {
-      const { data } = await sb.from('support_tickets').select('*').order('created_at', {ascending:false});
-      getEl('adminTickets').innerHTML = data.map(t => `<div class="msg" style="font-size:13px; margin-bottom:10px;"><b>${t.user_email}</b>: ${t.message}</div>`).join('');
-    }
-
-    // --- PROFILE ---
-    async function uploadAvatar() {
-      const file = getEl('avatarFile').files[0];
-      const path = `${user.id}/av_${Date.now()}.png`;
-      await sb.storage.from('avatars').upload(path, file);
-      const url = sb.storage.from('avatars').getPublicUrl(path).data.publicUrl;
-      await sb.from('profiles').upsert({ id: user.id, avatar_url: url });
-      refreshData();
-    }
-    async function saveProfileName() { await sb.from('profiles').upsert({ id: user.id, username: getEl('profileName').value }); }
-
-    // --- RENDERERS ---
-    function renderAll() {
-      const streak = calculateStreak();
-      document.getElementById('streakVal').innerText = streak;
-      document.getElementById('levelVal').innerText = streak > 10 ? 'Warrior Level ⚔️' : streak > 3 ? 'Apprentice 🌱' : 'Novice Level 🥚';
-      
-      const today = new Date().getDate();
-      
-      document.querySelectorAll('#focusChipsContainer .space-tab').forEach(c => {
-          const val = c.innerText.split(' ')[1];
-          c.classList.toggle('active', focuses.includes(val));
-      });
-
-      document.getElementById('ringsGrid').innerHTML = cats.map(cat => {
-        const hbits = habits.filter(h => h.category === cat.id);
-        const done = checks.filter(c => hbits.some(h => h.id === c.habit_id)).length;
-        const perc = hbits.length ? Math.round((done / (hbits.length * 31)) * 100) : 0;
-        const isFoc = focuses.includes(cat.id);
-        return `
-          <div style="text-align:center; width:60px;">
-            <div style="width:50px; height:50px; border-radius:50%; margin:0 auto 8px; background:conic-gradient(${cat.color} ${perc*3.6}deg, rgba(255,255,255,0.05) 0deg); display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; ${isFoc?'border:2px solid #fff':''}">
-              ${perc}%
-            </div>
-            <div style="font-size:9px; font-weight:800; color:var(--muted)">${cat.id}</div>
-          </div>`;
-      }).join('');
-
-      document.getElementById('trackerSections').innerHTML = cats.map(cat => {
-        const catH = habits.filter(h => h.category === cat.id);
-        return `
-          <div class="category-group">
-            <div class="category-header">
-              <span style="font-weight:800; font-size:18px; color:${cat.color}">${cat.emoji} ${cat.id}</span>
-              <button class="button dark" style="padding:4px 10px; font-size:11px" onclick="addHabit('${cat.id}')">+ Add</button>
-            </div>
-            <div class="tracker-box">
-              <div class="tracker-row" style="background:rgba(255,255,255,0.02); height:35px; font-size:10px; color:var(--muted);">
-                <div class="tracker-cell">Habit Name</div>
-                ${Array.from({length:31}, (_,i) => `<div class="tracker-cell">${i+1}</div>`).join('')}
-              </div>
-              ${catH.map(h => {
-                const startDay = new Date(h.created_at).getDate();
-                const startMonth = new Date(h.created_at).getMonth();
-                const isNew = startMonth === new Date().getMonth();
-                return `
-                  <div class="tracker-row">
-                    <div class="tracker-cell habit-name-cell">${h.title} <span style="opacity:0.2; cursor:pointer;" onclick="deleteHabit('${h.id}')">✕</span></div>
-                    ${Array.from({length:31}, (_, i) => {
-                      const d = i + 1;
-                      const locked = isNew && d < startDay;
-                      const active = checks.some(c => c.habit_id === h.id && new Date(c.check_in_date).getDate() === d);
-                      return `<div class="tracker-cell" style="${d===today?'background:rgba(59,130,246,0.1)':''}"><div class="square ${active?'active':''} ${locked?'disabled':''} ${d===today?'today':''}" onclick="${locked?'':`toggleCheck('${h.id}',${i})`}"></div></div>`;
-                    }).join('')}
-                  </div>`;
-              }).join('')}
-            </div>
-          </div>`;
-      }).join('');
-
-      renderChat();
-      if(profile.avatar_url) document.getElementById('profileAvatar').src = profile.avatar_url;
-      document.getElementById('profileName').value = profile.username || "";
-    }
-
-    function renderChat() {
-      const filtered = posts.filter(p => (p.space || 'GENERAL') === curSpace);
-      document.getElementById('postsWrap').innerHTML = filtered.map(p => `
-        <div class="msg ${p.user_id===user.id?'own':''}">
-          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px; font-size:11px; font-weight:800; cursor:pointer;" onclick="getEl('postInput').value += '@${p.user_email.split('@')[0]} '; getEl('postInput').focus();">
-            <img class="avatar-chat" src="https://ui-avatars.com/api/?name=${p.user_email}">
-            <span>${p.user_email}</span>
-          </div>
-          <div style="font-size:14px; line-height:1.4;">${p.body.replace(/@(\w+|[а-яА-ЯёЁіІїЇєЄ]+)/g, '<span style="color:var(--accent); font-weight:800;">@$1</span>')}</div>
-          ${p.media_url ? `<img src="${p.media_url}" style="width:100%; border-radius:12px; margin-top:10px;">` : ''}
-        </div>`).join('');
-      document.getElementById('postsWrap').scrollTop = document.getElementById('postsWrap').scrollHeight;
-    }
-
+    // --- AUTH ACTIONS ---
     async function handleSignIn() {
       const { error } = await sb.auth.signInWithPassword({ email: getEl('emailInput').value, password: getEl('passwordInput').value });
-      if(!error) bootstrap(); else document.getElementById('authError').innerText = error.message;
+      if(error) getEl('authError').innerText = error.message; else bootstrap();
     }
     async function handleSignUp() {
-      const p = getEl('passwordInput').value;
-      if(p.length < 6) return document.getElementById('authError').innerText = "Пароль має бути мін. 6 символів";
-      const { error } = await sb.auth.signUp({ email: getEl('emailInput').value, password: p });
-      if(!error) alert("Перевірте пошту!"); else document.getElementById('authError').innerText = error.message;
+      const { error } = await sb.auth.signUp({ email: getEl('emailInput').value, password: getEl('passwordInput').value });
+      if(error) getEl('authError').innerText = error.message; else alert("Confirm email & login");
     }
     async function logout() { await sb.auth.signOut(); location.reload(); }
-    function togglePass() { const i = getEl('passwordInput'); i.type = i.type==='password'?'text':'password'; }
     function getEl(id) { return document.getElementById(id); }
 
+    // --- NAV ---
     document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
       document.querySelectorAll('.tab, .view').forEach(el => el.classList.remove('active'));
       t.classList.add('active');
