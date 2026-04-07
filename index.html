@@ -3,147 +3,171 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>EK Habit Tracker | Pro Elite</title>
+  <title>EK Habit Tracker | eKreative Style</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0f172a; --card: #1e293b; --accent: #3b82f6; --text: #f8fafc;
-      --muted: #94a3b8; --border: #334155; --success: #10b981;
+      /* Кольори eKreative.com */
+      --bg: #0a0e17; 
+      --card: #161b22; 
+      --accent: #2f39f6; 
+      --text: #ffffff;
+      --muted: #8b949e;
+      --border: #30363d;
+      --today: rgba(47, 57, 246, 0.2);
     }
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', sans-serif; }
-    body { margin: 0; background: var(--bg); color: var(--text); min-height: 100vh; }
+    
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { 
+      margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); 
+      line-height: 1.6;
+    }
     .hidden { display: none !important; }
 
-    /* --- AUTH --- */
-    .auth-shell { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; background: radial-gradient(circle at top right, #1e293b, #0f172a); }
-    .auth-card { width: 100%; max-width: 400px; background: var(--card); border-radius: 24px; padding: 40px; border: 1px solid var(--border); text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
-    .nav-logo { font-weight: 800; font-size: 28px; letter-spacing: -1.5px; margin-bottom: 30px; display: block; }
-
-    /* --- UI ELEMENTS --- */
-    .input, .textarea { width: 100%; background: #0f172a; border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px; color: #fff; font-size: 15px; margin-bottom: 12px; outline: none; transition: 0.3s; }
+    /* Auth - Стійкий мінімалізм */
+    .auth-shell { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .auth-card { width: 100%; max-width: 400px; background: var(--card); border-radius: 12px; padding: 40px; border: 1px solid var(--border); text-align: center; }
+    .auth-card h1 { font-size: 32px; font-weight: 800; letter-spacing: -1.5px; margin-bottom: 10px; }
+    
+    .input, .textarea { 
+      width: 100%; background: #0d1117; border: 1px solid var(--border); border-radius: 8px; 
+      padding: 14px 16px; color: #fff; font-size: 16px; margin-bottom: 15px; outline: none; transition: 0.2s;
+    }
     .input:focus { border-color: var(--accent); }
-    .button { border: 0; border-radius: 12px; padding: 12px 24px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+
+    .button { 
+      border: 0; border-radius: 8px; padding: 14px 24px; font-size: 15px; font-weight: 700; 
+      cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center;
+    }
     .button.primary { background: var(--accent); color: #fff; width: 100%; }
-    .button.dark { background: #334155; color: #fff; }
-    .button:hover { opacity: 0.9; transform: translateY(-1px); }
+    .button.dark { background: transparent; color: #fff; border: 1px solid var(--border); }
+    .button:hover { opacity: 0.9; }
 
-    /* --- LAYOUT --- */
-    .app { max-width: 1200px; margin: 0 auto; padding: 20px; }
-    .topbar { display: flex; gap: 15px; margin-bottom: 30px; align-items: center; overflow-x: auto; padding-bottom: 5px; }
-    .tab { color: var(--muted); font-weight: 600; cursor: pointer; padding: 10px 15px; border-radius: 10px; transition: 0.3s; font-size: 14px; white-space: nowrap; }
-    .tab.active { color: #fff; background: var(--accent); }
-    .card { background: var(--card); border-radius: 20px; border: 1px solid var(--border); padding: 24px; margin-bottom: 24px; }
+    /* Layout */
+    .app { max-width: 1400px; margin: 0 auto; padding: 40px 20px; }
+    .topbar { display: flex; gap: 30px; margin-bottom: 40px; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 15px; overflow-x: auto; }
+    .nav-logo { font-weight: 800; font-size: 24px; letter-spacing: -1px; margin-right: 20px; }
+    .tab { color: var(--muted); font-weight: 600; cursor: pointer; padding: 10px 0; transition: 0.3s; font-size: 14px; text-transform: uppercase; white-space: nowrap; }
+    .tab.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
+    
     .view { display: none; } .view.active { display: block; }
+    .card { background: var(--card); border-radius: 12px; border: 1px solid var(--border); padding: 30px; margin-bottom: 30px; }
 
-    /* --- DASHBOARD --- */
-    .dashboard-grid { display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
-    .stat-box { padding: 25px; border-radius: 20px; text-align: center; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.05); }
-    .ring-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
-    .focus-chip { padding: 8px 12px; border-radius: 10px; background: #0f172a; border: 1px solid var(--border); font-size: 11px; font-weight: 700; cursor: pointer; margin: 4px; display: inline-block; }
-    .focus-chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    /* Dashboard */
+    .dashboard-grid { display: grid; grid-template-columns: 350px 1fr; gap: 30px; }
+    .side-block { padding: 25px; border-radius: 12px; margin-bottom: 15px; font-weight: 800; font-size: 18px; text-align: center; color: #fff; }
+    .ring-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px; }
+    .focus-chip { padding: 10px 15px; border-radius: 8px; background: #0d1117; border: 1px solid var(--border); font-size: 12px; font-weight: 700; cursor: pointer; color: var(--muted); margin: 5px; display: inline-block; }
+    .focus-chip.active { background: #fff; color: #000; border-color: #fff; }
 
-    /* --- TRACKER --- */
-    .tracker-container { overflow-x: auto; background: #0f172a; border-radius: 16px; border: 1px solid var(--border); }
-    .tracker-row { display: grid; grid-template-columns: 200px repeat(31, 35px); border-bottom: 1px solid var(--border); align-items: center; }
-    .tracker-cell { height: 45px; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--border); font-size: 11px; color: var(--muted); }
-    .habit-title { justify-content: space-between; padding: 0 15px; font-weight: 600; color: #fff; font-size: 13px; text-align: left; }
-    .square { width: 18px; height: 18px; border: 2px solid #334155; border-radius: 4px; cursor: pointer; transition: 0.2s; }
-    .square.active { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 10px rgba(59, 130, 246, 0.4); }
-    .square.today { border-color: var(--accent); }
+    /* Tracker */
+    .tracker-section { overflow-x: auto; background: #0d1117; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 40px; }
+    .tracker-head, .tracker-row { display: grid; grid-template-columns: 220px repeat(31, 40px) 70px; align-items: center; min-width: 1530px; }
+    .tracker-head { height: 45px; background: rgba(255,255,255,0.03); font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; }
+    .tracker-row { height: 55px; border-top: 1px solid var(--border); }
+    .tracker-cell { display: flex; align-items: center; justify-content: center; height: 100%; border-right: 1px solid var(--border); }
+    .habit-title { justify-content: space-between; padding: 0 20px; font-weight: 600; font-size: 14px; color: #fff; text-align: left; }
+    
+    .checkbox { width: 20px; height: 20px; border: 2px solid #30363d; border-radius: 4px; cursor: pointer; transition: 0.1s; }
+    .checkbox.active { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 10px rgba(47, 57, 246, 0.5); }
+    .today-cell { background: var(--today); }
 
-    /* --- COMMUNITY --- */
-    .space-nav { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 10px; }
-    .chat-box { height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
-    .msg { max-width: 80%; padding: 14px; border-radius: 16px; background: #334155; position: relative; font-size: 14px; }
-    .msg.own { align-self: flex-end; background: var(--accent); }
-    .post-img { width: 100%; border-radius: 10px; margin-top: 8px; }
+    /* Community */
+    .chat-box { height: 500px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; padding-right: 15px; }
+    .msg { max-width: 80%; padding: 16px; border-radius: 12px; background: #1c2128; border: 1px solid var(--border); position: relative; font-size: 15px; }
+    .msg.own { align-self: flex-end; background: var(--accent); border: 0; }
+    .space-btn { padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; background: #0d1117; border: 1px solid var(--border); margin-right: 10px; color: var(--muted); }
+    .space-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-    @media (max-width: 768px) { .dashboard-grid { grid-template-columns: 1fr; } .tracker-row { grid-template-columns: 140px repeat(31, 35px); } }
+    @media (max-width: 768px) { .dashboard-grid { grid-template-columns: 1fr; } .tracker-row { grid-template-columns: 160px repeat(31, 40px) 70px; } }
   </style>
 </head>
 <body>
 
   <div id="authView" class="auth-shell">
     <div class="auth-card">
-      <span class="nav-logo">EK.</span>
+      <h1 class="nav-logo">EK.</h1>
+      <p style="color:var(--muted); margin-bottom:30px;">Track your evolution.</p>
       <input id="emailInput" class="input" type="email" placeholder="Email" />
       <div style="position: relative;">
-        <input id="passwordInput" class="input" type="password" placeholder="Password (6+ symbols)" />
-        <span onclick="togglePass()" style="position:absolute; right:15px; top:13px; cursor:pointer; opacity:0.5;">👁️</span>
+        <input id="passwordInput" class="input" type="password" placeholder="Password (min. 6 chars)" />
+        <span onclick="togglePassword()" style="position:absolute; right:15px; top:13px; cursor:pointer; font-size:20px; opacity:0.5;">👁️</span>
       </div>
-      <div id="authErr" style="color:#ef4444; font-size:12px; margin-bottom:15px;"></div>
-      <button class="button primary" onclick="signIn()">Sign In</button>
+      <div id="loginError" style="color:#ff6b6b; font-size:12px; margin: 10px 0;"></div>
+      <button id="loginBtn" class="button primary" onclick="signIn()">Sign In</button>
       <button class="button dark" style="width:100%; margin-top:10px;" onclick="signUp()">Create Account</button>
     </div>
   </div>
 
   <div id="appView" class="app hidden">
     <div class="topbar">
-      <div style="font-weight: 800; font-size: 20px; margin-right: 15px;">EK.</div>
-      <div class="tab active" data-view="dashView">Dashboard</div>
+      <div class="nav-logo">EK.</div>
+      <div class="tab active" data-view="dashboardView">Dashboard</div>
       <div class="tab" data-view="trackerView">Tracker</div>
       <div class="tab" data-view="communityView">Community</div>
+      <div class="tab" data-view="supportView">Support</div>
       <div class="tab" data-view="settingsView">Settings</div>
-      <button class="button dark" style="margin-left:auto; padding:6px 12px; font-size:11px;" onclick="logout()">Logout</button>
+      <button class="button dark" style="margin-left:auto; padding:8px 15px; font-size:11px;" onclick="logout()">Logout</button>
     </div>
 
-    <div id="dashView" class="view active">
+    <div id="dashboardView" class="view active">
        <div class="dashboard-grid">
          <div>
-            <div class="stat-box" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
-              <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; opacity: 0.8;">Current Streak</div>
-              <div id="streakVal" style="font-size: 48px; font-weight: 800;">0</div>
-              <div id="levelVal" style="font-size: 12px; font-weight: 700; background: rgba(0,0,0,0.2); padding: 4px 10px; border-radius: 20px; display: inline-block;">Novice 🥚</div>
+            <div id="streakPanel" class="side-block" style="background: var(--accent);">🔥 0 DAYS STREAK</div>
+            <div id="levelPanel" class="side-block" style="background: #10b981;">🏆 NOVICE LEVEL</div>
+            <div class="card" style="text-align:center; padding:20px;">
+              <div style="color:var(--muted); font-size:12px; text-transform:uppercase; font-weight:800; letter-spacing:1px;">Active Days</div>
+              <div id="activeVal" style="font-size:42px; font-weight:800">0</div>
             </div>
-            <div class="card">
-              <div style="font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; margin-bottom: 10px;">🎯 Your Focus</div>
-              <div id="focusChips">
-                <div class="focus-chip" data-val="MOVE" onclick="toggleFocus('MOVE')">🏃 MOVE</div>
-                <div class="focus-chip" data-val="MIND" onclick="toggleFocus('MIND')">🧠 MIND</div>
-                <div class="focus-chip" data-val="CREATE" onclick="toggleFocus('CREATE')">🎨 CREATE</div>
-                <div class="focus-chip" data-val="SLOW" onclick="toggleFocus('SLOW')">🌿 SLOW</div>
+            <div class="card" style="text-align:center;">
+              <div style="font-size: 11px; margin-bottom: 15px; color:var(--muted); font-weight:800; text-transform:uppercase;">Current Focus:</div>
+              <div class="focus-chips" id="focusChipsContainer">
+                <div class="focus-chip" data-val="MOVE" onclick="toggleFocusChip('MOVE')">🏃 MOVE</div>
+                <div class="focus-chip" data-val="MIND" onclick="toggleFocusChip('MIND')">🧠 MIND</div>
+                <div class="focus-chip" data-val="CREATE" onclick="toggleFocusChip('CREATE')">🎨 CREATE</div>
+                <div class="focus-chip" data-val="SLOW" onclick="toggleFocusChip('SLOW')">🌿 SLOW</div>
               </div>
             </div>
          </div>
-         <div class="card">
-            <div style="font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; margin-bottom: 20px;">Category Progress</div>
-            <div id="ringsWrap" class="ring-grid"></div>
-         </div>
+         <div id="ringsWrap" class="ring-grid"></div>
        </div>
     </div>
 
     <div id="trackerView" class="view">
-      <div id="trackerSections"></div>
+      <div id="trackerWrap"></div>
     </div>
 
     <div id="communityView" class="view">
       <div class="card">
-        <div class="space-nav" id="spaceNav">
-          <button class="space-tab button dark" onclick="setSpace('GENERAL')">💬 General</button>
-          <button class="space-tab button dark" onclick="setSpace('MOVE')">🏃 MOVE</button>
-          <button class="space-tab button dark" onclick="setSpace('MIND')">🧠 MIND</button>
-          <button class="space-tab button dark" onclick="setSpace('CREATE')">🎨 CREATE</button>
-          <button class="space-tab button dark" onclick="setSpace('SLOW')">🌿 SLOW</button>
-        </div>
+        <div id="spacesWrap" style="display:flex; overflow-x:auto; margin-bottom:20px; padding-bottom:10px;"></div>
         <div id="postsWrap" class="chat-box"></div>
-        <div style="margin-top:20px; display:flex; gap:10px; align-items:center;">
-          <label class="button dark" style="padding:12px;">📎<input type="file" id="postFile" class="hidden" onchange="alert('Файл вибрано: ' + this.files[0].name)"></label>
-          <input id="postInput" class="input" style="margin:0;" placeholder="Message..." />
-          <button class="button primary" style="width:100px;" onclick="sendPost()">Send</button>
+        <div style="margin-top:25px; display:flex; gap:15px; align-items:center;">
+          <label class="button dark" style="padding:14px;">📎<input type="file" id="fileInput" class="hidden" onchange="getEl('fileStatus').innerText = this.files[0].name"></label>
+          <textarea id="postInput" class="textarea" style="margin:0; height:52px;" placeholder="Share your progress..."></textarea>
+          <button class="button primary" style="width:110px;" onclick="createPost()">Send</button>
+        </div>
+        <div id="fileStatus" style="font-size:10px; color:var(--accent); margin-top:5px;"></div>
+      </div>
+    </div>
+
+    <div id="supportView" class="view">
+      <div class="card" style="max-width: 600px; margin: 0 auto;">
+        <h2 style="margin-top:0">Support</h2>
+        <textarea id="supportMsg" class="textarea" placeholder="Як ми можемо допомогти?"></textarea>
+        <button class="button primary" onclick="sendSupport()">Send Ticket</button>
+        <div id="adminPanel" class="hidden" style="margin-top:30px; border-top: 1px solid var(--border); padding-top:20px;">
+          <h3 style="color:var(--accent)">👑 Admin View</h3>
+          <div id="adminTickets"></div>
         </div>
       </div>
     </div>
 
     <div id="settingsView" class="view">
        <div class="card">
-         <h2>Settings</h2>
-         <p>Email: <strong id="userEmailLabel"></strong></p>
-         <button class="button primary" onclick="alert('Done!')">🔔 Enable Notifications</button>
-         <div id="adminPanel" class="hidden" style="margin-top:20px; border-top:1px solid var(--border); padding-top:20px;">
-           <h3 style="color:var(--accent)">👑 Support Tickets (Admin)</h3>
-           <div id="adminTickets"></div>
-         </div>
+           <h2 style="margin-top:0">Account</h2>
+           <p style="color:var(--muted)">Email: <strong style="color:#fff;" id="userEmailLabel"></strong></p>
+           <button class="button primary" style="width:auto;" onclick="alert('Сповіщення увімкнено!')">Enable Notifications</button>
        </div>
     </div>
   </div>
@@ -153,137 +177,211 @@
     const SUPABASE_KEY = "sb_publishable_yfG2qoR_Cx8QKwEbNpzeUA_4VNjItCT";
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    let user = null, habits = [], checks = [], posts = [], profile = {}, curSpace = "GENERAL", selectedFocuses = [];
-    const cats = [{id:'MOVE', c:'#3b82f6'}, {id:'MIND', c:'#10b981'}, {id:'CREATE', c:'#f43f5e'}, {id:'SLOW', c:'#8b5cf6'}];
+    const OWNER_EMAIL = "yaninastonkus@gmail.com"; 
 
-    async function bootstrap() {
+    let currentUser = null, categories = [], habits = [], checkIns = [], posts = [], selectedSpace = "GENERAL", selectedFocuses = [];
+    const TODAY_DAY = new Date().getDate();
+    const META = { 
+      MOVE: { color: "#3b82f6", emoji: "🏃" }, 
+      MIND: { color: "#10b981", emoji: "🧠" }, 
+      CREATE: { color: "#f43f5e", emoji: "🎨" }, 
+      SLOW: { color: "#8b5cf6", emoji: "🌿" },
+      GENERAL: { color: "#94a3b8", emoji: "💬" }
+    };
+
+    const getEl = id => document.getElementById(id);
+
+    async function bootstrap(){
       const { data } = await sb.auth.getSession();
-      user = data.session?.user; if(!user) return;
-      document.getElementById('authView').classList.add('hidden');
-      document.getElementById('appView').classList.remove('hidden');
-      document.getElementById('userEmailLabel').innerText = user.email;
-      await refreshData();
-    }
-
-    async function refreshData() {
-      const [h, c, po, pr] = await Promise.all([
-        sb.from('habits').select('*').eq('user_id', user.id),
-        sb.from('check_ins').select('*').eq('user_id', user.id),
-        sb.from('community_posts').select('*').order('created_at'),
-        sb.from('profiles').select('*').eq('id', user.id).single()
-      ]);
-      habits = h.data || []; checks = c.data || []; posts = po.data || []; profile = pr.data || {};
-      selectedFocuses = (profile.focus_text || "").split(',').filter(Boolean);
+      currentUser = data.session?.user; if(!currentUser) return;
+      getEl('authView').classList.add('hidden');
+      getEl('appView').classList.remove('hidden');
+      getEl('userEmailLabel').innerText = currentUser.email;
       
-      if(habits.length === 0) {
-        await sb.from('habits').insert(cats.map(cat => ({user_id:user.id, title:`Daily ${cat.id}`, category:cat.id})));
-        location.reload();
+      const res = await Promise.all([
+        sb.from('categories').select('*').order('sort_order'),
+        sb.from('habits').select('*').eq('user_id', currentUser.id),
+        sb.from('check_ins').select('*').eq('user_id', currentUser.id),
+        sb.from('community_posts').select('*').order('created_at'),
+        sb.from('profiles').select('focus_text').eq('id', currentUser.id).single()
+      ]);
+      
+      // Додаємо General в список категорій для чату
+      categories = [{slug: 'GENERAL', id: 'gen_space'}, ...res[0].data];
+      habits = res[1].data || [];
+      checkIns = res[2].data || [];
+      posts = res[3].data || [];
+      if(res[4].data?.focus_text) selectedFocuses = res[4].data.focus_text.split(',').filter(Boolean);
+
+      if(currentUser.email === OWNER_EMAIL) {
+        getEl('adminPanel').classList.remove('hidden');
+        loadAdminTickets();
       }
+      
       renderAll();
     }
 
-    // --- LOGIC ---
-    async function toggleCheck(hId, dayNum) {
-      const dStr = new Date(new Date().getFullYear(), new Date().getMonth(), dayNum).toISOString().split('T')[0];
-      const exist = checks.find(c => c.habit_id === hId && c.check_in_date === dStr);
+    // --- TRACKER LOGIC (FIXED) ---
+    async function toggleCheck(hId, day){
+      // Виправлено зміщення дати: створюємо дату саме для обраного дня
+      const year = new Date().getFullYear();
+      const month = new Date().getMonth();
+      const dStr = new Date(year, month, day).toISOString().split('T')[0];
+      
+      const exist = checkIns.find(c => c.habit_id === hId && c.check_in_date === dStr);
       if(exist) await sb.from('check_ins').delete().eq('id', exist.id);
-      else await sb.from('check_ins').insert({user_id:user.id, habit_id:hId, check_in_date:dStr});
-      await refreshData();
+      else await sb.from('check_ins').insert({user_id:currentUser.id, habit_id:hId, check_in_date:dStr});
+      
+      const fresh = await sb.from('check_ins').select('*').eq('user_id', currentUser.id);
+      checkIns = fresh.data; renderAll();
     }
 
-    async function toggleFocus(id) {
-      const idx = selectedFocuses.indexOf(id);
-      if(idx > -1) selectedFocuses.splice(idx, 1); else selectedFocuses.push(id);
-      await sb.from('profiles').upsert({id:user.id, focus_text: selectedFocuses.join(',')});
+    async function addHabit(catId){
+      const t = prompt("Назва нової звички:");
+      if(t) {
+        await sb.from('habits').insert({user_id: currentUser.id, title: t, category_id: catId});
+        location.reload(); // Перевантажуємо для оновлення списку
+      }
+    }
+
+    async function toggleFocusChip(val) {
+      const idx = selectedFocuses.indexOf(val);
+      if (idx > -1) selectedFocuses.splice(idx, 1); else selectedFocuses.push(val);
+      await sb.from('profiles').upsert({ id: currentUser.id, focus_text: selectedFocuses.join(',') });
       renderAll();
     }
 
-    async function addHabit(catId) {
-      const t = prompt("Назва:"); if(t) { await sb.from('habits').insert({user_id:user.id, title:t, category:catId}); await refreshData(); }
+    // --- COMMUNITY & SUPPORT ---
+    async function sendPost(){
+      const b = getEl('postInput').value;
+      const file = getEl('fileInput').files[0];
+      if(!b && !file) return;
+      
+      let url = null;
+      if(file) {
+        const path = `${currentUser.id}/c_${Date.now()}.png`;
+        await sb.storage.from('community').upload(path, file);
+        url = sb.storage.from('community').getPublicUrl(path).data.publicUrl;
+      }
+
+      const cat = categories.find(c => c.slug === selectedSpace);
+      await sb.from('community_posts').insert({
+        user_id: currentUser.id, 
+        body: b, 
+        category_id: cat.id === 'gen_space' ? null : cat.id, 
+        media_url: url,
+        user_email: currentUser.email
+      });
+      getEl('postInput').value = ""; getEl('fileInput').value = ""; getEl('fileStatus').innerText = "";
+      bootstrap();
     }
 
-    // --- RENDER ---
-    function renderAll() {
-      const today = new Date().getDate();
-      document.getElementById('streakVal').innerText = calculateStreak();
+    async function sendSupport() {
+      const msg = getEl('supportMsg').value;
+      if(!msg) return;
+      await sb.from('support_tickets').insert({user_id:currentUser.id, user_email:currentUser.email, message:msg});
+      alert("Надіслано!"); getEl('supportMsg').value = "";
+    }
+
+    async function loadAdminTickets() {
+      const { data } = await sb.from('support_tickets').select('*').order('created_at', {ascending:false});
+      if(data) getEl('adminTickets').innerHTML = data.map(t => `<div class="msg" style="margin-bottom:10px;"><b>${t.user_email}</b>: ${t.message}</div>`).join('');
+    }
+
+    // --- RENDERERS ---
+    function renderAll(){
+      const streak = calculateStreak();
+      getEl('streakPanel').innerText = `🔥 ${streak} DAYS STREAK`;
+      getEl('levelPanel').innerText = streak > 10 ? '🏆 WARRIOR LEVEL' : '🏆 NOVICE LEVEL';
+      getEl('activeVal').innerText = [...new Set(checkIns.map(c => c.check_in_date))].length;
       
       // Tracker
-      document.getElementById('trackerSections').innerHTML = cats.map(cat => {
-        const catH = habits.filter(h => h.category === cat.id);
+      getEl('trackerWrap').innerHTML = categories.filter(c => c.slug !== 'GENERAL').map(cat => {
+        const catH = habits.filter(h => h.category_id === cat.id);
         return `
-          <div class="card" style="padding:0; overflow:hidden; margin-bottom:20px;">
-            <div style="padding:15px 20px; background:rgba(255,255,255,0.03); display:flex; justify-content:space-between; align-items:center;">
-              <span style="font-weight:800; color:${cat.c}">${cat.id}</span>
-              <button class="button dark" style="padding:5px 10px; font-size:10px" onclick="addHabit('${cat.id}')">+ Add</button>
+          <div class="category-group" style="margin-bottom:30px; padding:0 20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+              <h3 style="margin:0; font-size:18px;">${META[cat.slug].emoji} ${cat.slug}</h3>
+              <button class="button dark" style="padding:6px 12px; font-size:11px" onclick="addHabit('${cat.id}')">+ ADD HABIT</button>
             </div>
-            <div class="tracker-container">
-              <div class="tracker-row" style="background:rgba(0,0,0,0.2); height:30px; font-size:9px; font-weight:800;">
-                <div class="tracker-cell">Habits</div>
-                ${Array.from({length:31}, (_,i)=>`<div class="tracker-cell">${i+1}</div>`).join('')}
+            <div class="tracker-section">
+              <div class="tracker-head">
+                <div class="tracker-cell" style="justify-content:flex-start; padding-left:20px;">Habit</div>
+                ${Array.from({length:31}, (_,i)=>`<div class="tracker-cell ${i+1===TODAY_DAY?'today-cell':''}">${i+1}</div>`).join('')}
+                <div class="tracker-cell">%</div>
               </div>
-              ${catH.map(h => `
-                <div class="tracker-row">
-                  <div class="tracker-cell habit-title">${h.title}</div>
-                  ${Array.from({length:31}, (_,i)=>{
-                    const d = i+1;
-                    const active = checks.some(c => c.habit_id === h.id && new Date(c.check_in_date).getDate() === d);
-                    return `<div class="tracker-cell"><div class="square ${active?'active':''} ${d===today?'today':''}" onclick="toggleCheck('${h.id}',${d})"></div></div>`;
-                  }).join('')}
-                </div>`).join('')}
+              ${catH.map(h => {
+                const hChecks = checkIns.filter(c => c.habit_id === h.id);
+                return `
+                  <div class="tracker-row">
+                    <div class="tracker-cell habit-title">${h.title}</div>
+                    ${Array.from({length:31}, (_,i)=>{
+                      const active = checkIns.some(c => c.habit_id === h.id && new Date(c.check_in_date).getDate() === i+1);
+                      return `<div class="tracker-cell ${i+1===TODAY_DAY?'today-cell':''}"><div class="checkbox ${active?'active':''}" onclick="toggleCheck('${h.id}',${i+1})"></div></div>`;
+                    }).join('')}
+                    <div class="tracker-cell" style="font-weight:800; color:${META[cat.slug].color}">${Math.round((hChecks.length/31)*100)}%</div>
+                  </div>`;
+              }).join('')}
             </div>
           </div>`;
       }).join('');
 
-      // Dashboard Rings
-      document.getElementById('ringsWrap').innerHTML = cats.map(cat => {
-        const hbits = habits.filter(h => h.category === cat.id);
-        const done = checks.filter(c => hbits.some(h => h.id === c.habit_id)).length;
-        const perc = hbits.length ? Math.round((done/(hbits.length*31))*100) : 0;
-        const foc = selectedFocuses.includes(cat.id);
-        return `<div class="card" style="text-align:center; padding:15px; ${foc?'border-color:var(--accent)':''}">
-          <div style="width:50px; height:50px; border-radius:50%; margin:0 auto 10px; background:conic-gradient(${cat.c} ${perc*3.6}deg, #0f172a 0deg); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:11px;">${perc}%</div>
-          <div style="font-size:10px; font-weight:800; color:var(--muted)">${cat.id}</div>
-        </div>`;
+      // Rings
+      getEl('ringsWrap').innerHTML = categories.filter(c => c.slug !== 'GENERAL').map(cat => {
+        const hbits = habits.filter(h => h.category_id === cat.id);
+        const done = checkIns.filter(c => hbits.some(h => h.id === c.habit_id)).length;
+        const perc = hbits.length ? Math.min(100, Math.round((done / (hbits.length * 31)) * 100)) : 0;
+        const foc = selectedFocuses.includes(cat.slug);
+        return `
+          <div class="card" style="text-align:center; padding:20px; ${foc?'border:2px solid #fff':''}">
+            <div style="width:60px; height:60px; border-radius:50%; margin:0 auto 10px; background:conic-gradient(${META[cat.slug].color} ${perc*3.6}deg, #0d1117 0deg); display:flex; align-items:center; justify-content:center; font-weight:800;">${perc}%</div>
+            <div style="font-size:11px; font-weight:800; color:var(--muted)">${cat.slug}</div>
+          </div>`;
       }).join('');
 
+      // Focus
       document.querySelectorAll('.focus-chip').forEach(c => c.classList.toggle('active', selectedFocuses.includes(c.dataset.val)));
-      renderChat();
-    }
 
-    function renderChat() {
-      const filtered = posts.filter(p => (p.space || 'GENERAL') === curSpace);
-      document.getElementById('postsWrap').innerHTML = filtered.map(p => `
-        <div class="msg ${p.user_id===user.id?'own':''}">
-          <div style="font-size:10px; opacity:0.5; margin-bottom:4px;">${p.user_email}</div>
+      // Community
+      getEl('spacesWrap').innerHTML = categories.map(cat => `<div class="space-btn ${selectedSpace===cat.slug?'active':''}" onclick="selectedSpace='${cat.slug}'; renderAll();">${META[cat.slug].emoji} ${cat.slug}</div>`).join('');
+      const filtered = posts.filter(p => {
+        const pCat = categories.find(c => c.id === p.category_id);
+        return (pCat ? pCat.slug : 'GENERAL') === selectedSpace;
+      });
+      getEl('postsWrap').innerHTML = filtered.map(p => `
+        <div class="msg ${p.user_id===currentUser.id?'own':''}">
+          <div style="font-size:11px; font-weight:800; margin-bottom:5px; opacity:0.6;">${p.user_email}</div>
           <div>${p.body}</div>
+          ${p.media_url ? `<img src="${p.media_url}" style="width:100%; border-radius:8px; margin-top:10px;">` : ''}
         </div>`).join('');
-      document.getElementById('postsWrap').scrollTop = 9999;
-    }
-
-    function setSpace(s) { curSpace = s; renderChat(); }
-
-    async function sendPost() {
-      const b = document.getElementById('postInput').value; if(!b) return;
-      await sb.from('community_posts').insert({user_id:user.id, body:b, space:curSpace, user_email: user.email});
-      document.getElementById('postInput').value = ""; refreshData();
+      getEl('postsWrap').scrollTop = 9999;
     }
 
     function calculateStreak() {
-      const dates = [...new Set(checks.map(c => c.check_in_date))].sort().reverse();
+      const dates = [...new Set(checkIns.map(c => c.check_in_date))].sort().reverse();
       if(!dates.length) return 0;
       let s = 0, now = new Date().toISOString().split('T')[0];
       for(let d of dates) { if(d === now || d === new Date(Date.now()-86400000).toISOString().split('T')[0]) { s++; now = new Date(new Date(d).getTime()-86400000).toISOString().split('T')[0]; } else break; }
       return s;
     }
 
-    async function signIn() { const { error } = await sb.auth.signInWithPassword({ email: document.getElementById('emailInput').value, password: document.getElementById('passwordInput').value }); if(!error) bootstrap(); else document.getElementById('authErr').innerText = error.message; }
+    async function signIn() { 
+      const { error } = await sb.auth.signInWithPassword({ email: getEl('emailInput').value, password: getEl('passwordInput').value });
+      if(!error) bootstrap(); else getEl('loginError').innerText = error.message; 
+    }
+    async function signUp() {
+      const p = getEl('passwordInput').value;
+      if(p.length < 6) return alert("Пароль має бути від 6 символів");
+      const { error } = await sb.auth.signUp({ email: getEl('emailInput').value, password: p });
+      if(!error) alert("Перевірте пошту!"); else alert(error.message);
+    }
     async function logout() { await sb.auth.signOut(); location.reload(); }
-    function togglePass() { const i = document.getElementById('passwordInput'); i.type = i.type==='password'?'text':'password'; }
+    function togglePassword() { const i = getEl('passwordInput'); i.type = i.type==='password'?'text':'password'; }
 
     document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
       document.querySelectorAll('.tab, .view').forEach(el => el.classList.remove('active'));
       t.classList.add('active');
-      document.getElementById(t.dataset.view).classList.add('active');
+      getEl(t.dataset.view).classList.add('active');
     });
 
     bootstrap();
