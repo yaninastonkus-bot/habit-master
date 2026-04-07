@@ -3,130 +3,188 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>EK Habit Tracker</title>
+  <title>EK Habit Tracker | Pro</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #000000;
-      --card: #111111;
-      --card-blue: #0024f0;
-      --accent-lime: #ccff00;
+      --card: #0a0a0a;
+      --ek-blue: #0024f0;
+      --ek-lime: #ccff00;
       --text: #ffffff;
       --muted: #888888;
-      --border: #222222;
+      --border: rgba(255, 255, 255, 0.1);
       --today-bg: rgba(204, 255, 0, 0.1);
     }
 
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', sans-serif; }
-    body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.5; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { 
+      margin: 0; 
+      font-family: 'Inter', sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      line-height: 1.4;
+    }
     .hidden { display: none !important; }
 
-    /* --- AUTH --- */
+    /* --- AUTH SCREEN --- */
     .auth-shell { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-    .auth-card { width: 100%; max-width: 420px; background: var(--card); border-radius: 24px; padding: 40px; border: 1px solid var(--border); text-align: center; }
-    .auth-card h1 { font-size: 32px; font-weight: 800; letter-spacing: -1.5px; margin-bottom: 30px; }
-    
-    .input, .textarea { 
-      width: 100%; background: #1a1a1a; border: 1px solid var(--border); border-radius: 12px; 
-      padding: 14px 16px; color: #fff; font-size: 16px; margin-bottom: 15px; outline: none; transition: 0.3s;
+    .auth-card { 
+      width: 100%; max-width: 440px; background: var(--card); border-radius: 24px; padding: 48px 40px; 
+      border: 1px solid var(--border); text-align: center; 
     }
-    .input:focus { border-color: var(--card-blue); }
-    .button { border: 0; border-radius: 100px; padding: 14px 24px; font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; }
-    .button.primary { background: var(--accent-lime); color: #000; width: 100%; }
+    .auth-card h1 { 
+      font-size: 48px; font-weight: 900; letter-spacing: -3px; margin: 0 0 10px 0; 
+      text-transform: uppercase;
+    }
+    .auth-card p { color: var(--muted); font-weight: 500; margin-bottom: 32px; letter-spacing: -0.5px; }
+
+    .input { 
+      width: 100%; background: #111; border: 1px solid var(--border); border-radius: 12px; 
+      padding: 16px; color: #fff; font-size: 16px; font-family: inherit; outline: none; transition: 0.3s;
+      margin-bottom: 12px;
+    }
+    .input:focus { border-color: var(--ek-blue); }
+
+    .button { 
+      border: 0; border-radius: 100px; padding: 16px 32px; font-size: 16px; font-weight: 800; 
+      cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; justify-content: center;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .button.primary { background: var(--ek-lime); color: #000; width: 100%; }
+    .button.primary:hover { transform: scale(1.03); background: #dfff33; }
     .button.dark { background: transparent; color: #fff; border: 1px solid var(--border); }
-    .button.blue { background: var(--card-blue); color: #fff; }
+    .button.dark:hover { background: rgba(255,255,255,0.05); }
 
     /* --- LAYOUT --- */
-    .app { max-width: 1400px; margin: 0 auto; padding: 30px 20px; }
-    .topbar { display: flex; gap: 15px; margin-bottom: 40px; align-items: center; overflow-x: auto; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
-    .nav-logo { font-size: 22px; font-weight: 800; margin-right: 20px; white-space: nowrap; }
-    .tab { color: var(--muted); font-weight: 700; cursor: pointer; padding: 10px 0; transition: 0.3s; font-size: 13px; text-transform: uppercase; white-space: nowrap; }
-    .tab.active { color: var(--accent-lime); border-bottom: 2px solid var(--accent-lime); }
-    .view { display: none; } .view.active { display: block; }
-    .card { background: var(--card); border-radius: 20px; border: 1px solid var(--border); padding: 25px; margin-bottom: 25px; }
+    .app { max-width: 1400px; margin: 0 auto; padding: 40px 20px; }
+    .topbar { display: flex; gap: 15px; margin-bottom: 48px; flex-wrap: wrap; align-items: center; }
+    .nav-logo { font-size: 32px; font-weight: 900; margin-right: auto; letter-spacing: -2px; }
+    
+    .tab { 
+      background: transparent; color: var(--muted); border-radius: 100px; padding: 10px 20px; 
+      cursor: pointer; font-weight: 800; transition: 0.3s; border: 1px solid transparent;
+      font-size: 13px; text-transform: uppercase;
+    }
+    .tab.active { background: #fff; color: #000; }
+    .view { display: none; animation: fadeIn 0.4s ease; }
+    .view.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    
+    .card { background: var(--card); border-radius: 24px; border: 1px solid var(--border); padding: 32px; margin-bottom: 24px; }
 
     /* --- DASHBOARD --- */
-    .dash-grid { display: grid; grid-template-columns: 350px 1fr; gap: 25px; }
-    .side-block { padding: 20px; border-radius: 16px; margin-bottom: 12px; font-weight: 800; text-align: center; }
-    .focus-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
-    .focus-chip { padding: 8px 16px; border-radius: 100px; background: #1a1a1a; border: 1px solid var(--border); font-size: 11px; font-weight: 700; cursor: pointer; color: var(--muted); }
-    .focus-chip.active { background: var(--accent-lime); color: #000; border-color: var(--accent-lime); }
-    .ring-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
+    .dashboard-grid { display: grid; grid-template-columns: 380px 1fr; gap: 24px; }
+    
+    .stat-hero { background: var(--ek-blue); color: #fff; border: none; padding: 40px; position: relative; overflow: hidden; }
+    .stat-hero::after { content: "→"; position: absolute; right: 20px; bottom: 10px; font-size: 80px; opacity: 0.1; font-weight: 900; }
+    
+    .big-number { font-size: 82px; font-weight: 900; line-height: 1; letter-spacing: -5px; margin: 10px 0; color: var(--ek-lime); }
+    .stat-label { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8; }
+
+    .ring-card { text-align: center; padding: 24px; background: #080808; border: 1px solid var(--border); border-radius: 20px; }
+    .ring { width: 90px; height: 90px; border-radius: 50%; position: relative; margin: 0 auto 12px; border: 2px solid #1a1a1a; }
+    .ring-value { font-size: 20px; font-weight: 900; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--ek-lime); }
+
+    .focus-chip {
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      color: #fff; border-radius: 100px; padding: 8px 16px;
+      font-size: 12px; font-weight: 800; cursor: pointer; transition: 0.2s; margin-right: 6px; margin-bottom: 8px;
+      display: inline-block; text-transform: uppercase;
+    }
+    .focus-chip.active { background: var(--ek-lime); color: #000; border-color: var(--ek-lime); }
 
     /* --- TRACKER --- */
-    .tracker-box { overflow-x: auto; background: #080808; border-radius: 16px; border: 1px solid var(--border); }
-    .tracker-head, .tracker-row { display: grid; grid-template-columns: 200px repeat(31, 40px) 60px; align-items: center; min-width: 1500px; }
-    .tracker-head { height: 45px; background: #111; font-size: 10px; font-weight: 800; color: var(--muted); text-transform: uppercase; }
-    .tracker-row { height: 55px; border-top: 1px solid #1a1a1a; }
-    .tracker-cell { display: flex; align-items: center; justify-content: center; height: 100%; border-right: 1px solid #1a1a1a; }
-    .habit-title { justify-content: space-between !important; padding: 0 15px; font-weight: 600; color: #fff; font-size: 13px; text-align: left; }
-    .square { width: 22px; height: 22px; border: 2px solid #222; border-radius: 5px; cursor: pointer; transition: 0.15s; }
-    .square.active { background: var(--card-blue); border-color: var(--card-blue); box-shadow: 0 0 10px var(--card-blue); }
-    .today-cell { background: var(--today-bg); }
+    .category-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; border-bottom: 2px solid var(--ek-blue); padding-bottom: 10px; }
+    .category-title { font-size: 28px; font-weight: 900; text-transform: uppercase; letter-spacing: -1px; }
+    .add-habit-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--ek-lime); color: #000; display: flex; align-items: center; justify-content: center; font-weight: 900; cursor: pointer; transition: 0.2s; }
+    .add-habit-btn:hover { transform: rotate(90deg); }
 
-    /* --- CHAT --- */
-    .chat-box { height: 500px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; padding-right: 10px; }
-    .msg { max-width: 80%; padding: 15px; border-radius: 18px; background: #1a1a1a; border: 1px solid var(--border); position: relative; font-size: 14px; }
-    .msg.own { align-self: flex-end; background: var(--card-blue); border: 0; }
-    .msg-user { font-size: 10px; font-weight: 800; margin-bottom: 5px; opacity: 0.6; display: flex; align-items: center; gap: 6px; }
-    .avatar-chat { width: 20px; height: 20px; border-radius: 50%; background: #333; }
-    .space-btn { padding: 10px 18px; border-radius: 100px; font-size: 12px; font-weight: 700; cursor: pointer; background: #111; border: 1px solid var(--border); color: var(--muted); margin-right: 8px; white-space: nowrap; transition: 0.2s; }
-    .space-btn.active { background: var(--card-blue); color: #fff; border-color: var(--card-blue); }
+    .tracker-section { overflow-x: auto; background: #050505; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 48px; }
+    .tracker-head, .tracker-row { display: grid; grid-template-columns: 240px repeat(31, 45px) 80px; align-items: center; min-width: 1600px; }
+    .tracker-head { height: 50px; background: #0a0a0a; font-size: 11px; font-weight: 900; text-transform: uppercase; color: var(--muted); letter-spacing: 1px; }
+    .tracker-row { border-bottom: 1px solid #111; height: 64px; }
+    .habit-title-cell { justify-content: flex-start !important; padding-left: 24px; font-weight: 800; font-size: 14px; text-transform: uppercase; }
+    
+    .checkbox { width: 24px; height: 24px; border: 2px solid #222; border-radius: 6px; cursor: pointer; transition: 0.2s; background: #000; }
+    .checkbox.active { background: var(--ek-blue); border-color: var(--ek-blue); box-shadow: 0 0 15px rgba(0, 36, 240, 0.4); }
+    .today-cell { background: var(--today-bg) !important; color: var(--ek-lime); }
 
-    @media (max-width: 768px) { .dash-grid { grid-template-columns: 1fr; } .tracker-row, .tracker-head { grid-template-columns: 150px repeat(31, 40px) 60px; } }
+    /* --- COMMUNITY --- */
+    .community-layout { display: grid; grid-template-columns: 260px 1fr; gap: 32px; }
+    .space-btn { 
+      width: 100%; border: 1px solid var(--border); border-radius: 14px; padding: 16px; 
+      text-align: left; font-size: 14px; font-weight: 800; cursor: pointer; background: #080808; color: #fff; margin-bottom: 10px;
+      text-transform: uppercase; letter-spacing: 1px; transition: 0.3s;
+    }
+    .space-btn.active { background: var(--ek-blue); border-color: var(--ek-blue); }
+    
+    .chat-box { height: 600px; overflow-y: auto; background: #030303; border-radius: 20px; padding: 24px; border: 1px solid var(--border); }
+    .msg { max-width: 85%; padding: 16px 20px; border-radius: 18px; background: #111; margin-bottom: 14px; border: 1px solid var(--border); }
+    .msg.own { background: var(--ek-blue); border: none; margin-left: auto; }
+    .msg-user { font-size: 11px; font-weight: 900; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+    .msg.own .msg-user { color: rgba(255,255,255,0.7); }
+
+    @media (max-width: 768px) {
+      .dashboard-grid, .community-layout { grid-template-columns: 1fr; }
+      .app { padding: 20px 12px; }
+      .nav-logo { margin-bottom: 15px; width: 100%; text-align: center; }
+      .big-number { font-size: 64px; }
+    }
   </style>
 </head>
 <body>
 
   <div id="authView" class="auth-shell">
     <div class="auth-card">
-      <h1>EK Habit Tracker</h1>
-      <input id="emailInput" class="input" type="email" placeholder="Email" />
-      <div style="position: relative;">
-        <input id="passwordInput" class="input" type="password" placeholder="Пароль (мін. 6 символів)" />
-        <span onclick="togglePassword()" style="position:absolute; right:15px; top:13px; cursor:pointer; font-size:18px; opacity:0.5;">👁️</span>
+      <h1>EK.</h1>
+      <p>DATA-DRIVEN HABIT TRACKING</p>
+      <input id="emailInput" class="input" type="email" placeholder="EMAIL ADDRESS" />
+      <div style="position: relative; margin-bottom: 24px;">
+        <input id="passwordInput" class="input" type="password" placeholder="PASSWORD (MIN. 6)" />
+        <div id="eyeIcon" onclick="togglePassword()" style="position: absolute; right: 14px; top: 18px; cursor: pointer; opacity: 0.5;">👁️</div>
       </div>
-      <div id="loginError" style="color:#ff4444; font-size:12px; margin-bottom:15px; min-height:15px;"></div>
-      <button id="loginBtn" class="button primary" onclick="signIn()">Увійти</button>
-      <button class="button dark" style="width:100%; margin-top:10px;" onclick="signUp()">Створити</button>
+      <div id="loginError" style="color:#ff4444; font-size:12px; margin-bottom:15px; min-height:15px; font-weight:700;"></div>
+      <button id="loginBtn" class="button primary" onclick="signIn()">SIGN IN</button>
+      <button class="button dark" style="width:100%; margin-top:12px;" onclick="signUp()">CREATE ACCOUNT</button>
     </div>
   </div>
 
   <div id="appView" class="app hidden">
-    <nav class="topbar">
-      <div class="nav-logo">EK Habit Tracker</div>
-      <div class="tab active" data-view="dashboardView">Dashboard</div>
-      <div class="tab" data-view="trackerView">Tracker</div>
-      <div class="tab" data-view="communityView">Community</div>
-      <div class="tab" data-view="supportView">Support</div>
-      <div class="tab" data-view="settingsView">Profile</div>
-      <button class="button dark" style="margin-left:auto; padding:8px 15px; font-size:11px;" onclick="logout()">Вихід</button>
-    </nav>
+    <div class="topbar">
+      <div class="nav-logo">EK.</div>
+      <div class="tab active" data-view="dashboardView">DASHBOARD</div>
+      <div class="tab" data-view="trackerView">TRACKER</div>
+      <div class="tab" data-view="communityView">COMMUNITY</div>
+      <div class="tab" data-view="settingsView">SETTINGS</div>
+      <button class="button dark" style="padding: 10px 20px; font-size: 12px;" onclick="logout()">LOGOUT</button>
+    </div>
 
     <div id="dashboardView" class="view active">
-      <div class="dash-grid">
-        <div>
-          <div id="streakPanel" class="side-block" style="background: var(--card-blue);">🔥 0 DAYS STREAK</div>
-          <div id="levelPanel" class="side-block" style="background: var(--accent-lime); color:#000;">🏆 NOVICE LEVEL 🥚</div>
-          <div class="card" style="text-align: center;">
-            <div style="color:var(--muted); font-size:10px; text-transform:uppercase; font-weight:800; letter-spacing:1px; margin-bottom:8px;">Active Days</div>
-            <div id="activeVal" style="font-size:48px; font-weight:800;">0</div>
-          </div>
-          <div class="card">
-            <div style="font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase;">Target Focus</div>
-            <div class="focus-chips">
-              <div class="focus-chip" data-val="MOVE" onclick="toggleFocus('MOVE')">🏃 MOVE</div>
-              <div class="focus-chip" data-val="MIND" onclick="toggleFocus('MIND')">🧠 MIND</div>
-              <div class="focus-chip" data-val="CREATE" onclick="toggleFocus('CREATE')">🎨 CREATE</div>
-              <div class="focus-chip" data-val="SLOW" onclick="toggleFocus('SLOW')">🌿 SLOW</div>
+       <div class="dashboard-grid">
+         <div>
+            <div class="card stat-hero">
+              <div class="stat-label">Current Streak</div>
+              <div id="streakPanel" class="big-number">0</div>
+              <div id="levelPanel" style="font-weight: 800; text-transform: uppercase; font-size: 14px;">NOVICE LEVEL</div>
             </div>
-          </div>
-        </div>
-        <div class="card">
-          <div id="ringsWrap" class="ring-grid"></div>
-        </div>
-      </div>
+            <div class="card" style="text-align:center;">
+              <div class="stat-label">Active Days</div>
+              <div id="activeVal" class="big-number" style="color:#fff;">0</div>
+            </div>
+            <div class="card">
+              <div class="stat-label" style="margin-bottom: 15px; display: block;">Focus Areas</div>
+              <div class="focus-chips" id="focusChipsContainer">
+                <div class="focus-chip" data-val="MOVE" onclick="toggleFocusChip('MOVE')">MOVE</div>
+                <div class="focus-chip" data-val="MIND" onclick="toggleFocusChip('MIND')">MIND</div>
+                <div class="focus-chip" data-val="CREATE" onclick="toggleFocusChip('CREATE')">CREATE</div>
+                <div class="focus-chip" data-val="SLOW" onclick="toggleFocusChip('SLOW')">SLOW</div>
+              </div>
+            </div>
+         </div>
+         <div id="ringsWrap" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px;"></div>
+       </div>
     </div>
 
     <div id="trackerView" class="view">
@@ -134,41 +192,36 @@
     </div>
 
     <div id="communityView" class="view">
-      <div class="card">
-        <div id="spacesWrap" style="display:flex; overflow-x:auto; margin-bottom:20px; padding-bottom:10px;"></div>
-        <div id="postsWrap" class="chat-box"></div>
-        <div style="margin-top:20px; display:flex; gap:12px; align-items:center;">
-          <label class="button dark" style="padding:12px;">📎<input type="file" id="postFile" class="hidden" onchange="getEl('fileStat').innerText = this.files[0].name"></label>
-          <textarea id="postInput" class="textarea" style="margin:0; height:50px; padding-top:14px;" placeholder="Що у вас нового?"></textarea>
-          <button class="button blue" style="width:100px; margin:0;" onclick="sendPost()">Надіслати</button>
-        </div>
-        <div id="fileStat" style="font-size:10px; color:var(--accent-lime); margin-top:5px;"></div>
-      </div>
-    </div>
-
-    <div id="supportView" class="view">
-      <div class="card" style="max-width: 650px; margin: 0 auto;">
-        <h2 style="margin-top:0">Support</h2>
-        <textarea id="supportMsg" class="textarea" placeholder="Напишіть своє запитання..."></textarea>
-        <button class="button primary" onclick="sendSupport()">Відправити</button>
-        <div id="adminPanel" class="hidden" style="margin-top:30px; border-top:1px solid var(--border); padding-top:20px;">
-          <h3 style="color:var(--accent-lime); font-size:14px;">👑 Адмін-панель (Тікети)</h3>
-          <div id="adminTickets" style="display:flex; flex-direction:column; gap:10px;"></div>
+      <div class="community-layout">
+        <div id="spacesWrap" class="spaces-sidebar"></div>
+        <div>
+          <div class="card" style="padding:0; background:transparent; border:none;">
+            <div id="postsWrap" class="chat-box"></div>
+            <div style="margin-top:24px; display:flex; gap:12px; align-items:flex-end;">
+              <label class="button dark" style="padding:16px; border-radius:12px; cursor:pointer;">📎<input type="file" id="fileInput" class="hidden" onchange="updateFileName()"></label>
+              <div style="flex-grow:1;">
+                <textarea id="postInput" class="textarea" style="margin:0; min-height:56px;" placeholder="SHARE YOUR SUCCESS..."></textarea>
+                <div id="fileNameDisplay" style="font-size: 11px; color: var(--ek-lime); margin-top:5px; font-weight:700;"></div>
+              </div>
+              <button id="sendBtn" class="button blue" style="background:var(--ek-blue); color:#fff;" onclick="createPost()">SEND</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
     <div id="settingsView" class="view">
-      <div class="card" style="max-width: 500px; margin: 0 auto; text-align: center;">
-        <div style="position: relative; width: 110px; height: 110px; margin: 0 auto 25px;">
-          <img id="profileAvatar" style="width:110px; height:110px; border-radius:50%; object-fit:cover; border:2px solid var(--card-blue); background:#111;" src="https://ui-avatars.com/api/?name=EK">
-          <label style="position:absolute; bottom:0; right:0; background:var(--card-blue); width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; border:3px solid var(--bg);">
-            📷<input type="file" class="hidden" id="avatarFile" onchange="uploadAvatar()">
-          </label>
-        </div>
-        <input id="profileName" class="input" style="text-align:center;" placeholder="Ваше ім'я" onchange="saveProfileName()">
-        <p style="color: var(--muted); font-size: 13px;" id="userEmailLabel"></p>
-      </div>
+       <div class="card">
+           <h2 style="font-size:32px; font-weight:900; margin:0 0 24px 0; letter-spacing: -1.5px;">SETTINGS</h2>
+           <div class="stat-label">Account Email</div>
+           <div id="userEmailLabel" style="font-size: 18px; font-weight: 700; margin-bottom: 24px; color: var(--ek-blue);"></div>
+           <button class="button primary" style="width:auto;" onclick="alert('Notifications enabled!')">ENABLE NOTIFICATIONS</button>
+           
+           <div id="adminSection" class="hidden" style="margin-top:48px; border-top:1px solid #222; padding-top:32px;">
+              <div class="stat-label" style="color:var(--ek-lime); margin-bottom: 20px; display:block;">👑 Admin Statistics</div>
+              <div id="adminStats" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:20px;"></div>
+           </div>
+       </div>
     </div>
   </div>
 
@@ -179,167 +232,207 @@
 
     const OWNER_EMAIL = "yaninastonkus@gmail.com"; 
 
-    let user = null, habits = [], checks = [], posts = [], profile = {}, curSpace = "GENERAL", focuses = [];
-    const cats = [
-      { id: 'MOVE', color: '#0024f0', emoji: '🏃' },
-      { id: 'MIND', color: '#10b981', emoji: '🧠' },
-      { id: 'CREATE', color: '#f43f5e', emoji: '🎨' },
-      { id: 'SLOW', color: '#8b5cf6', emoji: '🌿' }
-    ];
+    let currentUser = null, categories = [], habits = [], checkIns = [], posts = [], selectedSpace = "GENERAL", selectedFocuses = [];
+    const TODAY_DAY = new Date().getDate();
 
-    async function bootstrap() {
+    const META = { 
+      MOVE: { color: "#0024f0", emoji: "🏃" }, 
+      MIND: { color: "#0024f0", emoji: "🧠" }, 
+      CREATE: { color: "#0024f0", emoji: "🎨" }, 
+      SLOW: { color: "#0024f0", emoji: "🌿" },
+      GENERAL: { color: "#333", emoji: "💬" }
+    };
+    const DEFAULT_HABITS = { MOVE: ["Walk", "Stretching"], MIND: ["Journaling", "Reading"], CREATE: ["Sketching"], SLOW: ["Tea Time"] };
+
+    const getEl = id => document.getElementById(id);
+    function getMeta(slug) { return META[slug?.toUpperCase()] || { emoji: "📌", color: "#333" }; }
+
+    function updateFileName() { const file = getEl('fileInput').files[0]; getEl('fileNameDisplay').innerText = file ? "ATTACHED: " + file.name : ''; }
+    function togglePassword() { const input = getEl('passwordInput'); input.type = (input.type === 'password') ? 'text' : 'password'; }
+
+    async function signUp(){
+      const email = getEl('emailInput').value.trim(); const password = getEl('passwordInput').value;
+      if(!email || password.length < 6) return alert("Min 6 chars");
+      const { error } = await sb.auth.signUp({ email, password });
+      if(error) alert(error.message); else alert("Account created! Sign in now.");
+    }
+    async function signIn(){
+      getEl('loginBtn').innerText = "WAITING...";
+      const { error } = await sb.auth.signInWithPassword({ email: getEl('emailInput').value, password: getEl('passwordInput').value });
+      if(error) { alert(error.message); getEl('loginBtn').innerText = "SIGN IN"; } else bootstrap();
+    }
+    async function logout(){ await sb.auth.signOut(); location.reload(); }
+
+    async function bootstrap(){
       const { data } = await sb.auth.getSession();
-      user = data.session?.user; if(!user) return;
-      getEl('authView').classList.add('hidden');
-      getEl('appView').classList.remove('hidden');
-      getEl('userEmailLabel').innerText = user.email;
-      if(user.email === OWNER_EMAIL) { getEl('adminPanel').classList.remove('hidden'); loadTickets(); }
-      await refreshData();
-    }
-
-    async function refreshData() {
-      const [h, c, pr, po] = await Promise.all([
-        sb.from('habits').select('*').eq('user_id', user.id),
-        sb.from('check_ins').select('*').eq('user_id', user.id),
-        sb.from('profiles').select('*').eq('id', user.id).single(),
-        sb.from('community_posts').select('*').order('created_at')
-      ]);
-      habits = h.data || []; checks = c.data || []; profile = pr.data || {}; posts = po.data || [];
-      focuses = (profile.focus_text || "").split(',').filter(Boolean);
-      
-      if(habits.length === 0) {
-        await sb.from('habits').insert(cats.map(cat => ({user_id:user.id, title:`Daily ${cat.id}`, category_id:cat.id})));
-        return refreshData();
-      }
+      currentUser = data.session?.user; if(!currentUser) return;
+      getEl('authView').classList.add('hidden'); getEl('appView').classList.remove('hidden');
+      getEl('userEmailLabel').innerText = currentUser.email;
+      if(currentUser.email === OWNER_EMAIL) getEl('adminSection').classList.remove('hidden');
+      await loadCategories(); await syncHabits(); await loadCheckIns(); await loadPosts(); await loadProfile();
       renderAll();
     }
 
-    // --- TRACKER LOGIC ---
-    async function toggleCheck(hId, day) {
-      const dStr = new Date(new Date().getFullYear(), new Date().getMonth(), day).toISOString().split('T')[0];
-      const exist = checks.find(c => c.habit_id === hId && c.check_in_date === dStr);
+    async function loadProfile() { 
+      const { data } = await sb.from('profiles').select('focus_text').eq('id', currentUser.id).single(); 
+      if(data?.focus_text) { selectedFocuses = data.focus_text.split(',').filter(Boolean); updateFocusUI(); } 
+    }
+    function toggleFocusChip(val) { 
+      const idx = selectedFocuses.indexOf(val); 
+      if (idx > -1) selectedFocuses.splice(idx, 1); else selectedFocuses.push(val); 
+      updateFocusUI(); saveFocus(); 
+    }
+    function updateFocusUI() { document.querySelectorAll('.focus-chip').forEach(c => selectedFocuses.includes(c.dataset.val) ? c.classList.add('active') : c.classList.remove('active')); renderDashboard(); }
+    async function saveFocus() { await sb.from('profiles').upsert({ id: currentUser.id, focus_text: selectedFocuses.join(',') }); }
+
+    async function loadCategories(){ 
+      const { data } = await sb.from('categories').select('*').order('sort_order'); 
+      categories = data || []; 
+    }
+    
+    async function syncHabits(){
+      const { data } = await sb.from('habits').select('*').eq('user_id', currentUser.id);
+      if(!data || data.length === 0){
+        let ins = []; 
+        categories.forEach(c => (DEFAULT_HABITS[c.slug?.toUpperCase()] || []).forEach(t => ins.push({ user_id:currentUser.id, category_id:c.id, title:t })));
+        if(ins.length) await sb.from('habits').insert(ins);
+      }
+      const { data: fresh } = await sb.from('habits').select('*').eq('user_id', currentUser.id);
+      habits = fresh || [];
+    }
+
+    async function addNewHabit(catId) {
+      const title = prompt("ENTER NEW HABIT:");
+      if(!title) return;
+      const { error } = await sb.from('habits').insert({ user_id: currentUser.id, category_id: catId, title: title });
+      if(!error) { await syncHabits(); renderTracker(); }
+    }
+
+    async function loadCheckIns(){ const { data } = await sb.from('check_ins').select('*').eq('user_id', currentUser.id); checkIns = data || []; }
+    async function loadPosts(){ const { data } = await sb.from('community_posts').select('*').order('created_at', { ascending: true }); posts = data || []; renderCommunity(); }
+
+    async function toggleCheck(habitId, day){
+      const dateStr = new Date(new Date().getFullYear(), new Date().getMonth(), day+1).toISOString().split('T')[0];
+      const exist = checkIns.find(c => c.habit_id === habitId && c.check_in_date === dateStr);
       if(exist) await sb.from('check_ins').delete().eq('id', exist.id);
-      else await sb.from('check_ins').insert({user_id:user.id, habit_id:hId, check_in_date:dStr});
-      await refreshData();
+      else await sb.from('check_ins').insert({ user_id:currentUser.id, habit_id:habitId, check_in_date:dateStr });
+      await loadCheckIns(); renderAll();
     }
 
-    async function addHabit(catId) {
-      const t = prompt("Назва нової звички:");
-      if(t) { await sb.from('habits').insert({user_id:user.id, title:t, category_id:catId}); await refreshData(); }
+    async function createPost(){
+      const body = getEl('postInput').value.trim(); const file = getEl('fileInput').files[0];
+      if(!body && !file) return;
+      try {
+          let url = null;
+          if(file){
+            const fName = `${currentUser.id}/${Date.now()}_${file.name}`;
+            const { error: upErr } = await sb.storage.from('community').upload(fName, file);
+            if(!upErr) url = sb.storage.from('community').getPublicUrl(fName).data.publicUrl;
+          }
+          const catId = selectedSpace === "GENERAL" ? null : categories.find(c => c.slug === selectedSpace)?.id;
+          await sb.from('community_posts').insert({ user_id: currentUser.id, category_id: catId, body, media_url: url, user_email: currentUser.email });
+          getEl('postInput').value = ''; getEl('fileInput').value = ''; getEl('fileNameDisplay').innerText = '';
+          await loadPosts();
+      } catch(e) { alert(e.message); }
     }
 
-    async function deleteHabit(id) { if(confirm("Видалити?")) { await sb.from('habits').delete().eq('id', id); await refreshData(); } }
-
-    async function toggleFocus(id) {
-      const idx = focuses.indexOf(id);
-      if(idx > -1) focuses.splice(idx, 1); else focuses.push(id);
-      await sb.from('profiles').upsert({ id: user.id, focus_text: focuses.join(',') });
-      renderAll();
-    }
-
-    // --- COMMUNITY & SUPPORT ---
-    async function sendPost() {
-      const b = getEl('postInput').value.trim(); const file = getEl('postFile').files[0];
-      if(!b && !file) return;
-      let url = null;
-      if(file) {
-        const path = `${user.id}/c_${Date.now()}.png`;
-        await sb.storage.from('community').upload(path, file);
-        url = sb.storage.from('community').getPublicUrl(path).data.publicUrl;
-      }
-      await sb.from('community_posts').insert({
-        user_id: user.id, body: b, space: curSpace, media_url: url, user_email: profile.username || user.email
-      });
-      getEl('postInput').value = ""; getEl('postFile').value = ""; getEl('fileStat').innerText = "";
-      await refreshData();
-    }
-
-    function setSpace(s) { curSpace = s; document.querySelectorAll('.space-btn').forEach(b => b.classList.toggle('active', b.innerText.includes(s))); renderChat(); }
-
-    async function sendSupport() {
-      const m = getEl('supportMsg').value; if(!m) return;
-      await sb.from('support_tickets').insert({user_id:user.id, user_email:user.email, message:m});
-      alert("Відправлено!"); getEl('supportMsg').value = "";
-    }
-
-    async function loadTickets() {
-      const { data } = await sb.from('support_tickets').select('*').order('created_at', {ascending:false});
-      getEl('adminTickets').innerHTML = (data || []).map(t => `<div class="msg" style="font-size:12px;"><b>${t.user_email}</b>: ${t.message}</div>`).join('');
-    }
-
-    // --- PROFILE ---
-    async function uploadAvatar() {
-      const file = getEl('avatarFile').files[0];
-      const path = `${user.id}/av_${Date.now()}.png`;
-      await sb.storage.from('avatars').upload(path, file);
-      const url = sb.storage.from('avatars').getPublicUrl(path).data.publicUrl;
-      await sb.from('profiles').upsert({ id: user.id, avatar_url: url });
-      refreshData();
-    }
-    async function saveProfileName() { await sb.from('profiles').upsert({ id: user.id, username: getEl('profileName').value }); }
-
-    // --- RENDERERS ---
-    function renderAll() {
-      const streak = calculateStreak();
-      getEl('streakPanel').innerText = `🔥 ${streak} DAYS STREAK`;
-      getEl('levelPanel').innerText = streak > 10 ? '🏆 WARRIOR LEVEL' : '🏆 NOVICE LEVEL 🥚';
-      getEl('activeVal').innerText = [...new Set(checks.map(c => c.check_in_date))].length;
-      
-      const today = new Date().getDate();
-      document.querySelectorAll('.focus-chip').forEach(c => c.classList.toggle('active', focuses.includes(c.dataset.val)));
-
-      getEl('ringsWrap').innerHTML = cats.map(cat => {
-        const catHabits = habits.filter(h => h.category_id === cat.id);
-        const done = checks.filter(c => catHabits.some(h => h.id === c.habit_id)).length;
-        const perc = catHabits.length ? Math.round((done / (catHabits.length * 31)) * 100) : 0;
-        const isFoc = focuses.includes(cat.id);
-        return `<div class="card" style="text-align:center; padding:15px; ${isFoc?'border-color:var(--accent-lime)':''}"><div style="width:60px; height:60px; border-radius:50%; margin:0 auto 10px; background:conic-gradient(${cat.color} ${perc*3.6}deg, #222 0deg); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:12px;">${perc}%</div><div style="font-size:10px; font-weight:800; color:var(--muted)">${cat.id}</div></div>`;
-      }).join('');
-
-      getEl('trackerWrap').innerHTML = cats.map(cat => {
-        const catH = habits.filter(h => h.category_id === cat.id);
-        return `<div style="margin-bottom:35px;"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><span style="font-weight:800; font-size:20px; color:${cat.color}">${cat.emoji} ${cat.id}</span><button class="button dark" style="padding:6px 12px; font-size:11px;" onclick="addHabit('${cat.id}')">+ ADD</button></div><div class="tracker-box"><div class="tracker-head"><div class="habit-title">Habit</div>${Array.from({length:31}, (_,i)=>`<div class="${i+1===today?'today-cell':''}">${i+1}</div>`).join('')}<div>%</div></div>${catH.map(h => {
-          const hChecks = checks.filter(c => c.habit_id === h.id);
-          return `<div class="tracker-row"><div class="tracker-cell habit-title">${h.title} <span style="opacity:0.2; cursor:pointer;" onclick="deleteHabit('${h.id}')">✕</span></div>${Array.from({length:31}, (_, i) => {
-            const active = hChecks.some(c => new Date(c.check_in_date).getDate() === i+1);
-            return `<div class="tracker-cell ${i+1===today?'today-cell':''}"><div class="square ${active?'active':''}" onclick="toggleCheck('${h.id}',${i+1})"></div></div>`;
-          }).join('')}<div class="tracker-cell" style="font-weight:800; color:${cat.color}">${Math.round((hChecks.length/31)*100)}%</div></div>`;
-        }).join('')}</div></div>`;
-      }).join('');
-
-      let spHtml = `<button class="space-btn ${curSpace==='GENERAL'?'active':''}" onclick="setSpace('GENERAL')">💬 GENERAL</button>`;
-      cats.forEach(c => spHtml += `<button class="space-btn ${curSpace===c.id?'active':''}" onclick="setSpace('${c.id}')">${c.emoji} ${c.id}</button>`);
-      getEl('spacesWrap').innerHTML = spHtml;
-      renderChat();
-      if(profile.avatar_url) getEl('profileAvatar').src = profile.avatar_url;
-      getEl('profileName').value = profile.username || "";
-    }
-
-    function renderChat() {
-      const filtered = posts.filter(p => (p.space || 'GENERAL') === curSpace);
-      getEl('postsWrap').innerHTML = filtered.map(p => `<div class="msg ${p.user_id===user.id?'own':''}"><div class="msg-user"><img class="avatar-chat" src="https://ui-avatars.com/api/?name=${p.user_email}"><span>${p.user_email}</span></div><div>${p.body}</div>${p.media_url ? `<img src="${p.media_url}" style="width:100%; border-radius:12px; margin-top:10px;">` : ''}</div>`).join('');
-      getEl('postsWrap').scrollTop = 9999;
-    }
-
-    function calculateStreak() {
-      const dates = [...new Set(checks.map(c => c.check_in_date))].sort().reverse();
-      if(!dates.length) return 0;
-      let s = 0, now = new Date().toISOString().split('T')[0];
-      for(let d of dates) { if(d === now || d === new Date(Date.now()-86400000).toISOString().split('T')[0]) { s++; now = new Date(new Date(d).getTime()-86400000).toISOString().split('T')[0]; } else break; }
+    function getStreak(){
+      const dates = [...new Set(checkIns.map(c => c.check_in_date))].sort().reverse();
+      let s = 0, check = new Date().toISOString().split('T')[0];
+      for(let d of dates){ if(d === check || d === new Date(Date.now()-86400000).toISOString().split('T')[0]){ s++; check = new Date(new Date(d).getTime()-86400000).toISOString().split('T')[0]; } else break; }
       return s;
     }
 
-    async function signIn() { const { error } = await sb.auth.signInWithPassword({ email: getEl('emailInput').value, password: getEl('passwordInput').value }); if(!error) bootstrap(); else getEl('loginError').innerText = error.message; }
-    async function signUp() { const { error } = await sb.auth.signUp({ email: getEl('emailInput').value, password: getEl('passwordInput').value }); if(!error) alert("Check email!"); else getEl('loginError').innerText = error.message; }
-    async function logout() { await sb.auth.signOut(); location.reload(); }
-    function togglePassword() { const i = getEl('passwordInput'); i.type = i.type==='password'?'text':'password'; }
-    const getEl = id => document.getElementById(id);
+    function renderAll(){
+      renderDashboard(); renderTracker(); renderCommunity(); renderAdmin(); bindTabs();
+    }
 
-    document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
-      document.querySelectorAll('.tab, .view').forEach(el => el.classList.remove('active'));
-      t.classList.add('active'); getEl(t.dataset.view).classList.add('active');
-    });
+    function renderDashboard(){
+      getEl('streakPanel').innerText = getStreak();
+      getEl('activeVal').innerText = [...new Set(checkIns.map(c => c.check_in_date))].length;
+      getEl('levelPanel').innerText = checkIns.length < 30 ? 'NOVICE LEVEL' : 'WARRIOR LEVEL';
+      
+      let html = '';
+      categories.forEach(cat => {
+        const hbits = habits.filter(h => h.category_id === cat.id);
+        const done = checkIns.filter(c => hbits.some(h => h.id === c.habit_id)).length;
+        const perc = hbits.length ? Math.round((done / (hbits.length * 31)) * 100) : 0;
+        const isFoc = selectedFocuses.includes(cat.slug);
+        html += `
+          <div class="ring-card" style="${isFoc ? 'border-color:var(--ek-lime)' : ''}">
+            <div class="ring" style="background: conic-gradient(var(--ek-blue) ${perc*3.6}deg, #111 0deg);">
+              <div class="ring-value">${perc}%</div>
+            </div>
+            <div class="stat-label">${cat.slug}</div>
+          </div>`;
+      });
+      getEl('ringsWrap').innerHTML = html;
+    }
 
+    function renderTracker(){
+      getEl('trackerWrap').innerHTML = categories.map(cat => {
+        const hbits = habits.filter(h => h.category_id === cat.id);
+        return `
+          <div class="category-header">
+            <div class="category-title">${cat.slug}</div>
+            <div class="add-habit-btn" onclick="addNewHabit('${cat.id}')">+</div>
+          </div>
+          <div class="tracker-section">
+            <div class="tracker-head">
+              <div class="habit-title-cell">HABIT</div>
+              ${Array.from({length:31}, (_,i)=>`<div class="${i+1===TODAY_DAY?'today-cell':''}">${i+1}</div>`).join('')}
+              <div>%</div>
+            </div>
+            ${hbits.map(h => {
+              const hChecks = checkIns.filter(c => c.habit_id === h.id);
+              return `<div class="tracker-row">
+                <div class="habit-title-cell">${h.title}</div>
+                ${Array.from({length:31}, (_,i)=>{
+                  const dStr = new Date(new Date().getFullYear(), new Date().getMonth(), i+2).toISOString().split('T')[0];
+                  return `<div class="${i+1===TODAY_DAY?'today-cell':''}">
+                    <div class="checkbox ${hChecks.some(c=>c.check_in_date===dStr)?'active':''}" onclick="toggleCheck('${h.id}', ${i+1})"></div>
+                  </div>`;
+                }).join('')}
+                <div style="font-weight:900; color:var(--ek-blue); font-size:12px;">${Math.round((hChecks.length/31)*100)}%</div>
+              </div>`;
+            }).join('')}
+          </div>`;
+      }).join('');
+    }
+
+    function renderCommunity(){
+      let spacesHtml = `<button class="space-btn ${selectedSpace==='GENERAL'?'active':''}" onclick="selectedSpace='GENERAL'; renderCommunity();">💬 GENERAL</button>`;
+      spacesHtml += categories.map(cat => `<button class="space-btn ${selectedSpace===cat.slug?'active':''}" onclick="selectedSpace='${cat.slug}'; renderCommunity();">${getMeta(cat.slug).emoji} ${cat.slug}</button>`).join('');
+      getEl('spacesWrap').innerHTML = spacesHtml;
+
+      const filtered = posts.filter(p => {
+        if(selectedSpace === "GENERAL") return p.category_id === null;
+        return categories.find(c => c.id === p.category_id)?.slug === selectedSpace;
+      });
+
+      getEl('postsWrap').innerHTML = filtered.map(p => `
+        <div class="msg ${p.user_id===currentUser.id?'own':''}">
+          <div class="msg-user">${p.user_email}</div>
+          <div style="font-weight:500;">${p.body || ''}</div>
+          ${p.media_url ? `<img src="${p.media_url}" style="width:100%; border-radius:12px; margin-top:12px; border:1px solid var(--border);">` : ''}
+        </div>`).join('');
+      getEl('postsWrap').scrollTop = getEl('postsWrap').scrollHeight;
+    }
+
+    async function renderAdmin() { 
+      if(currentUser?.email !== OWNER_EMAIL) return; 
+      const { data } = await sb.from('community_posts').select('category_id'); 
+      const s = {}; data?.forEach(p => { const c = categories.find(x => x.id === p.category_id); const slug = c ? c.slug : 'General'; s[slug] = (s[slug] || 0) + 1; }); 
+      getEl('adminStats').innerHTML = Object.entries(s).map(([slug, count]) => `<div class="card" style="padding:20px; text-align:center;"><div class="stat-label" style="margin-bottom:10px;">${slug}</div><div style="font-size:24px; font-weight:900">${count}</div></div>`).join(''); 
+    }
+
+    function bindTabs(){ 
+      document.querySelectorAll('.tab').forEach(t => t.onclick = () => { 
+        document.querySelectorAll('.tab, .view').forEach(x => x.classList.remove('active')); 
+        t.classList.add('active'); 
+        getEl(t.dataset.view).classList.add('active'); 
+      }); 
+    }
     bootstrap();
   </script>
 </body>
