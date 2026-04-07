@@ -960,8 +960,36 @@
     }
 
     async function loadCategories(){
-      const { data } = await sb.from('categories').select('*').order('sort_order');
+      let { data, error } = await sb.from('categories').select('*').order('sort_order');
+      if(error){
+        alert(error.message);
+        categories = [];
+        return;
+      }
+
       categories = data || [];
+
+      const hasGeneral = categories.some(c => (c.slug || '').toUpperCase() === 'GENERAL');
+      if(!hasGeneral){
+        const maxSort = categories.length ? Math.max(...categories.map(c => Number(c.sort_order) || 0)) : 0;
+        const { error: insertError } = await sb.from('categories').insert({
+          slug: 'GENERAL',
+          sort_order: maxSort + 1
+        });
+
+        if(insertError){
+          alert('Не вдалося автоматично створити GENERAL: ' + insertError.message);
+          return;
+        }
+
+        const { data: refreshed, error: refreshError } = await sb.from('categories').select('*').order('sort_order');
+        if(refreshError){
+          alert(refreshError.message);
+          categories = [];
+          return;
+        }
+        categories = refreshed || [];
+      }
     }
 
     async function syncHabits(){
@@ -1060,12 +1088,13 @@
         }
 
         const generalCategory = categories.find(c => (c.slug || '').toUpperCase() === 'GENERAL');
+        const generalCategory = categories.find(c => (c.slug || '').toUpperCase() === 'GENERAL');
         const catId = selectedSpace === 'GENERAL'
           ? generalCategory?.id
           : (categories.find(c => c.slug === selectedSpace)?.id ?? null);
 
         if(!catId) {
-          alert('Не знайдена категорія для цього чату. Перевір categories у Supabase.');
+          alert('Не знайдена категорія для цього чату. Онови сторінку.');
           return;
         }
 
