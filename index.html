@@ -18,7 +18,8 @@
     .auth-shell{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;}
     .auth-card{width:100%; max-width:560px; background:#f7f8fc; border-radius:28px; padding:32px; box-shadow:var(--shadow); text-align:center;}
     .input,.textarea{width:100%; border:1px solid var(--border); border-radius:14px; padding:14px 16px; font-size:16px; background:#fff;}
-    .button{border:0; border-radius:14px; padding:14px 16px; font-size:16px; font-weight:700; cursor:pointer;}
+    .button{border:0; border-radius:14px; padding:14px 16px; font-size:16px; font-weight:700; cursor:pointer; transition: 0.2s;}
+    .button:active{transform: scale(0.98);}
     .button.primary{background:var(--blue);color:#fff}
     .button.green{background:var(--green);color:#fff}
     .button.dark{background:var(--dark);color:#fff}
@@ -36,7 +37,7 @@
     .ring-value{font-size:20px; font-weight:800; position:absolute; z-index:10; top:50%; left:50%; transform:translate(-50%, -50%);}
     .side-block{color:#fff; min-height:70px; display:flex; align-items:center; justify-content:center; text-align:center; padding:15px; font-size:17px; font-weight:700; border-radius:18px; margin-bottom:10px;}
 
-    /* Tracker Grid Fix */
+    /* Tracker Grid */
     .tracker-section{overflow-x:auto; margin-bottom:20px; background:#fff; border-radius:18px; border:1px solid var(--border);}
     .tracker-head, .tracker-row {
       display: grid;
@@ -44,10 +45,10 @@
       align-items: center;
       min-width: 1350px;
     }
-    .tracker-head { color:#fff; font-size:12px; font-weight:700; height:40px; }
-    .tracker-head > div, .tracker-row > div { display: flex; align-items: center; justify-content: center; height: 100%; border-right: 1px solid #f0f0f0; }
+    .tracker-head { color:#fff; font-size:12px; font-weight:700; height:40px; background: #333; }
+    .tracker-head > div, .tracker-row > div { display: flex; align-items: center; justify-content: center; height: 100%; border-right: 1px solid #f4f4f4; }
     .tracker-row { border-bottom: 1px solid var(--border); height:45px; font-size:14px; }
-    .today-cell { background: var(--today) !important; color: var(--text) !important; font-weight: 800; }
+    .today-cell { background: var(--today) !important; color: #000 !important; font-weight: 800; }
     .checkbox{width:20px; height:20px; border:2px solid #cbd5e1; border-radius:6px; cursor:pointer;}
 
     /* Community */
@@ -65,216 +66,4 @@
         <input id="emailInput" class="input" type="email" placeholder="твій email" style="margin-bottom:10px;"/>
         <input id="passwordInput" class="input" type="password" placeholder="пароль" />
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:15px;">
-          <button class="button primary" onclick="signIn()">Увійти</button>
-          <button class="button green" onclick="signUp()">Зареєструватися</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div id="appView" class="app hidden">
-    <div class="topbar">
-      <div class="tab active" data-view="dashboardView">Dashboard</div>
-      <div class="tab" data-view="trackerView">Tracker</div>
-      <div class="tab" data-view="communityView">Community</div>
-      <div class="tab" data-view="settingsView">Settings</div>
-      <button class="button dark" onclick="logout()">Logout</button>
-    </div>
-
-    <div id="dashboardView" class="view active">
-       <div style="display:grid; grid-template-columns:300px 1fr; gap:20px;">
-         <div>
-            <div id="levelPanel" class="side-block" style="background:var(--green)">🏆 LEVEL: Novice 🥚</div>
-            <div id="streakPanel" class="side-block" style="background:#ff9800">🔥 STREAK: 0 DAYS</div>
-            <div id="motivationPanel" class="side-block" style="background:var(--blue)">✨ Ready for XP?</div>
-            <div class="card" style="text-align:center">
-              <div style="color:var(--muted)">Active Days</div>
-              <div id="activeVal" style="font-size:28px; font-weight:800">0</div>
-            </div>
-         </div>
-         <div id="ringsWrap" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:15px;"></div>
-       </div>
-    </div>
-
-    <div id="trackerView" class="view">
-      <div id="trackerWrap"></div>
-    </div>
-
-    <div id="communityView" class="view">
-      <div class="community-layout">
-        <div id="spacesWrap"></div>
-        <div>
-          <div class="card">
-            <h3 id="communityTitle" style="margin-top:0">Community</h3>
-            <textarea id="postInput" class="textarea" placeholder="Напиши про перемогу..."></textarea>
-            <div style="margin-top:10px; display:flex; gap:10px; align-items:center;">
-               <input type="file" id="fileInput" style="font-size:12px; flex:1;">
-               <button class="button primary" onclick="createPost()">Опублікувати</button>
-            </div>
-          </div>
-          <div id="postsWrap"></div>
-        </div>
-      </div>
-    </div>
-
-    <div id="settingsView" class="view">
-       <div class="card">
-           <h2>Settings</h2>
-           <p>Email: <strong id="userEmailLabel"></strong></p>
-           <button class="button primary" onclick="enableNotifications()" style="margin-bottom:10px;">🔔 Увімкнути сповіщення</button><br>
-           <button class="button dark" onclick="logout()">Logout</button>
-       </div>
-    </div>
-  </div>
-
-  <script>
-    const SUPABASE_URL = "https://vnbcelodaueayobcvkjy.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_yfG2qoR_Cx8QKwEbNpzeUA_4VNjItCT";
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    let currentUser, categories = [], habits = [], checkIns = [], posts = [], selectedSpace = "MOVE";
-    const TODAY_DAY = new Date().getDate();
-
-    const META = {
-      MOVE: { color: "#2F39F6", emoji: "🏃" },
-      MIND: { color: "#7EA765", emoji: "🧠" },
-      CREATE: { color: "#E3AED0", emoji: "🎨" },
-      SLOW: { color: "#6F87D8", emoji: "🌿" }
-    };
-
-    const DEFAULT_HABITS = {
-      MOVE: ["10–20 min walk", "Stretching", "Short workout"],
-      MIND: ["Journaling", "Reading", "Meditation"],
-      CREATE: ["Sketching", "Drawing", "New recipe"],
-      SLOW: ["No phone tea", "Early bed", "Self-care"]
-    };
-
-    async function signUp(){
-      const { error } = await sb.auth.signUp({ email: emailInput.value, password: passwordInput.value });
-      if(error) alert(error.message); else alert("Перевір пошту!");
-    }
-    async function signIn(){
-      const { error } = await sb.auth.signInWithPassword({ email: emailInput.value, password: passwordInput.value });
-      if(error) alert(error.message); else bootstrap();
-    }
-    function logout(){ sb.auth.signOut(); location.reload(); }
-
-    async function bootstrap(){
-      const { data } = await sb.auth.getSession();
-      currentUser = data.session?.user;
-      if(!currentUser) return;
-      document.getElementById('authView').classList.add('hidden');
-      document.getElementById('appView').classList.remove('hidden');
-      userEmailLabel.innerText = currentUser.email;
-
-      await loadCategories();
-      await cleanHabits();
-      await loadCheckIns();
-      await loadPosts();
-      renderAll();
-    }
-
-    async function loadCategories(){ const { data } = await sb.from('categories').select('*').order('sort_order'); categories = data || []; }
-    
-    async function cleanHabits(){
-      const { data } = await sb.from('habits').select('*').eq('user_id', currentUser.id);
-      let seen = new Set(), dups = [];
-      data?.forEach(h => seen.has(h.title) ? dups.push(h.id) : seen.add(h.title));
-      if(dups.length) await sb.from('habits').delete().in('id', dups);
-      if(!data || data.length === 0){
-        let ins = [];
-        categories.forEach(c => (DEFAULT_HABITS[c.slug] || []).forEach(t => ins.push({ user_id:currentUser.id, category_id:c.id, title:t })));
-        await sb.from('habits').insert(ins);
-      }
-      const { data: fresh } = await sb.from('habits').select('*').eq('user_id', currentUser.id);
-      habits = fresh || [];
-    }
-
-    async function loadCheckIns(){ const { data } = await sb.from('check_ins').select('*').eq('user_id', currentUser.id); checkIns = data || []; }
-    async function loadPosts(){ const { data } = await sb.from('community_posts').select('*').order('created_at', { ascending: false }); posts = data || []; }
-
-    async function toggleCheck(habitId, day){
-      const dateStr = new Date(new Date().getFullYear(), new Date().getMonth(), day+1).toISOString().split('T')[0];
-      const exist = checkIns.find(c => c.habit_id === habitId && c.check_in_date === dateStr);
-      if(exist) await sb.from('check_ins').delete().eq('id', exist.id);
-      else await sb.from('check_ins').insert({ user_id:currentUser.id, habit_id:habitId, check_in_date:dateStr });
-      await loadCheckIns(); renderAll();
-    }
-
-    async function createPost(){
-      const body = postInput.value.trim();
-      const file = fileInput.files[0];
-      let fileUrl = null;
-      if(file){
-        const fPath = `${currentUser.id}/${Date.now()}_${file.name}`;
-        const { data: uploadData } = await sb.storage.from('community').upload(fPath, file);
-        if(uploadData) fileUrl = sb.storage.from('community').getPublicUrl(fPath).data.publicUrl;
-      }
-      await sb.from('community_posts').insert({ user_id: currentUser.id, category_id: categories.find(c => c.slug === selectedSpace).id, body, file_url: fileUrl, user_email: currentUser.email });
-      postInput.value = ''; fileInput.value = ''; await loadPosts(); renderCommunity();
-    }
-
-    function getStreak(){
-      const dates = [...new Set(checkIns.map(c => c.check_in_date))].sort().reverse();
-      let streak = 0; let today = new Date().toISOString().split('T')[0];
-      for(let d of dates){ if(d === today || d === new Date(Date.now()-86400000).toISOString().split('T')[0]){ streak++; today = new Date(new Date(today).getTime()-86400000).toISOString().split('T')[0]; } else break; }
-      return streak;
-    }
-
-    function renderAll(){ renderDashboard(); renderTracker(); renderCommunity(); bindTabs(); }
-
-    function renderDashboard(){
-      const streak = getStreak();
-      streakPanel.innerText = `🔥 STREAK: ${streak} DAYS`;
-      activeVal.innerText = [...new Set(checkIns.map(c => c.check_in_date))].length;
-      ringsWrap.innerHTML = categories.map(cat => {
-        const catHabits = habits.filter(h => h.category_id === cat.id);
-        const done = checkIns.filter(c => catHabits.some(h => h.id === c.habit_id)).length;
-        const perc = Math.min(100, Math.round((done / (catHabits.length * 31)) * 100));
-        return `<div class="card ring-card"><div style="font-weight:800">${cat.slug}</div><div class="ring" style="background: conic-gradient(${cat.color} ${perc*3.6}deg, #dfe3ea 0deg);"><div class="ring-value">${perc}%</div></div></div>`;
-      }).join('');
-    }
-
-    function renderTracker(){
-      trackerWrap.innerHTML = categories.map(cat => {
-        const catHabits = habits.filter(h => h.category_id === cat.id);
-        return `
-          <div class="tracker-section">
-            <div class="tracker-head" style="background:${cat.color}">
-              <div style="justify-content:flex-start; padding-left:15px">${cat.slug}</div>
-              ${Array.from({length:31}, (_,i)=>`<div class="${i+1===TODAY_DAY?'today-cell':''}">${i+1}</div>`).join('')}
-              <div>%</div>
-            </div>
-            ${catHabits.map(h => {
-              const hChecks = checkIns.filter(c => c.habit_id === h.id);
-              return `<div class="tracker-row">
-                <div style="justify-content:flex-start; padding-left:15px; font-weight:600">${h.title}</div>
-                ${Array.from({length:31}, (_,i)=>{
-                  const dStr = new Date(new Date().getFullYear(), new Date().getMonth(), i+2).toISOString().split('T')[0];
-                  const checked = hChecks.some(c => c.check_in_date === dStr);
-                  return `<div class="${i+1===TODAY_DAY?'today-cell':''}"><div class="checkbox" style="${checked?`background:${cat.color}; border-color:${cat.color}`:''}" onclick="toggleCheck('${h.id}', ${i+1})"></div></div>`;
-                }).join('')}
-                <div style="font-weight:bold; color:${cat.color}">${Math.round((hChecks.length/31)*100)}%</div>
-              </div>`;
-            }).join('')}
-          </div>`;
-      }).join('');
-    }
-
-    function renderCommunity(){
-      spacesWrap.innerHTML = categories.map(cat => `<button class="space-btn" style="${selectedSpace===cat.slug?`background:${cat.color}; color:#fff`:''}" onclick="selectedSpace='${cat.slug}'; renderCommunity();">${META[cat.slug].emoji} ${cat.slug}</button>`).join('');
-      const filtered = posts.filter(p => categories.find(c => c.id === p.category_id)?.slug === selectedSpace);
-      postsWrap.innerHTML = filtered.map(p => `<div class="card"><div style="font-size:12px; color:var(--muted)">${p.user_email} • ${new Date(p.created_at).toLocaleDateString()}</div><p>${p.body || ''}</p>${p.file_url ? `<img src="${p.file_url}" class="post-img">` : ''}</div>`).join('');
-    }
-
-    async function enableNotifications(){
-      if(!("Notification" in window)) return alert("Браузер не підтримує сповіщення");
-      const permission = await Notification.requestPermission();
-      if(permission === "granted") alert("Сповіщення активовано!");
-    }
-
-    function bindTabs(){ document.querySelectorAll('.tab').forEach(t => t.onclick = () => { document.querySelectorAll('.tab, .view').forEach(x => x.classList.remove('active')); t.classList.add('active'); document.getElementById(t.dataset.view).classList.add('active'); }); }
-    bootstrap();
-  </script>
-</body>
-</html>
+          <button class="button primary" onclick="signIn()">Увійти</
