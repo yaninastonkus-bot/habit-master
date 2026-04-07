@@ -33,7 +33,7 @@
     .view{display:none} .view.active{display:block}
     .card{background:var(--card); border-radius:28px; box-shadow:var(--shadow); padding:22px; margin-bottom:20px;}
     
-    /* Dashboard Rings */
+    /* Dashboard */
     .dashboard-grid { display: grid; grid-template-columns: 320px 1fr; gap: 20px; }
     .ring-card{min-height:220px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; text-align:center;}
     .ring{width:110px; height:110px; border-radius:50%; position:relative; border:1px solid #d2d9e4;}
@@ -41,29 +41,28 @@
     .ring-value{font-size:22px; font-weight:800; position:absolute; z-index:10; top:50%; left:50%; transform:translate(-50%, -50%);}
     .side-block{color:#fff; min-height:75px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:15px; font-size:17px; font-weight:700; border-radius:22px; margin-bottom:12px;}
     .focus-input { background: rgba(255,255,255,0.2); border: 0; color: #fff; width: 100%; border-radius: 10px; padding: 5px 10px; font-family: inherit; font-size: 16px; text-align: center; font-weight: 800;}
-    .focus-input::placeholder { color: rgba(255,255,255,0.6); }
 
-    /* Tracker Grid */
-    .tracker-section{overflow-x:auto; margin-bottom:25px; background:#fff; border-radius:20px; border:1px solid var(--border);}
+    /* Tracker UI Fix */
+    .tracker-section{overflow-x:auto; margin-bottom:25px; background:#fff; border-radius:20px; border:1px solid var(--border); padding-bottom:5px;}
     .tracker-head, .tracker-row {
       display: grid;
-      grid-template-columns: 220px repeat(31, 38px) 70px;
+      grid-template-columns: 200px repeat(31, 40px) 70px;
       align-items: center;
-      min-width: 1450px;
+      min-width: 1510px;
     }
     .tracker-head { color:#fff; font-size:12px; font-weight:700; height:45px; background: #333;}
     .tracker-row { border-bottom: 1px solid #f0f0f0; height:50px; font-size:14px; }
+    .tracker-head > div, .tracker-row > div { display: flex; align-items: center; justify-content: center; height: 100%; border-right: 1px solid rgba(0,0,0,0.03); }
     .today-cell { background: var(--today) !important; color: #000; font-weight: 800;}
     .checkbox{width:22px; height:22px; border:2px solid #cbd5e1; border-radius:7px; cursor:pointer;}
 
-    /* Community Layout Fix */
+    /* Community */
     .community-layout{display:grid; grid-template-columns: 280px 1fr; gap:20px; align-items: start;}
-    .spaces-sidebar { display: flex; flex-direction: column; gap: 10px; }
-    .space-btn{width:100%; border:1px solid var(--border); border-radius:18px; padding:16px; text-align:left; font-size:16px; font-weight:700; cursor:pointer; background:#fff; box-shadow: var(--shadow); transition: 0.2s;}
+    .space-btn{width:100%; border:1px solid var(--border); border-radius:18px; padding:16px; text-align:left; font-size:16px; font-weight:700; cursor:pointer; background:#fff; box-shadow: var(--shadow); margin-bottom:10px; transition: 0.2s;}
     .chat-box { height: 500px; overflow-y: auto; background: #f8fbff; border-radius: 22px; padding: 20px; display: flex; flex-direction: column; gap: 12px; border: 1px solid var(--border); }
-    .msg { max-width: 85%; padding: 14px 18px; border-radius: 20px; background: #fff; box-shadow: 0 3px 10px rgba(0,0,0,0.04); color: var(--text); }
+    .msg { max-width: 85%; padding: 14px 18px; border-radius: 20px; background: #fff; box-shadow: 0 3px 10px rgba(0,0,0,0.04); color: var(--text); line-height: 1.4; }
     .msg.own { align-self: flex-end; background: var(--blue); color: #fff; }
-    .post-img { max-width: 100%; border-radius: 14px; margin-top: 10px; display: block; }
+    .post-img { max-width: 100%; border-radius: 14px; margin-top: 10px; display: block; border: 1px solid rgba(0,0,0,0.1); }
   </style>
 </head>
 <body>
@@ -102,7 +101,6 @@
             <div class="card" style="background:var(--pink); color:#fff; padding: 15px; border-radius: 22px;">
               <div style="font-size: 14px; margin-bottom: 5px; opacity: 0.9;">🎯 YOUR FOCUS:</div>
               <input id="focusInput" class="focus-input" placeholder="write your goal..." onchange="saveFocus()">
-              <div style="margin-top: 15px; font-size: 14px; opacity: 0.9;">🎁 REWARD: merch</div>
             </div>
          </div>
          <div id="ringsWrap" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:15px;"></div>
@@ -115,7 +113,7 @@
 
     <div id="communityView" class="view">
       <div class="community-layout">
-        <div id="spacesWrap" class="spaces-sidebar"></div>
+        <div id="spacesWrap"></div>
         <div>
           <div class="card" style="margin-bottom:15px;">
             <h3 id="communityTitle" style="margin:0 0 15px 0;">Community</h3>
@@ -133,11 +131,14 @@
 
     <div id="settingsView" class="view">
        <div class="card">
-           <h2 style="margin-top:0">Статистика проекту</h2>
-           <div id="adminStats" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:15px; margin-bottom:20px;"></div>
-           <hr style="border:0; border-top:1px solid var(--border); margin:20px 0;">
-           <button class="button primary" onclick="enableNotifications()">🔔 Увімкнути сповіщення</button>
-           <button class="button dark" style="margin-left:10px;" onclick="logout()">Logout</button>
+           <h2 style="margin-top:0">Налаштування</h2>
+           <p>Email: <strong id="userEmailLabel"></strong></p>
+           <button class="button primary" onclick="enableNotifications()">🔔 Сповіщення</button>
+           
+           <div id="adminSection" class="hidden" style="margin-top:30px; border-top:2px solid #eee; padding-top:20px;">
+              <h3 style="color:var(--blue)">👑 Панель власника</h3>
+              <div id="adminStats" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:15px;"></div>
+           </div>
        </div>
     </div>
   </div>
@@ -146,6 +147,9 @@
     const SUPABASE_URL = "https://vnbcelodaueayobcvkjy.supabase.co";
     const SUPABASE_KEY = "sb_publishable_yfG2qoR_Cx8QKwEbNpzeUA_4VNjItCT";
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // ВПИШИ СВІЙ EMAIL ТУТ
+    const OWNER_EMAIL = "твоя_пошта@gmail.com"; 
 
     let currentUser, categories = [], habits = [], checkIns = [], posts = [], selectedSpace = "MOVE";
     const TODAY_DAY = new Date().getDate();
@@ -164,10 +168,9 @@
       SLOW: ["No phone tea", "Early bed", "Self-care"]
     };
 
-    // --- Auth ---
     async function signUp(){
       const { error } = await sb.auth.signUp({ email: emailInput.value, password: passwordInput.value });
-      if(error) alert(error.message); else alert("Акаунт створено!");
+      if(error) alert(error.message); else alert("Акаунт створено! Увійди.");
     }
     async function signIn(){
       const { error } = await sb.auth.signInWithPassword({ email: emailInput.value, password: passwordInput.value });
@@ -175,13 +178,19 @@
     }
     function logout(){ sb.auth.signOut(); location.reload(); }
 
-    // --- Data ---
     async function bootstrap(){
       const { data } = await sb.auth.getSession();
       currentUser = data.session?.user;
       if(!currentUser) return;
+
       document.getElementById('authView').classList.add('hidden');
       document.getElementById('appView').classList.remove('hidden');
+      userEmailLabel.innerText = currentUser.email;
+
+      // Перевірка на власника
+      if(currentUser.email === OWNER_EMAIL) {
+          document.getElementById('adminSection').classList.remove('hidden');
+      }
 
       await loadCategories();
       await syncHabits();
@@ -201,7 +210,10 @@
       await sb.from('profiles').upsert({ id: currentUser.id, focus_text: val });
     }
 
-    async function loadCategories(){ const { data } = await sb.from('categories').select('*').order('sort_order'); categories = data || []; }
+    async function loadCategories(){ 
+      const { data } = await sb.from('categories').select('*').order('sort_order'); 
+      categories = data || []; 
+    }
     
     async function syncHabits(){
       const { data } = await sb.from('habits').select('*').eq('user_id', currentUser.id);
@@ -214,8 +226,16 @@
       habits = fresh || [];
     }
 
-    async function loadCheckIns(){ const { data } = await sb.from('check_ins').select('*').eq('user_id', currentUser.id); checkIns = data || []; }
-    async function loadPosts(){ const { data } = await sb.from('community_posts').select('*').order('created_at', { ascending: true }); posts = data || []; }
+    async function loadCheckIns(){ 
+      const { data } = await sb.from('check_ins').select('*').eq('user_id', currentUser.id); 
+      checkIns = data || []; 
+    }
+
+    async function loadPosts(){ 
+      const { data } = await sb.from('community_posts').select('*').order('created_at', { ascending: true }); 
+      posts = data || []; 
+      renderCommunity();
+    }
 
     async function toggleCheck(habitId, day){
       const dateStr = new Date(new Date().getFullYear(), new Date().getMonth(), day+1).toISOString().split('T')[0];
@@ -229,22 +249,43 @@
       const body = postInput.value.trim();
       const file = fileInput.files[0];
       let fileUrl = null;
-      if(file){
-        uploadStatus.innerText = "⏳ Завантаження...";
-        const fPath = `${currentUser.id}/${Date.now()}_${file.name}`;
-        const { error: upErr } = await sb.storage.from('community').upload(fPath, file);
-        if(!upErr) fileUrl = sb.storage.from('community').getPublicUrl(fPath).data.publicUrl;
+
+      if(!body && !file) return;
+      uploadStatus.innerText = "⏳ Відправка...";
+
+      try {
+          if(file){
+            const fName = `${currentUser.id}/${Date.now()}_${file.name}`;
+            const { error: upErr } = await sb.storage.from('community').upload(fName, file);
+            if(!upErr) fileUrl = sb.storage.from('community').getPublicUrl(fName).data.publicUrl;
+          }
+
+          const catId = categories.find(c => c.slug === selectedSpace)?.id;
+          const { error } = await sb.from('community_posts').insert({ 
+            user_id: currentUser.id, 
+            category_id: catId, 
+            body, media_url: fileUrl, user_email: currentUser.email 
+          });
+
+          if(error) throw error;
+          
+          postInput.value = ''; fileInput.value = ''; uploadStatus.innerText = "";
+          await loadPosts();
+      } catch (e) {
+          alert("Помилка відправки: " + e.message);
+          uploadStatus.innerText = "";
       }
-      await sb.from('community_posts').insert({ user_id: currentUser.id, category_id: categories.find(c => c.slug === selectedSpace).id, body, media_url: fileUrl, user_email: currentUser.email });
-      postInput.value = ''; fileInput.value = ''; uploadStatus.innerText = "";
-      await loadPosts(); renderCommunity();
     }
 
-    // --- Rendering ---
     function getStreak(){
       const dates = [...new Set(checkIns.map(c => c.check_in_date))].sort().reverse();
-      let streak = 0; let today = new Date().toISOString().split('T')[0];
-      for(let d of dates){ if(d === today || d === new Date(Date.now()-86400000).toISOString().split('T')[0]){ streak++; today = new Date(new Date(today).getTime()-86400000).toISOString().split('T')[0]; } else break; }
+      let streak = 0; let checkDate = new Date().toISOString().split('T')[0];
+      for(let d of dates){
+        if(d === checkDate || d === new Date(Date.now()-86400000).toISOString().split('T')[0]){
+          streak++;
+          checkDate = new Date(new Date(d).getTime()-86400000).toISOString().split('T')[0];
+        } else break;
+      }
       return streak;
     }
 
@@ -252,12 +293,13 @@
 
     function renderDashboard(){
       const streak = getStreak();
+      const totalDone = checkIns.length;
       streakPanel.innerText = `🔥 STREAK: ${streak} DAYS`;
       activeVal.innerText = [...new Set(checkIns.map(c => c.check_in_date))].length;
+      levelPanel.innerText = `🏆 LEVEL: ${totalDone < 20 ? 'Novice 🥚' : totalDone < 80 ? 'Apprentice 🌱' : 'Warrior ⚔️'}`;
       
       const totalPossible = habits.length * 31;
-      const totalDone = checkIns.length;
-      const totalPerc = Math.min(100, Math.round((totalDone / totalPossible) * 100));
+      const totalPerc = Math.min(100, Math.round((totalDone / (totalPossible || 1)) * 100));
 
       let ringsHtml = `
         <div class="card ring-card" style="border: 2px solid var(--blue)">
@@ -268,10 +310,9 @@
       ringsHtml += categories.map(cat => {
         const catHabits = habits.filter(h => h.category_id === cat.id);
         const done = checkIns.filter(c => catHabits.some(h => h.id === c.habit_id)).length;
-        const perc = Math.min(100, Math.round((done / (catHabits.length * 31)) * 100));
+        const perc = Math.min(100, Math.round((done / ((catHabits.length * 31) || 1)) * 100));
         return `<div class="card ring-card"><div style="font-weight:800; font-size:14px;">${META[cat.slug].emoji} ${cat.slug}</div><div class="ring" style="background: conic-gradient(${cat.color} ${perc*3.6}deg, #dfe3ea 0deg);"><div class="ring-value">${perc}%</div></div></div>`;
       }).join('');
-      
       ringsWrap.innerHTML = ringsHtml;
     }
 
@@ -280,20 +321,20 @@
         const catHabits = habits.filter(h => h.category_id === cat.id);
         return `<div class="tracker-section">
           <div class="tracker-head" style="background:${cat.color}">
-            <div style="justify-content:flex-start; padding-left:15px">${META[cat.slug].emoji} ${cat.slug}</div>
+            <div style="justify-content:flex-start; padding-left:15px; border-right: 1px solid rgba(255,255,255,0.2);">${META[cat.slug].emoji} ${cat.slug}</div>
             ${Array.from({length:31}, (_,i)=>`<div class="${i+1===TODAY_DAY?'today-cell':''}">${i+1}</div>`).join('')}
-            <div>%</div>
+            <div style="border:0">%</div>
           </div>
           ${catHabits.map(h => {
             const hChecks = checkIns.filter(c => c.habit_id === h.id);
             return `<div class="tracker-row">
-              <div style="justify-content:flex-start; padding-left:15px; font-weight:600">${h.title}</div>
+              <div style="justify-content:flex-start; padding-left:15px; font-weight:600; border-right: 1px solid #eee;">${h.title}</div>
               ${Array.from({length:31}, (_,i)=>{
                 const dStr = new Date(new Date().getFullYear(), new Date().getMonth(), i+2).toISOString().split('T')[0];
                 const checked = hChecks.some(c => c.check_in_date === dStr);
                 return `<div class="${i+1===TODAY_DAY?'today-cell':''}"><div class="checkbox" style="${checked?`background:${cat.color}; border-color:${cat.color}`:''}" onclick="toggleCheck('${h.id}', ${i+1})"></div></div>`;
               }).join('')}
-              <div style="font-weight:bold; color:${cat.color}">${Math.round((hChecks.length/31)*100)}%</div>
+              <div style="font-weight:bold; color:${cat.color}; border:0">${Math.round((hChecks.length/31)*100)}%</div>
             </div>`;
           }).join('')}
         </div>`;
@@ -315,6 +356,7 @@
     }
 
     async function renderAdmin() {
+        if(currentUser.email !== OWNER_EMAIL) return;
         const { data: allPosts } = await sb.from('community_posts').select('category_id');
         const stats = {};
         allPosts?.forEach(p => {
@@ -328,7 +370,7 @@
             </div>`).join('');
     }
 
-    async function enableNotifications(){ Notification.requestPermission(); }
+    function enableNotifications(){ Notification.requestPermission(); }
     function bindTabs(){ document.querySelectorAll('.tab').forEach(t => t.onclick = () => { document.querySelectorAll('.tab, .view').forEach(x => x.classList.remove('active')); t.classList.add('active'); document.getElementById(t.dataset.view).classList.add('active'); }); }
     
     bootstrap();
