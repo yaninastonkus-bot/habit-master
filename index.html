@@ -407,6 +407,8 @@
       border-radius: 50%;
       position: relative;
       border: 2px solid rgba(255,255,255,0.05);
+      background: conic-gradient(from -90deg, var(--card-blue) 0deg, var(--card-blue) 0deg, #23232a 0deg, #23232a 360deg);
+      overflow: hidden;
     }
     .ring::after {
       content: '';
@@ -1149,6 +1151,35 @@
       return s;
     }
 
+    function getLevelMeta(totalDone){
+      const levels = [
+        { min: 0, name: 'SEED', label: 'your start is already progress' },
+        { min: 8, name: 'NOVICE', label: 'you are building consistency' },
+        { min: 18, name: 'ROOKIE', label: 'small wins are stacking up' },
+        { min: 30, name: 'EXPLORER', label: 'you are finding your rhythm' },
+        { min: 45, name: 'BUILDER', label: 'your system is getting stronger' },
+        { min: 65, name: 'STRIVER', label: 'momentum is clearly visible' },
+        { min: 90, name: 'WARRIOR', label: 'you are showing real discipline' },
+        { min: 120, name: 'ELITE', label: 'high consistency unlocked' },
+        { min: 160, name: 'MASTER', label: 'this is next-level commitment' }
+      ];
+
+      let current = levels[0];
+      let next = null;
+      for (let i = 0; i < levels.length; i++) {
+        if (totalDone >= levels[i].min) {
+          current = levels[i];
+          next = levels[i + 1] || null;
+        }
+      }
+
+      return {
+        ...current,
+        next,
+        leftToNext: next ? Math.max(0, next.min - totalDone) : 0
+      };
+    }
+
     function renderAll(){
       renderDashboard();
       renderTracker();
@@ -1166,18 +1197,18 @@
 
       getEl('activeVal').innerText = [...new Set(checkIns.map(c => c.check_in_date))].length;
 
-      const levelName = checkIns.length < 30 ? 'NOVICE' : 'WARRIOR';
+      const levelMeta = getLevelMeta(checkIns.length);
       getEl('levelPanel').innerHTML = `
         <div class="metric-kicker">Level</div>
-        <div class="metric-value">${levelName}</div>
-        <div class="metric-label">keep building momentum</div>`;
+        <div class="metric-value">${levelMeta.name}</div>
+        <div class="metric-label">${levelMeta.next ? `${levelMeta.label} · ${levelMeta.leftToNext} to ${levelMeta.next.name}` : levelMeta.label}</div>`;
 
       const totalChecks = habits.length ? habits.length * 31 : 0;
       const totalDone = checkIns.length;
       const totalPerc = totalChecks ? Math.round((totalDone / totalChecks) * 100) : 0;
       getEl('totalProgressWrap').innerHTML = `
         <div class="ring-card" style="min-height:260px; border-color: rgba(184,242,58,0.4);">
-          <div class="ring" style="width:140px; height:140px; background: conic-gradient(var(--accent-lime) ${totalPerc*3.6}deg, #23232a 0deg);">
+          <div class="ring" style="width:140px; height:140px; background: conic-gradient(from -90deg, var(--accent-lime) 0deg ${totalPerc * 3.6}deg, #23232a ${totalPerc * 3.6}deg 360deg);">
             <div class="ring-value" style="font-size:34px;">${totalPerc}%</div>
           </div>
           <div class="ring-meta">
@@ -1211,7 +1242,7 @@
         const isFoc = selectedFocuses.includes(cat.slug);
         html += `
           <div class="ring-card" style="${isFoc ? 'border-color: rgba(184,242,58,0.7); box-shadow: inset 0 0 0 1px rgba(184,242,58,0.22);' : ''}">
-            <div class="ring" style="background: conic-gradient(var(--card-blue) ${perc*3.6}deg, #23232a 0deg);">
+            <div class="ring" style="background: conic-gradient(from -90deg, var(--card-blue) 0deg ${perc * 3.6}deg, #23232a ${perc * 3.6}deg 360deg);">
               <div class="ring-value">${perc}%</div>
             </div>
             <div class="ring-meta">
