@@ -61,16 +61,21 @@
     .today-cell { background: var(--today) !important; color: #000; font-weight: 800;}
     .checkbox{width:22px; height:22px; border:2px solid #cbd5e1; border-radius:7px; cursor:pointer;}
 
-    /* Community */
+    /* Community Chat */
     .community-layout{display:grid; grid-template-columns: 280px 1fr; gap:20px; align-items: start;}
     .spaces-sidebar { display: flex; flex-direction: column; gap: 10px; }
     .space-btn{width:100%; border:1px solid var(--border); border-radius:18px; padding:16px; text-align:left; font-size:16px; font-weight:700; cursor:pointer; background:#fff; box-shadow: var(--shadow); transition: 0.2s;}
     .chat-box { height: 500px; overflow-y: auto; background: #f8fbff; border-radius: 22px; padding: 20px; display: flex; flex-direction: column; gap: 12px; border: 1px solid var(--border); }
-    .msg { max-width: 85%; padding: 14px 18px; border-radius: 20px; background: #fff; box-shadow: 0 3px 10px rgba(0,0,0,0.04); color: var(--text); position: relative; word-wrap: break-word; line-height:1.4;}
+    
+    /* Оновлені стилі повідомлень для кнопок редагування */
+    .msg { max-width: 85%; padding: 14px 18px; padding-right: 65px; border-radius: 20px; background: #fff; box-shadow: 0 3px 10px rgba(0,0,0,0.04); color: var(--text); position: relative; word-wrap: break-word; line-height:1.4;}
     .msg.own { align-self: flex-end; background: var(--blue); color: #fff; }
     .post-img { max-width: 100%; border-radius: 14px; margin-top: 10px; display: block; border: 1px solid rgba(0,0,0,0.1); }
-    .del-btn { position: absolute; top: 10px; right: 12px; cursor: pointer; opacity: 0.5; font-size: 14px; }
-    .del-btn:hover { opacity: 1; color: red; }
+    
+    /* Кнопки Редагувати / Видалити */
+    .action-btns { position: absolute; top: 12px; right: 12px; display: flex; gap: 5px; }
+    .action-btn { cursor: pointer; opacity: 0.8; font-size: 14px; transition: 0.2s; user-select: none; background: rgba(255,255,255,0.7); border-radius: 6px; padding: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display:flex; align-items:center; justify-content:center;}
+    .action-btn:hover { opacity: 1; transform: scale(1.1); background: #fff; }
 
     /* Mobile Setup */
     @media (max-width: 768px) {
@@ -92,7 +97,7 @@
       .chat-box { height: 400px; padding: 15px; }
       #communityView .card > div[style*="display:flex"] { flex-wrap: wrap; }
       #postInput { width: 100%; }
-      #communityView .card button.primary { width: 100%; }
+      #sendBtn, #cancelEditBtn { flex-grow: 1; }
     }
     input[type="password"]::-ms-reveal, input[type="password"]::-ms-clear { display: none; }
   </style>
@@ -168,10 +173,19 @@
           <div class="card" style="margin-bottom:15px;">
             <h3 id="communityTitle" style="margin:0 0 15px 0;">Community</h3>
             <div id="postsWrap" class="chat-box"></div>
-            <div style="margin-top:15px; display:flex; gap:10px; align-items:center;">
-              <label class="button dark" style="padding:14px; cursor:pointer;">📎<input type="file" id="fileInput" class="hidden"></label>
+            
+            <div style="margin-top:15px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+              <div id="attachWrap" style="display:flex; align-items:center; gap:8px;">
+                <label class="button dark" style="padding:14px; cursor:pointer; margin:0;">
+                  📎<input type="file" id="fileInput" class="hidden" onchange="updateFileName()">
+                </label>
+                <span id="fileNameDisplay" style="font-size: 12px; color: var(--muted); max-width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></span>
+              </div>
+              
               <textarea id="postInput" class="textarea" style="min-height:50px; flex-grow:1;" placeholder="Поділися успіхом..."></textarea>
-              <button class="button primary" style="height:50px;" onclick="createPost()">Надіслати</button>
+              
+              <button id="cancelEditBtn" class="button dark hidden" style="height:50px;" onclick="cancelEdit()">Скасувати</button>
+              <button id="sendBtn" class="button primary" style="height:50px;" onclick="createPost()">Надіслати</button>
             </div>
             <div id="uploadStatus" style="font-size:12px; color:var(--blue); margin-top:5px;"></div>
           </div>
@@ -198,10 +212,12 @@
     const SUPABASE_KEY = "sb_publishable_yfG2qoR_Cx8QKwEbNpzeUA_4VNjItCT";
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // ⚠️ ТВІЙ EMAIL 
+    // ⚠️ ТВІЙ EMAIL
     const OWNER_EMAIL = "yaninastonkus@gmail.com"; 
 
     let currentUser = null, categories = [], habits = [], checkIns = [], posts = [], selectedSpace = "";
+    let editingPostId = null;
+
     const TODAY_DAY = new Date().getDate();
 
     const META = {
@@ -221,17 +237,16 @@
     const getEl = id => document.getElementById(id);
     function getMeta(slug) { return META[slug?.toUpperCase()] || { emoji: "📌", color: "#6f7f98" }; }
 
-    // --- Показати/Сховати пароль ---
+    function updateFileName() {
+      const file = getEl('fileInput').files[0];
+      getEl('fileNameDisplay').innerText = file ? file.name : '';
+    }
+
     function togglePassword() {
       const input = getEl('passwordInput');
       const icon = getEl('eyeIcon');
-      if (input.type === 'password') {
-        input.type = 'text';
-        icon.innerText = '🙈';
-      } else {
-        input.type = 'password';
-        icon.innerText = '👁️';
-      }
+      if (input.type === 'password') { input.type = 'text'; icon.innerText = '🙈'; } 
+      else { input.type = 'password'; icon.innerText = '👁️'; }
     }
 
     async function signUp(){
@@ -266,7 +281,10 @@
       }
     }
 
-    function logout(){ sb.auth.signOut(); location.reload(); }
+    async function logout(){ 
+      await sb.auth.signOut(); 
+      location.reload(); 
+    }
 
     async function bootstrap(){
       try {
@@ -302,9 +320,7 @@
     async function loadProfile() {
       try {
         const { data } = await sb.from('profiles').select('focus_text').eq('id', currentUser.id).single();
-        if(data && data.focus_text) {
-            getEl('focusInput').value = data.focus_text;
-        }
+        if(data && data.focus_text) getEl('focusInput').value = data.focus_text;
       } catch(e) { console.warn("Профіль не знайдено, ігноруємо."); }
     }
 
@@ -345,14 +361,6 @@
       } catch(e) { console.error("Помилка відміток", e); }
     }
 
-    async function loadPosts(){ 
-      try {
-        const { data } = await sb.from('community_posts').select('*').order('created_at', { ascending: true }); 
-        posts = data || []; 
-        renderCommunity();
-      } catch(e) { console.error("Помилка постів", e); }
-    }
-
     async function toggleCheck(habitId, day){
       try {
         const dateStr = new Date(new Date().getFullYear(), new Date().getMonth(), day+1).toISOString().split('T')[0];
@@ -366,30 +374,68 @@
       } catch(e) { alert("Помилка: " + e.message); }
     }
 
+    async function loadPosts(){ 
+      try {
+        const { data } = await sb.from('community_posts').select('*').order('created_at', { ascending: true }); 
+        posts = data || []; 
+        renderCommunity();
+      } catch(e) { console.error("Помилка постів", e); }
+    }
+
+    function startEdit(id) {
+      const post = posts.find(p => p.id === id);
+      if(!post) return;
+      
+      editingPostId = id;
+      getEl('postInput').value = post.body || '';
+      getEl('sendBtn').innerText = 'Зберегти';
+      getEl('cancelEditBtn').classList.remove('hidden');
+      getEl('attachWrap').classList.add('hidden');
+      getEl('postInput').focus();
+    }
+
+    function cancelEdit() {
+      editingPostId = null;
+      getEl('postInput').value = '';
+      getEl('sendBtn').innerText = 'Надіслати';
+      getEl('cancelEditBtn').classList.add('hidden');
+      getEl('attachWrap').classList.remove('hidden');
+    }
+
     async function createPost(){
       const body = getEl('postInput').value.trim();
       const file = getEl('fileInput').files[0];
       let fileUrl = null;
 
-      if(!body && !file) return;
-      getEl('uploadStatus').innerText = "⏳ Відправка...";
+      if(!body && !file && !editingPostId) return;
+      getEl('uploadStatus').innerText = "⏳ Обробка...";
 
       try {
-          if(file){
-            const fName = `${currentUser.id}/${Date.now()}_${file.name}`;
-            const { error: upErr } = await sb.storage.from('community').upload(fName, file);
-            if(upErr) throw new Error("Не вдалося завантажити фото: " + upErr.message);
-            fileUrl = sb.storage.from('community').getPublicUrl(fName).data.publicUrl;
+          if (editingPostId) {
+             const { error } = await sb.from('community_posts').update({ body }).eq('id', editingPostId);
+             if(error) throw error;
+             cancelEdit(); 
+          } else {
+             if(file){
+               const fName = `${currentUser.id}/${Date.now()}_${file.name}`;
+               const { error: upErr } = await sb.storage.from('community').upload(fName, file);
+               if(upErr) throw new Error("Не вдалося завантажити фото: " + upErr.message);
+               fileUrl = sb.storage.from('community').getPublicUrl(fName).data.publicUrl;
+             }
+
+             const catId = categories.find(c => c.slug === selectedSpace)?.id;
+             const { error } = await sb.from('community_posts').insert({ 
+               user_id: currentUser.id, category_id: catId, body, media_url: fileUrl, user_email: currentUser.email 
+             });
+
+             if(error) throw error;
+             
+             getEl('postInput').value = ''; 
+             getEl('fileInput').value = ''; 
+             getEl('fileNameDisplay').innerText = ''; 
           }
-
-          const catId = categories.find(c => c.slug === selectedSpace)?.id;
-          const { error } = await sb.from('community_posts').insert({ 
-            user_id: currentUser.id, category_id: catId, body, media_url: fileUrl, user_email: currentUser.email 
-          });
-
-          if(error) throw error;
           
-          getEl('postInput').value = ''; getEl('fileInput').value = ''; getEl('uploadStatus').innerText = "";
+          getEl('uploadStatus').innerText = "";
           await loadPosts();
       } catch (e) {
           alert("Помилка: " + e.message); 
@@ -419,21 +465,13 @@
     }
 
     function renderAll(){ 
-      // Зберігаємо позиції скролу перед перемалюванням (для мобільних)
       const sections = document.querySelectorAll('.tracker-section');
       const scrollPositions = Array.from(sections).map(sec => sec.scrollLeft);
 
-      renderDashboard(); 
-      renderTracker(); 
-      renderCommunity(); 
-      renderAdmin(); 
-      bindTabs(); 
+      renderDashboard(); renderTracker(); renderCommunity(); renderAdmin(); bindTabs(); 
 
-      // Відновлюємо позиції скролу
       const newSections = document.querySelectorAll('.tracker-section');
-      newSections.forEach((sec, i) => {
-        if(scrollPositions[i]) sec.scrollLeft = scrollPositions[i];
-      });
+      newSections.forEach((sec, i) => { if(scrollPositions[i]) sec.scrollLeft = scrollPositions[i]; });
     }
 
     function renderDashboard(){
@@ -445,26 +483,18 @@
       const totalPerc = totalPossible > 0 ? Math.min(100, Math.round((checkIns.length / totalPossible) * 100)) : 0;
       const currentFocus = getEl('focusInput').value; 
 
-      let ringsHtml = `
-        <div class="card ring-card" style="border: 2px solid var(--blue)">
-          <div style="font-weight:800; font-size:14px; color:var(--blue)">🏆 TOTAL PROGRESS</div>
-          <div class="ring" style="background: conic-gradient(var(--blue) ${totalPerc*3.6}deg, #dfe3ea 0deg);"><div class="ring-value">${totalPerc}%</div></div>
-        </div>`;
+      let ringsHtml = `<div class="card ring-card" style="border: 2px solid var(--blue)"><div style="font-weight:800; font-size:14px; color:var(--blue)">🏆 TOTAL PROGRESS</div><div class="ring" style="background: conic-gradient(var(--blue) ${totalPerc*3.6}deg, #dfe3ea 0deg);"><div class="ring-value">${totalPerc}%</div></div></div>`;
 
       ringsHtml += categories.map(cat => {
         const catHabits = habits.filter(h => h.category_id === cat.id);
         const done = checkIns.filter(c => catHabits.some(h => h.id === c.habit_id)).length;
         const perc = (catHabits.length * 31) > 0 ? Math.min(100, Math.round((done / (catHabits.length * 31)) * 100)) : 0;
         
-        // Логіка підсвічування обраного фокусу
         const isFocused = cat.slug === currentFocus;
         const ringStyle = isFocused ? `transform: scale(1.05); box-shadow: 0 0 20px ${cat.color}60; border: 2px solid ${cat.color};` : '';
         const focusBadge = isFocused ? `<span style="font-size:14px;">🎯</span> ` : '';
 
-        return `<div class="card ring-card" style="${ringStyle}">
-          <div style="font-weight:800; font-size:14px;">${focusBadge}${getMeta(cat.slug).emoji} ${cat.slug}</div>
-          <div class="ring" style="background: conic-gradient(${cat.color} ${perc*3.6}deg, #dfe3ea 0deg);"><div class="ring-value">${perc}%</div></div>
-        </div>`;
+        return `<div class="card ring-card" style="${ringStyle}"><div style="font-weight:800; font-size:14px;">${focusBadge}${getMeta(cat.slug).emoji} ${cat.slug}</div><div class="ring" style="background: conic-gradient(${cat.color} ${perc*3.6}deg, #dfe3ea 0deg);"><div class="ring-value">${perc}%</div></div></div>`;
       }).join('');
       getEl('ringsWrap').innerHTML = ringsHtml;
     }
@@ -472,46 +502,36 @@
     function renderTracker(){
       getEl('trackerWrap').innerHTML = categories.map(cat => {
         const catHabits = habits.filter(h => h.category_id === cat.id);
-        return `<div class="tracker-section">
-          <div class="tracker-head" style="background:${cat.color}">
-            <div style="justify-content:flex-start; padding-left:15px; border-right: 1px solid rgba(255,255,255,0.2);">${getMeta(cat.slug).emoji} ${cat.slug}</div>
-            ${Array.from({length:31}, (_,i)=>`<div class="${i+1===TODAY_DAY?'today-cell':''}">${i+1}</div>`).join('')}
-            <div style="border:0">%</div>
-          </div>
-          ${catHabits.map(h => {
+        return `<div class="tracker-section"><div class="tracker-head" style="background:${cat.color}"><div style="justify-content:flex-start; padding-left:15px; border-right: 1px solid rgba(255,255,255,0.2);">${getMeta(cat.slug).emoji} ${cat.slug}</div>${Array.from({length:31}, (_,i)=>`<div class="${i+1===TODAY_DAY?'today-cell':''}">${i+1}</div>`).join('')}<div style="border:0">%</div></div>${catHabits.map(h => {
             const hChecks = checkIns.filter(c => c.habit_id === h.id);
-            return `<div class="tracker-row">
-              <div style="justify-content:flex-start; padding-left:15px; font-weight:600; border-right: 1px solid #eee;">${h.title}</div>
-              ${Array.from({length:31}, (_,i)=>{
+            return `<div class="tracker-row"><div style="justify-content:flex-start; padding-left:15px; font-weight:600; border-right: 1px solid #eee;">${h.title}</div>${Array.from({length:31}, (_,i)=>{
                 const dStr = new Date(new Date().getFullYear(), new Date().getMonth(), i+2).toISOString().split('T')[0];
                 const checked = hChecks.some(c => c.check_in_date === dStr);
                 return `<div class="${i+1===TODAY_DAY?'today-cell':''}"><div class="checkbox" style="${checked?`background:${cat.color}; border-color:${cat.color}`:''}" onclick="toggleCheck('${h.id}', ${i+1})"></div></div>`;
-              }).join('')}
-              <div style="font-weight:bold; color:${cat.color}; border:0">${Math.round((hChecks.length/31)*100)}%</div>
-            </div>`;
-          }).join('')}
-        </div>`;
+              }).join('')}<div style="font-weight:bold; color:${cat.color}; border:0">${Math.round((hChecks.length/31)*100)}%</div></div>`;
+          }).join('')}</div>`;
       }).join('');
     }
 
     function renderCommunity(){
       getEl('spacesWrap').innerHTML = categories.map(cat => {
-        return `<button class="space-btn" style="${selectedSpace===cat.slug?`background:${cat.color}; color:#fff`:''}" onclick="selectedSpace='${cat.slug}'; renderCommunity();">
-          ${getMeta(cat.slug).emoji} ${cat.slug}
-        </button>`;
+        return `<button class="space-btn" style="${selectedSpace===cat.slug?`background:${cat.color}; color:#fff`:''}" onclick="selectedSpace='${cat.slug}'; cancelEdit(); renderCommunity();">${getMeta(cat.slug).emoji} ${cat.slug}</button>`;
       }).join('');
       
       const filtered = posts.filter(p => categories.find(c => c.id === p.category_id)?.slug === selectedSpace);
       
       getEl('postsWrap').innerHTML = filtered.map(p => `<div class="msg ${p.user_id===currentUser.id?'own':''}">
-        ${p.user_id===currentUser.id?`<span class="del-btn" onclick="deletePost('${p.id}','${p.media_url}')">🗑️</span>`:''}
+        ${p.user_id===currentUser.id ? `
+        <div class="action-btns">
+          <span class="action-btn" title="Редагувати" onclick="startEdit('${p.id}')">✏️</span>
+          <span class="action-btn" title="Видалити" onclick="deletePost('${p.id}','${p.media_url}')">🗑️</span>
+        </div>` : ''}
         <div style="font-size:10px; opacity:0.8; margin-bottom:4px;">${p.user_email || 'Member'}</div>
-        <div>${p.body || ''}</div>${p.media_url ? `<img src="${p.media_url}" class="post-img">` : ''}
+        <div style="white-space: pre-wrap;">${p.body || ''}</div>${p.media_url ? `<img src="${p.media_url}" class="post-img">` : ''}
       </div>`).join('');
       
       getEl('postsWrap').scrollTop = getEl('postsWrap').scrollHeight;
-      const titleMeta = getMeta(selectedSpace);
-      getEl('communityTitle').innerText = `${titleMeta.emoji} ${selectedSpace} Community`;
+      getEl('communityTitle').innerText = `${getMeta(selectedSpace).emoji} ${selectedSpace} Community`;
     }
 
     async function renderAdmin() {
@@ -534,23 +554,26 @@
         } catch(e) { console.error("Admin stats error:", e); }
     }
 
-    // --- Оновлені сповіщення (Розумна кнопка для мобільних) ---
     async function enableNotifications(){ 
       if(!("Notification" in window)) {
-        return alert("На жаль, ваш пристрій не підтримує прямі веб-сповіщення.\n\nЯкщо ви на iPhone: натисніть 'Поділитися' ➡️ 'На початковий екран', відкрийте новий додаток з екрана і спробуйте знову!");
+        return alert("Ваш браузер не підтримує веб-сповіщення.\n\nЯкщо ви на iPhone: натисніть 'Поділитися' ➡️ 'На початковий екран'. Відкрийте додаток з екрана і спробуйте знову!");
       }
-      
+      if (Notification.permission === "granted") {
+        getEl('notifBtn').innerText = "✅ Сповіщення увімкнені";
+        getEl('notifBtn').classList.replace('primary', 'green');
+        return alert("Сповіщення вже працюють! Ми нагадаємо тобі про звички.");
+      }
+      if (Notification.permission === "denied") {
+        return alert("❌ Браузер блокує сповіщення.\n\nНатисніть на іконку 🔒 зліва від адреси сайту вгорі екрана, знайдіть 'Сповіщення' і змініть на 'Дозволити'. Потім оновіть сторінку.");
+      }
       try {
         const perm = await Notification.requestPermission();
         if(perm === "granted") {
-          getEl('notifBtn').innerText = "✅ Нагадування увімкнені";
+          getEl('notifBtn').innerText = "✅ Сповіщення увімкнені";
           getEl('notifBtn').classList.replace('primary', 'green');
-        } else if (perm === "denied") {
-          alert("Ви заблокували сповіщення. Щоб увімкнути, зайдіть у налаштування сайту в браузері.");
-        }
-      } catch (e) {
-         alert("Помилка: " + e.message);
-      }
+          new Notification("Habit Master Pro", { body: "Супер! Тепер ми на зв'язку 🔥" });
+        } else { alert("Ви не надали дозвіл на сповіщення."); }
+      } catch (e) { alert("Помилка запиту: " + e.message); }
     }
 
     function bindTabs(){ 
