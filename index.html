@@ -67,12 +67,10 @@
     .space-btn{width:100%; border:1px solid var(--border); border-radius:18px; padding:16px; text-align:left; font-size:16px; font-weight:700; cursor:pointer; background:#fff; box-shadow: var(--shadow); transition: 0.2s;}
     .chat-box { height: 500px; overflow-y: auto; background: #f8fbff; border-radius: 22px; padding: 20px; display: flex; flex-direction: column; gap: 12px; border: 1px solid var(--border); }
     
-    /* Оновлені стилі повідомлень для кнопок редагування */
     .msg { max-width: 85%; padding: 14px 18px; padding-right: 65px; border-radius: 20px; background: #fff; box-shadow: 0 3px 10px rgba(0,0,0,0.04); color: var(--text); position: relative; word-wrap: break-word; line-height:1.4;}
     .msg.own { align-self: flex-end; background: var(--blue); color: #fff; }
     .post-img { max-width: 100%; border-radius: 14px; margin-top: 10px; display: block; border: 1px solid rgba(0,0,0,0.1); }
     
-    /* Кнопки Редагувати / Видалити */
     .action-btns { position: absolute; top: 12px; right: 12px; display: flex; gap: 5px; }
     .action-btn { cursor: pointer; opacity: 0.8; font-size: 14px; transition: 0.2s; user-select: none; background: rgba(255,255,255,0.7); border-radius: 6px; padding: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display:flex; align-items:center; justify-content:center;}
     .action-btn:hover { opacity: 1; transform: scale(1.1); background: #fff; }
@@ -112,7 +110,7 @@
       <input id="emailInput" class="input" type="email" placeholder="Email" style="margin-bottom:12px;"/>
       
       <div style="position: relative; margin-bottom: 12px;">
-        <input id="passwordInput" class="input" type="password" placeholder="Пароль" style="padding-right: 40px;" />
+        <input id="passwordInput" class="input" type="password" placeholder="Пароль (мін. 6 символів)" style="padding-right: 40px;" />
         <div id="eyeIcon" onclick="togglePassword()" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); cursor: pointer; opacity: 0.6; font-size: 18px; user-select: none;">👁️</div>
       </div>
 
@@ -254,7 +252,9 @@
         getEl('loginError').innerText = "";
         const email = getEl('emailInput').value.trim();
         const password = getEl('passwordInput').value;
+        
         if(!email || !password) return getEl('loginError').innerText = "Введи email та пароль";
+        if(password.length < 6) return getEl('loginError').innerText = "Пароль має містити мінімум 6 символів";
         
         const { error } = await sb.auth.signUp({ email, password });
         if(error) throw error;
@@ -269,6 +269,7 @@
         
         const email = getEl('emailInput').value.trim();
         const password = getEl('passwordInput').value;
+        
         if(!email || !password) throw new Error("Введи email та пароль");
 
         const { error } = await sb.auth.signInWithPassword({ email, password });
