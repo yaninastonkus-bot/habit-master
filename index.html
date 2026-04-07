@@ -101,7 +101,7 @@
 
   <div id="authView" class="auth-shell">
     <div class="auth-card">
-      <h1 style="margin:0 0 10px 0;">🔥 Habit Master</h1>
+      <h1 style="margin:0 0 10px 0;">🔥 ek-habit-tracker</h1>
       <p style="color:var(--muted); margin-bottom:20px;">Увійдіть або створіть акаунт</p>
       
       <input id="emailInput" class="input" type="email" placeholder="Email" style="margin-bottom:12px;"/>
@@ -198,7 +198,7 @@
     const SUPABASE_KEY = "sb_publishable_yfG2qoR_Cx8QKwEbNpzeUA_4VNjItCT";
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // ⚠️ СТВІЙ EMAIL
+    // ⚠️ ТВІЙ EMAIL 
     const OWNER_EMAIL = "yaninastonkus@gmail.com"; 
 
     let currentUser = null, categories = [], habits = [], checkIns = [], posts = [], selectedSpace = "";
@@ -221,7 +221,7 @@
     const getEl = id => document.getElementById(id);
     function getMeta(slug) { return META[slug?.toUpperCase()] || { emoji: "📌", color: "#6f7f98" }; }
 
-    // --- Функція Показати/Сховати пароль ---
+    // --- Показати/Сховати пароль ---
     function togglePassword() {
       const input = getEl('passwordInput');
       const icon = getEl('eyeIcon');
@@ -294,7 +294,7 @@
         renderAll();
       } catch (err) { 
         console.error("Bootstrap Error:", err);
-        alert("Системна помилка під час завантаження: " + err.message);
+        alert("Системна помилка: " + err.message);
         getEl('loginBtn').innerText = "Увійти";
       }
     }
@@ -311,7 +311,7 @@
     async function saveFocus() {
       try {
         await sb.from('profiles').upsert({ id: currentUser.id, focus_text: getEl('focusInput').value });
-        renderDashboard(); // Оновлюємо дашборд, щоб підсвітити обране кільце
+        renderDashboard(); 
       } catch(e) { console.error("Помилка збереження фокусу", e); }
     }
 
@@ -443,7 +443,7 @@
       
       const totalPossible = habits.length * 31;
       const totalPerc = totalPossible > 0 ? Math.min(100, Math.round((checkIns.length / totalPossible) * 100)) : 0;
-      const currentFocus = getEl('focusInput').value; // Беремо поточний фокус
+      const currentFocus = getEl('focusInput').value; 
 
       let ringsHtml = `
         <div class="card ring-card" style="border: 2px solid var(--blue)">
@@ -534,14 +534,23 @@
         } catch(e) { console.error("Admin stats error:", e); }
     }
 
-    function enableNotifications(){ 
-      if(!("Notification" in window)) return alert("Браузер не підтримує пуші");
-      Notification.requestPermission().then(perm => {
+    // --- Оновлені сповіщення (Розумна кнопка для мобільних) ---
+    async function enableNotifications(){ 
+      if(!("Notification" in window)) {
+        return alert("На жаль, ваш пристрій не підтримує прямі веб-сповіщення.\n\nЯкщо ви на iPhone: натисніть 'Поділитися' ➡️ 'На початковий екран', відкрийте новий додаток з екрана і спробуйте знову!");
+      }
+      
+      try {
+        const perm = await Notification.requestPermission();
         if(perm === "granted") {
           getEl('notifBtn').innerText = "✅ Нагадування увімкнені";
           getEl('notifBtn').classList.replace('primary', 'green');
+        } else if (perm === "denied") {
+          alert("Ви заблокували сповіщення. Щоб увімкнути, зайдіть у налаштування сайту в браузері.");
         }
-      });
+      } catch (e) {
+         alert("Помилка: " + e.message);
+      }
     }
 
     function bindTabs(){ 
