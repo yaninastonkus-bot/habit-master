@@ -40,8 +40,10 @@
     .ring::after{content:""; position:absolute; inset:12px; background:#fff; border-radius:50%;}
     .ring-value{font-size:22px; font-weight:800; position:absolute; z-index:10; top:50%; left:50%; transform:translate(-50%, -50%);}
     .side-block{color:#fff; min-height:75px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:15px; font-size:17px; font-weight:700; border-radius:22px; margin-bottom:12px;}
+    .focus-input { background: rgba(255,255,255,0.2); border: 0; color: #fff; width: 100%; border-radius: 10px; padding: 5px 10px; font-family: inherit; font-size: 16px; text-align: center; font-weight: 800;}
+    .focus-input::placeholder { color: rgba(255,255,255,0.6); }
 
-    /* Tracker Fix */
+    /* Tracker Grid */
     .tracker-section{overflow-x:auto; margin-bottom:25px; background:#fff; border-radius:20px; border:1px solid var(--border);}
     .tracker-head, .tracker-row {
       display: grid;
@@ -49,18 +51,19 @@
       align-items: center;
       min-width: 1450px;
     }
-    .tracker-head { color:#fff; font-size:12px; font-weight:700; height:45px; }
+    .tracker-head { color:#fff; font-size:12px; font-weight:700; height:45px; background: #333;}
     .tracker-row { border-bottom: 1px solid #f0f0f0; height:50px; font-size:14px; }
-    .tracker-head > div, .tracker-row > div { display: flex; align-items: center; justify-content: center; height: 100%; border-right: 1px solid rgba(0,0,0,0.03); }
-    .today-cell { background: var(--today) !important; font-weight: 800; color: #000; }
-    .checkbox{width:22px; height:22px; border:2px solid #cbd5e1; border-radius:7px; cursor:pointer; transition: 0.2s;}
+    .today-cell { background: var(--today) !important; color: #000; font-weight: 800;}
+    .checkbox{width:22px; height:22px; border:2px solid #cbd5e1; border-radius:7px; cursor:pointer;}
 
-    /* Community Chat */
-    .community-layout{display:grid; grid-template-columns:260px 1fr; gap:20px;}
+    /* Community Layout Fix */
+    .community-layout{display:grid; grid-template-columns: 280px 1fr; gap:20px; align-items: start;}
+    .spaces-sidebar { display: flex; flex-direction: column; gap: 10px; }
+    .space-btn{width:100%; border:1px solid var(--border); border-radius:18px; padding:16px; text-align:left; font-size:16px; font-weight:700; cursor:pointer; background:#fff; box-shadow: var(--shadow); transition: 0.2s;}
     .chat-box { height: 500px; overflow-y: auto; background: #f8fbff; border-radius: 22px; padding: 20px; display: flex; flex-direction: column; gap: 12px; border: 1px solid var(--border); }
-    .msg { max-width: 85%; padding: 14px 18px; border-radius: 20px; background: #fff; box-shadow: 0 3px 10px rgba(0,0,0,0.04); }
+    .msg { max-width: 85%; padding: 14px 18px; border-radius: 20px; background: #fff; box-shadow: 0 3px 10px rgba(0,0,0,0.04); color: var(--text); }
     .msg.own { align-self: flex-end; background: var(--blue); color: #fff; }
-    .post-img { max-width: 100%; border-radius: 14px; margin-top: 10px; display: block; border: 1px solid rgba(0,0,0,0.1); }
+    .post-img { max-width: 100%; border-radius: 14px; margin-top: 10px; display: block; }
   </style>
 </head>
 <body>
@@ -68,12 +71,11 @@
   <div id="authView" class="auth-shell">
     <div class="auth-card">
       <h1 style="margin:0 0 10px 0;">🔥 Habit Master</h1>
-      <p style="color:var(--muted); margin-bottom:25px;">Твій шлях до кращої версії себе</p>
       <input id="emailInput" class="input" type="email" placeholder="Email" style="margin-bottom:12px;"/>
       <input id="passwordInput" class="input" type="password" placeholder="Пароль" />
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:20px;">
         <button class="button primary" onclick="signIn()">Увійти</button>
-        <button class="button green" onclick="signUp()">Створити акаунт</button>
+        <button class="button green" onclick="signUp()">Зареєструватися</button>
       </div>
     </div>
   </div>
@@ -92,14 +94,15 @@
          <div>
             <div id="levelPanel" class="side-block" style="background:var(--green)">🏆 LEVEL: Novice 🥚</div>
             <div id="streakPanel" class="side-block" style="background:#ff9800">🔥 STREAK: 0 DAYS</div>
-            <div id="motivationPanel" class="side-block" style="background:var(--blue)">✨ Ready for XP?</div>
+            <div id="motivationPanel" class="side-block" style="background:var(--blue)">✨ Nice start!</div>
             <div class="card" style="text-align:center">
               <div style="color:var(--muted); font-size:14px; margin-bottom:5px;">Active Days</div>
               <div id="activeVal" style="font-size:32px; font-weight:800">0</div>
             </div>
-            <div class="card" style="background:var(--pink); color:#fff; font-weight:800; text-align:center;">
-              🎯 FOCUS: consistency<br>
-              🎁 REWARD: merch
+            <div class="card" style="background:var(--pink); color:#fff; padding: 15px; border-radius: 22px;">
+              <div style="font-size: 14px; margin-bottom: 5px; opacity: 0.9;">🎯 YOUR FOCUS:</div>
+              <input id="focusInput" class="focus-input" placeholder="write your goal..." onchange="saveFocus()">
+              <div style="margin-top: 15px; font-size: 14px; opacity: 0.9;">🎁 REWARD: merch</div>
             </div>
          </div>
          <div id="ringsWrap" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:15px;"></div>
@@ -112,15 +115,13 @@
 
     <div id="communityView" class="view">
       <div class="community-layout">
-        <div id="spacesWrap"></div>
+        <div id="spacesWrap" class="spaces-sidebar"></div>
         <div>
-          <div class="card" style="margin-bottom:15px; position:relative;">
+          <div class="card" style="margin-bottom:15px;">
             <h3 id="communityTitle" style="margin:0 0 15px 0;">Community</h3>
             <div id="postsWrap" class="chat-box"></div>
             <div style="margin-top:15px; display:flex; gap:12px;">
-              <label class="button dark" style="padding:14px; cursor:pointer; font-size:18px;">
-                📎<input type="file" id="fileInput" class="hidden">
-              </label>
+              <label class="button dark" style="padding:14px; cursor:pointer;">📎<input type="file" id="fileInput" class="hidden"></label>
               <textarea id="postInput" class="textarea" style="min-height:54px;" placeholder="Поділися успіхом..."></textarea>
               <button class="button primary" onclick="createPost()">Надіслати</button>
             </div>
@@ -131,14 +132,12 @@
     </div>
 
     <div id="settingsView" class="view">
-       <div class="card" style="max-width:600px;">
-           <h2 style="margin-top:0">Налаштування</h2>
-           <p>Акаунт: <strong id="userEmailLabel"></strong></p>
-           <div style="padding:15px; background:#f0f7ff; border-radius:18px; margin-bottom:20px;">
-              <p style="margin-top:0"><strong>Сповіщення:</strong> Отримуй нагадування о 20:00.</p>
-              <button id="notifBtn" class="button primary" onclick="enableNotifications()">🔔 Увімкнути сповіщення</button>
-           </div>
-           <button class="button dark" onclick="logout()">Вийти з акаунту</button>
+       <div class="card">
+           <h2 style="margin-top:0">Статистика проекту</h2>
+           <div id="adminStats" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:15px; margin-bottom:20px;"></div>
+           <hr style="border:0; border-top:1px solid var(--border); margin:20px 0;">
+           <button class="button primary" onclick="enableNotifications()">🔔 Увімкнути сповіщення</button>
+           <button class="button dark" style="margin-left:10px;" onclick="logout()">Logout</button>
        </div>
     </div>
   </div>
@@ -165,39 +164,44 @@
       SLOW: ["No phone tea", "Early bed", "Self-care"]
     };
 
-    // --- Auth Logic ---
+    // --- Auth ---
     async function signUp(){
-      const { data, error } = await sb.auth.signUp({ email: emailInput.value, password: passwordInput.value });
-      if(error) alert(error.message); else alert("Акаунт створено! Увійди.");
+      const { error } = await sb.auth.signUp({ email: emailInput.value, password: passwordInput.value });
+      if(error) alert(error.message); else alert("Акаунт створено!");
     }
     async function signIn(){
-      const { data, error } = await sb.auth.signInWithPassword({ email: emailInput.value, password: passwordInput.value });
+      const { error } = await sb.auth.signInWithPassword({ email: emailInput.value, password: passwordInput.value });
       if(error) alert(error.message); else bootstrap();
     }
     function logout(){ sb.auth.signOut(); location.reload(); }
 
-    // --- Core Logic ---
+    // --- Data ---
     async function bootstrap(){
       const { data } = await sb.auth.getSession();
       currentUser = data.session?.user;
       if(!currentUser) return;
-
       document.getElementById('authView').classList.add('hidden');
       document.getElementById('appView').classList.remove('hidden');
-      userEmailLabel.innerText = currentUser.email;
 
       await loadCategories();
       await syncHabits();
       await loadCheckIns();
       await loadPosts();
+      await loadProfile();
       renderAll();
-      initNotificationTimer();
     }
 
-    async function loadCategories(){ 
-      const { data } = await sb.from('categories').select('*').order('sort_order'); 
-      categories = data || []; 
+    async function loadProfile() {
+      const { data } = await sb.from('profiles').select('focus_text').eq('id', currentUser.id).single();
+      if(data) document.getElementById('focusInput').value = data.focus_text || '';
     }
+
+    async function saveFocus() {
+      const val = document.getElementById('focusInput').value;
+      await sb.from('profiles').upsert({ id: currentUser.id, focus_text: val });
+    }
+
+    async function loadCategories(){ const { data } = await sb.from('categories').select('*').order('sort_order'); categories = data || []; }
     
     async function syncHabits(){
       const { data } = await sb.from('habits').select('*').eq('user_id', currentUser.id);
@@ -210,15 +214,8 @@
       habits = fresh || [];
     }
 
-    async function loadCheckIns(){ 
-      const { data } = await sb.from('check_ins').select('*').eq('user_id', currentUser.id); 
-      checkIns = data || []; 
-    }
-
-    async function loadPosts(){ 
-      const { data } = await sb.from('community_posts').select('*').order('created_at', { ascending: true }); 
-      posts = data || []; 
-    }
+    async function loadCheckIns(){ const { data } = await sb.from('check_ins').select('*').eq('user_id', currentUser.id); checkIns = data || []; }
+    async function loadPosts(){ const { data } = await sb.from('community_posts').select('*').order('created_at', { ascending: true }); posts = data || []; }
 
     async function toggleCheck(habitId, day){
       const dateStr = new Date(new Date().getFullYear(), new Date().getMonth(), day+1).toISOString().split('T')[0];
@@ -228,144 +225,112 @@
       await loadCheckIns(); renderAll();
     }
 
-    // --- Community Upload ---
     async function createPost(){
       const body = postInput.value.trim();
       const file = fileInput.files[0];
       let fileUrl = null;
-
-      if(!body && !file) return;
-      uploadStatus.innerText = "⏳ Завантаження...";
-
       if(file){
-        const fName = `${currentUser.id}/${Date.now()}_${file.name}`;
-        const { data: upData, error: upErr } = await sb.storage.from('community').upload(fName, file);
-        if(!upErr) fileUrl = sb.storage.from('community').getPublicUrl(fName).data.publicUrl;
+        uploadStatus.innerText = "⏳ Завантаження...";
+        const fPath = `${currentUser.id}/${Date.now()}_${file.name}`;
+        const { error: upErr } = await sb.storage.from('community').upload(fPath, file);
+        if(!upErr) fileUrl = sb.storage.from('community').getPublicUrl(fPath).data.publicUrl;
       }
-
-      await sb.from('community_posts').insert({ 
-        user_id: currentUser.id, 
-        category_id: categories.find(c => c.slug === selectedSpace).id, 
-        body, media_url: fileUrl, user_email: currentUser.email 
-      });
-
+      await sb.from('community_posts').insert({ user_id: currentUser.id, category_id: categories.find(c => c.slug === selectedSpace).id, body, media_url: fileUrl, user_email: currentUser.email });
       postInput.value = ''; fileInput.value = ''; uploadStatus.innerText = "";
       await loadPosts(); renderCommunity();
     }
 
-    // --- Notifications ---
-    async function enableNotifications(){
-      if(!("Notification" in window)) return alert("Браузер не підтримує пуші");
-      const perm = await Notification.requestPermission();
-      if(perm === "granted") {
-        notifBtn.innerText = "✅ Нагадування увімкнені";
-        notifBtn.classList.replace('primary', 'green');
-        new Notification("Habit Master Pro", { body: "Нагадування о 20:00 активовано!" });
-      }
-    }
-
-    function initNotificationTimer(){
-      setInterval(() => {
-        const now = new Date();
-        if(now.getHours() === 20 && now.getMinutes() === 0 && Notification.permission === "granted") {
-          new Notification("Час Habit Master! 🔥", { body: "Зайди та відміть свої успіхи за сьогодні." });
-        }
-      }, 60000);
-    }
-
-    // --- Stats & Rendering ---
+    // --- Rendering ---
     function getStreak(){
       const dates = [...new Set(checkIns.map(c => c.check_in_date))].sort().reverse();
-      let streak = 0; let checkDate = new Date().toISOString().split('T')[0];
-      for(let d of dates){
-        if(d === checkDate || d === new Date(Date.now()-86400000).toISOString().split('T')[0]){
-          streak++;
-          checkDate = new Date(new Date(d).getTime()-86400000).toISOString().split('T')[0];
-        } else break;
-      }
+      let streak = 0; let today = new Date().toISOString().split('T')[0];
+      for(let d of dates){ if(d === today || d === new Date(Date.now()-86400000).toISOString().split('T')[0]){ streak++; today = new Date(new Date(today).getTime()-86400000).toISOString().split('T')[0]; } else break; }
       return streak;
     }
 
-    function renderAll(){ renderDashboard(); renderTracker(); renderCommunity(); bindTabs(); }
+    function renderAll(){ renderDashboard(); renderTracker(); renderCommunity(); renderAdmin(); bindTabs(); }
 
     function renderDashboard(){
       const streak = getStreak();
-      const totalCheckins = checkIns.length;
       streakPanel.innerText = `🔥 STREAK: ${streak} DAYS`;
       activeVal.innerText = [...new Set(checkIns.map(c => c.check_in_date))].length;
-      levelPanel.innerText = `🏆 LEVEL: ${totalCheckins < 20 ? 'Novice 🥚' : totalCheckins < 80 ? 'Apprentice 🌱' : 'Warrior ⚔️'}`;
-      motivationPanel.innerText = totalCheckins < 10 ? '✨ Nice start!' : '💪 Keep going!';
+      
+      const totalPossible = habits.length * 31;
+      const totalDone = checkIns.length;
+      const totalPerc = Math.min(100, Math.round((totalDone / totalPossible) * 100));
 
-      ringsWrap.innerHTML = categories.map(cat => {
+      let ringsHtml = `
+        <div class="card ring-card" style="border: 2px solid var(--blue)">
+          <div style="font-weight:800; font-size:14px; color:var(--blue)">🏆 TOTAL PROGRESS</div>
+          <div class="ring" style="background: conic-gradient(var(--blue) ${totalPerc*3.6}deg, #dfe3ea 0deg);"><div class="ring-value">${totalPerc}%</div></div>
+        </div>`;
+
+      ringsHtml += categories.map(cat => {
         const catHabits = habits.filter(h => h.category_id === cat.id);
         const done = checkIns.filter(c => catHabits.some(h => h.id === c.habit_id)).length;
         const perc = Math.min(100, Math.round((done / (catHabits.length * 31)) * 100));
-        return `
-          <div class="card ring-card">
-            <div style="font-weight:800; font-size:14px; color:var(--muted)">${META[cat.slug].emoji} ${cat.slug}</div>
-            <div class="ring" style="background: conic-gradient(${cat.color} ${perc*3.6}deg, #dfe3ea 0deg);">
-              <div class="ring-value">${perc}%</div>
-            </div>
-          </div>`;
+        return `<div class="card ring-card"><div style="font-weight:800; font-size:14px;">${META[cat.slug].emoji} ${cat.slug}</div><div class="ring" style="background: conic-gradient(${cat.color} ${perc*3.6}deg, #dfe3ea 0deg);"><div class="ring-value">${perc}%</div></div></div>`;
       }).join('');
+      
+      ringsWrap.innerHTML = ringsHtml;
     }
 
     function renderTracker(){
       trackerWrap.innerHTML = categories.map(cat => {
         const catHabits = habits.filter(h => h.category_id === cat.id);
-        return `
-          <div class="tracker-section">
-            <div class="tracker-head" style="background:${cat.color}">
-              <div style="justify-content:flex-start; padding-left:15px; border-right:1px solid rgba(255,255,255,0.1)">${META[cat.slug].emoji} ${cat.slug}</div>
-              ${Array.from({length:31}, (_,i)=>`<div class="${i+1===TODAY_DAY?'today-cell':''}">${i+1}</div>`).join('')}
-              <div style="border:0">%</div>
-            </div>
-            ${catHabits.map(h => {
-              const hChecks = checkIns.filter(c => c.habit_id === h.id);
-              return `<div class="tracker-row">
-                <div style="justify-content:flex-start; padding-left:15px; font-weight:600; border-right:1px solid #f0f0f0;">${h.title}</div>
-                ${Array.from({length:31}, (_,i)=>{
-                  const dStr = new Date(new Date().getFullYear(), new Date().getMonth(), i+2).toISOString().split('T')[0];
-                  const isChecked = hChecks.some(c => c.check_in_date === dStr);
-                  return `<div class="${i+1===TODAY_DAY?'today-cell':''}">
-                    <div class="checkbox" style="${isChecked?`background:${cat.color}; border-color:${cat.color}`:''}" onclick="toggleCheck('${h.id}', ${i+1})"></div>
-                  </div>`;
-                }).join('')}
-                <div style="font-weight:bold; color:${cat.color}; border:0">${Math.round((hChecks.length/31)*100)}%</div>
-              </div>`;
-            }).join('')}
-          </div>`;
+        return `<div class="tracker-section">
+          <div class="tracker-head" style="background:${cat.color}">
+            <div style="justify-content:flex-start; padding-left:15px">${META[cat.slug].emoji} ${cat.slug}</div>
+            ${Array.from({length:31}, (_,i)=>`<div class="${i+1===TODAY_DAY?'today-cell':''}">${i+1}</div>`).join('')}
+            <div>%</div>
+          </div>
+          ${catHabits.map(h => {
+            const hChecks = checkIns.filter(c => c.habit_id === h.id);
+            return `<div class="tracker-row">
+              <div style="justify-content:flex-start; padding-left:15px; font-weight:600">${h.title}</div>
+              ${Array.from({length:31}, (_,i)=>{
+                const dStr = new Date(new Date().getFullYear(), new Date().getMonth(), i+2).toISOString().split('T')[0];
+                const checked = hChecks.some(c => c.check_in_date === dStr);
+                return `<div class="${i+1===TODAY_DAY?'today-cell':''}"><div class="checkbox" style="${checked?`background:${cat.color}; border-color:${cat.color}`:''}" onclick="toggleCheck('${h.id}', ${i+1})"></div></div>`;
+              }).join('')}
+              <div style="font-weight:bold; color:${cat.color}">${Math.round((hChecks.length/31)*100)}%</div>
+            </div>`;
+          }).join('')}
+        </div>`;
       }).join('');
     }
 
     function renderCommunity(){
       spacesWrap.innerHTML = categories.map(cat => `
-        <button class="space-btn" style="${selectedSpace===cat.slug?`background:${cat.color}; color:#fff`:''}" 
-                onclick="selectedSpace='${cat.slug}'; renderCommunity();">
+        <button class="space-btn" style="${selectedSpace===cat.slug?`background:${cat.color}; color:#fff`:''}" onclick="selectedSpace='${cat.slug}'; renderCommunity();">
           ${META[cat.slug].emoji} ${cat.slug}
         </button>`).join('');
-      
       const filtered = posts.filter(p => categories.find(c => c.id === p.category_id)?.slug === selectedSpace);
-      postsWrap.innerHTML = filtered.map(p => {
-        const isOwn = p.user_id === currentUser.id;
-        return `<div class="msg ${isOwn?'own':''}">
-          <div style="font-size:10px; opacity:0.8; margin-bottom:4px;">${p.user_email || 'Member'}</div>
-          <div>${p.body || ''}</div>
-          ${p.media_url ? `<img src="${p.media_url}" class="post-img">` : ''}
-        </div>`;
-      }).join('');
+      postsWrap.innerHTML = filtered.map(p => `<div class="msg ${p.user_id===currentUser.id?'own':''}">
+        <div style="font-size:10px; opacity:0.8; margin-bottom:4px;">${p.user_email || 'Member'}</div>
+        <div>${p.body || ''}</div>${p.media_url ? `<img src="${p.media_url}" class="post-img">` : ''}
+      </div>`).join('');
       postsWrap.scrollTop = postsWrap.scrollHeight;
       communityTitle.innerText = `${META[selectedSpace].emoji} ${selectedSpace} Community`;
     }
 
-    function bindTabs(){
-      document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
-        document.querySelectorAll('.tab, .view').forEach(x => x.classList.remove('active'));
-        t.classList.add('active');
-        document.getElementById(t.dataset.view).classList.add('active');
-      });
+    async function renderAdmin() {
+        const { data: allPosts } = await sb.from('community_posts').select('category_id');
+        const stats = {};
+        allPosts?.forEach(p => {
+            const cat = categories.find(c => c.id === p.category_id);
+            if(cat) stats[cat.slug] = (stats[cat.slug] || 0) + 1;
+        });
+        adminStats.innerHTML = categories.map(cat => `
+            <div class="card" style="padding:15px; text-align:center; border-bottom: 4px solid ${cat.color}">
+                <div style="font-size:12px; color:var(--muted)">${cat.slug} Posts</div>
+                <div style="font-size:20px; font-weight:800">${stats[cat.slug] || 0}</div>
+            </div>`).join('');
     }
 
+    async function enableNotifications(){ Notification.requestPermission(); }
+    function bindTabs(){ document.querySelectorAll('.tab').forEach(t => t.onclick = () => { document.querySelectorAll('.tab, .view').forEach(x => x.classList.remove('active')); t.classList.add('active'); document.getElementById(t.dataset.view).classList.add('active'); }); }
+    
     bootstrap();
   </script>
 </body>
