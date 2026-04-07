@@ -694,6 +694,7 @@
   </div>
 
   <script>
+    // --- ТВОЇ КЛЮЧІ ---
     const SUPABASE_URL = "https://vnbcelodaueayobcvkjy.supabase.co";
     const SUPABASE_KEY = "sb_publishable_yfG2qoR_Cx8QKwEbNpzeUA_4VNjItCT";
 
@@ -741,69 +742,34 @@
     let adminAllCheckins = [];
     let adminAllPosts = [];
 
-    function percent(a,b){
-      return b === 0 ? 0 : Math.round((a / b) * 100);
-    }
-
-    function escapeHtml(text){
-      return (text || "")
-        .replace(/&/g,'&amp;')
-        .replace(/</g,'&lt;')
-        .replace(/>/g,'&gt;')
-        .replace(/"/g,'&quot;')
-        .replace(/'/g,'&#039;');
-    }
-
-    function getDaysFromCheckins(data){
-      return [...new Set(data.map(x => new Date(x.check_in_date).getDate()))].sort((a,b)=>a-b);
-    }
-
+    // --- ДОПОМІЖНІ ФУНКЦІЇ ---
+    function percent(a,b){ return b === 0 ? 0 : Math.round((a / b) * 100); }
+    function escapeHtml(text){ return (text || "").replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
+    function getDaysFromCheckins(data){ return [...new Set(data.map(x => new Date(x.check_in_date).getDate()))].sort((a,b)=>a-b); }
     function currentStreak(days){
-      let count = 0;
-      let d = TODAY;
-      const set = new Set(days);
-      while(set.has(d)){
-        count++;
-        d--;
-      }
+      let count = 0; let d = TODAY; const set = new Set(days);
+      while(set.has(d)){ count++; d--; }
       return count;
     }
-
     function bestStreak(days){
       if(!days.length) return 0;
-      let best = 1;
-      let cur = 1;
+      let best = 1; let cur = 1;
       for(let i=1;i<days.length;i++){
-        if(days[i] === days[i-1] + 1) cur++;
-        else cur = 1;
+        if(days[i] === days[i-1] + 1) cur++; else cur = 1;
         best = Math.max(best, cur);
       }
       return best;
     }
-
-    function categoryById(id){
-      return categories.find(c => c.id === id);
-    }
-
+    function categoryById(id){ return categories.find(c => c.id === id); }
     function habitsForCategory(slug){
       const cat = categories.find(c => c.slug === slug);
       if(!cat) return [];
       return habits.filter(h => h.category_id === cat.id).sort((a,b)=>a.sort_order-b.sort_order);
     }
-
-    function checkDaysForHabit(habitId){
-      return checkIns.filter(c => c.habit_id === habitId).map(c => new Date(c.check_in_date).getDate());
-    }
-
+    function checkDaysForHabit(habitId){ return checkIns.filter(c => c.habit_id === habitId).map(c => new Date(c.check_in_date).getDate()); }
     function ringCard(title, color, value){
       const deg = value * 3.6;
-      return `
-        <div class="card ring-card">
-          <div class="ring-title">${title}</div>
-          <div class="ring" style="background: conic-gradient(${color} ${deg}deg, #dfe3ea 0deg);"></div>
-          <div class="ring-value">${value}%</div>
-        </div>
-      `;
+      return `<div class="card ring-card"><div class="ring-title">${title}</div><div class="ring" style="background: conic-gradient(${color} ${deg}deg, #dfe3ea 0deg);"></div><div class="ring-value">${value}%</div></div>`;
     }
 
     function getAuthForm(){
@@ -813,50 +779,31 @@
       };
     }
 
+    // --- ФУНКЦІЇ АВТОРИЗАЦІЇ ---
     async function signUp(){
       const status = document.getElementById('authStatus');
       const { email, password } = getAuthForm();
-
-      if(!email || !password){
-        status.innerText = 'Введи email і пароль';
-        return;
-      }
-
-      if(password.length < 6){
-        status.innerText = 'Пароль має бути мінімум 6 символів';
-        return;
-      }
+      if(!email || !password){ status.innerText = 'Введи email і пароль'; return; }
+      if(password.length < 6){ status.innerText = 'Пароль має бути мінімум 6 символів'; return; }
 
       const { data, error } = await sb.auth.signUp({ email, password });
+      if(error){ status.innerText = 'Помилка реєстрації: ' + error.message; return; }
 
-      if(error){
-        status.innerText = 'Помилка реєстрації: ' + error.message;
-        return;
+      if(data?.session) {
+          status.innerText = 'Успішно! Завантаження додатку...';
+          await bootstrap();
+      } else {
+          status.innerText = 'Акаунт створено ✅ Тепер натисни "Увійти".';
       }
-
-      if(data?.user){
-        status.innerText = 'Акаунт створено ✅ Тепер натисни "Увійти".';
-        return;
-      }
-
-      status.innerText = 'Акаунт створено.';
     }
 
     async function signIn(){
       const status = document.getElementById('authStatus');
       const { email, password } = getAuthForm();
+      if(!email || !password){ status.innerText = 'Введи email і пароль'; return; }
 
-      if(!email || !password){
-        status.innerText = 'Введи email і пароль';
-        return;
-      }
-
-      const { error } = await sb.auth.signInWithPassword({ email, password });
-
-      if(error){
-        status.innerText = 'Помилка входу: ' + error.message;
-        return;
-      }
+      const { data, error } = await sb.auth.signInWithPassword({ email, password });
+      if(error){ status.innerText = 'Помилка входу: ' + error.message; return; }
 
       status.innerText = 'Успішний вхід ✅';
       await bootstrap();
@@ -867,238 +814,127 @@
       location.reload();
     }
 
+    // --- БД ФУНКЦІЇ ---
     async function ensureProfileSafe(){
-      const { error: upsertError } = await sb.from('profiles').upsert({
-        id: currentUser.id,
-        email: currentUser.email,
-        full_name: currentUser.email?.split('@')[0] || 'member'
-      });
+      // Спроба оновити або створити профіль
+      try {
+          await sb.from('profiles').upsert({
+            id: currentUser.id,
+            email: currentUser.email,
+            full_name: currentUser.email?.split('@')[0] || 'member'
+          });
+      } catch(e) { console.warn("Profile upsert failed, check RLS", e); }
 
-      if (upsertError) {
-        throw new Error('profiles upsert failed: ' + upsertError.message);
-      }
-
-      const { data, error } = await sb
-        .from('profiles')
-        .select('*')
-        .eq('id', currentUser.id)
-        .single();
-
-      if (error) {
-        throw new Error('profiles select failed: ' + error.message);
-      }
-
-      profile = data;
+      const { data, error } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+      if (!error) profile = data;
     }
 
     async function ensureCategoriesSafe(){
-      const { data, error } = await sb
-        .from('categories')
-        .select('*')
-        .order('sort_order', { ascending: true });
-
-      if (error) {
-        throw new Error('categories load failed: ' + error.message);
-      }
-
-      if (data && data.length) {
-        categories = data;
-        return;
-      }
-
+      const { data, error } = await sb.from('categories').select('*').order('sort_order', { ascending: true });
+      if (data && data.length) { categories = data; return; }
+      
       const { error: insertError } = await sb.from('categories').insert(DEFAULT_CATEGORIES);
-
-      if (insertError) {
-        throw new Error('categories insert failed: ' + insertError.message);
+      if (!insertError) {
+          const { data: fresh } = await sb.from('categories').select('*').order('sort_order', { ascending: true });
+          categories = fresh || [];
       }
-
-      const { data: fresh, error: reloadError } = await sb
-        .from('categories')
-        .select('*')
-        .order('sort_order', { ascending: true });
-
-      if (reloadError) {
-        throw new Error('categories reload failed: ' + reloadError.message);
-      }
-
-      categories = fresh || [];
     }
 
     async function ensureDefaultHabits(){
-      const { data, error } = await sb
-        .from('habits')
-        .select('*')
-        .eq('user_id', currentUser.id)
-        .order('sort_order', { ascending: true });
-
-      if(error) throw new Error('habits load failed: ' + error.message);
-
+      const { data } = await sb.from('habits').select('*').eq('user_id', currentUser.id).order('sort_order', { ascending: true });
       habits = data || [];
       if(habits.length) return;
 
       const inserts = [];
       categories.forEach(cat => {
         (DEFAULT_HABITS[cat.slug] || []).forEach((title, idx) => {
-          inserts.push({
-            user_id: currentUser.id,
-            category_id: cat.id,
-            title,
-            sort_order: idx + 1
-          });
+          inserts.push({ user_id: currentUser.id, category_id: cat.id, title, sort_order: idx + 1 });
         });
       });
 
-      const { error: insertError } = await sb.from('habits').insert(inserts);
-      if(insertError) throw new Error('habits insert failed: ' + insertError.message);
-
-      const { data: fresh, error: freshError } = await sb
-        .from('habits')
-        .select('*')
-        .eq('user_id', currentUser.id)
-        .order('sort_order', { ascending: true });
-
-      if(freshError) throw new Error('habits reload failed: ' + freshError.message);
-      habits = fresh || [];
+      if(inserts.length) {
+          await sb.from('habits').insert(inserts);
+          const { data: fresh } = await sb.from('habits').select('*').eq('user_id', currentUser.id);
+          habits = fresh || [];
+      }
     }
 
     async function loadCheckIns(){
-      const { data, error } = await sb.from('check_ins').select('*').eq('user_id', currentUser.id);
-      if(error) throw new Error('check_ins load failed: ' + error.message);
+      const { data } = await sb.from('check_ins').select('*').eq('user_id', currentUser.id);
       checkIns = data || [];
     }
 
     async function loadPosts(){
-      const { data, error } = await sb
-        .from('community_posts')
-        .select('*, profiles(full_name,email), categories(slug)')
-        .order('created_at', { ascending: false });
-
-      if(error) throw new Error('community_posts load failed: ' + error.message);
+      const { data } = await sb.from('community_posts').select('*, profiles(full_name,email), categories(slug)').order('created_at', { ascending: false });
       posts = data || [];
     }
 
     async function loadComments(){
-      const { data, error } = await sb
-        .from('community_comments')
-        .select('*, profiles(full_name,email)')
-        .order('created_at', { ascending: true });
-
-      if(error) throw new Error('community_comments load failed: ' + error.message);
+      const { data } = await sb.from('community_comments').select('*, profiles(full_name,email)').order('created_at', { ascending: true });
       comments = data || [];
     }
 
     async function loadAdminData(){
       if(profile?.role !== 'admin') return;
-
       const [profilesRes, checkinsRes, postsRes] = await Promise.all([
         sb.from('profiles').select('id,email,full_name,role'),
         sb.from('check_ins').select('id,user_id,check_in_date,habit_id'),
         sb.from('community_posts').select('id,user_id,category_id')
       ]);
-
       adminProfiles = profilesRes.data || [];
       adminAllCheckins = checkinsRes.data || [];
       adminAllPosts = postsRes.data || [];
     }
 
+    // --- РЕНДЕР І ЛОГІКА ---
     async function saveSettings(){
       const reminder_time = document.getElementById('reminderInput').value.trim() || '19:00';
       const focus_text = document.getElementById('focusInput').value.trim();
-
-      const { error } = await sb
-        .from('profiles')
-        .update({ reminder_time, focus_text })
-        .eq('id', currentUser.id);
-
+      const { error } = await sb.from('profiles').update({ reminder_time, focus_text }).eq('id', currentUser.id);
       document.getElementById('settingsStatus').innerText = error ? error.message : 'Збережено ✅';
-
       if(!error){
-        profile.reminder_time = reminder_time;
-        profile.focus_text = focus_text;
-        renderDashboard();
-        renderToday();
+        if(!profile) profile = {};
+        profile.reminder_time = reminder_time; profile.focus_text = focus_text;
+        renderAll();
       }
     }
 
     async function enableNotifications(){
       const el = document.getElementById('settingsStatus');
-      if(!('Notification' in window)){
-        el.innerText = 'Цей браузер не підтримує сповіщення';
-        return;
-      }
+      if(!('Notification' in window)){ el.innerText = 'Цей браузер не підтримує сповіщення'; return; }
       const permission = await Notification.requestPermission();
       el.innerText = permission === 'granted' ? 'Дозвіл на сповіщення надано ✅' : 'Сповіщення не увімкнені';
     }
 
     async function toggleCheck(habitId, day){
-      const dt = new Date();
-      dt.setDate(day);
+      const dt = new Date(); dt.setDate(day);
       const iso = dt.toISOString().slice(0,10);
-
       const existing = checkIns.find(c => c.habit_id === habitId && new Date(c.check_in_date).getDate() === day);
 
       if(existing){
-        const { error } = await sb.from('check_ins').delete().eq('id', existing.id);
-        if(error) return alert(error.message);
+        await sb.from('check_ins').delete().eq('id', existing.id);
       } else {
-        const { error } = await sb.from('check_ins').insert({
-          user_id: currentUser.id,
-          habit_id: habitId,
-          check_in_date: iso
-        });
-        if(error) return alert(error.message);
+        await sb.from('check_ins').insert({ user_id: currentUser.id, habit_id: habitId, check_in_date: iso });
       }
-
       await loadCheckIns();
-      await loadAdminData();
       renderAll();
     }
 
     async function createPost(){
       const body = document.getElementById('postInput').value.trim();
-      const status = document.getElementById('communityStatus');
-
-      if(!body){
-        status.innerText = 'Напиши щось перед публікацією';
-        return;
-      }
-
+      if(!body) return;
       const cat = categories.find(c => c.slug === selectedSpace);
-      const { error } = await sb.from('community_posts').insert({
-        user_id: currentUser.id,
-        category_id: cat.id,
-        body
-      });
-
-      if(error){
-        status.innerText = error.message;
-        return;
-      }
-
+      await sb.from('community_posts').insert({ user_id: currentUser.id, category_id: cat.id, body });
       document.getElementById('postInput').value = '';
-      status.innerText = 'Опубліковано ✅';
       await loadPosts();
-      await loadAdminData();
       renderCommunity();
-      renderAdmin();
     }
 
     async function addComment(postId){
       const input = document.getElementById(`comment-${postId}`);
       const body = input.value.trim();
       if(!body) return;
-
-      const { error } = await sb.from('community_comments').insert({
-        post_id: postId,
-        user_id: currentUser.id,
-        body
-      });
-
-      if(error){
-        alert(error.message);
-        return;
-      }
-
+      await sb.from('community_comments').insert({ post_id: postId, user_id: currentUser.id, body });
       input.value = '';
       await loadComments();
       renderCommunity();
@@ -1114,15 +950,15 @@
           if(target) target.classList.add('active');
         };
       });
-
       const adminTab = document.getElementById('adminTab');
-      if(adminTab){
-        if(profile?.role === 'admin') adminTab.classList.remove('hidden');
-        else adminTab.classList.add('hidden');
+      if(adminTab) {
+          if(profile?.role === 'admin') adminTab.classList.remove('hidden');
+          else adminTab.classList.add('hidden');
       }
     }
 
     function renderDashboard(){
+      if (!categories.length) return;
       const totalDone = checkIns.length;
       const totalPossible = habits.length * DAYS_IN_MONTH;
       const totalPercent = percent(totalDone, totalPossible);
@@ -1133,25 +969,12 @@
       const categoryStats = categories.map(cat => {
         const catHabits = habits.filter(h => h.category_id === cat.id);
         const catCheckins = checkIns.filter(c => catHabits.some(h => h.id === c.habit_id));
-        return {
-          slug: cat.slug,
-          done: catCheckins.length,
-          percent: percent(catCheckins.length, catHabits.length * DAYS_IN_MONTH),
-          color: cat.color
-        };
+        return { slug: cat.slug, done: catCheckins.length, percent: percent(catCheckins.length, catHabits.length * DAYS_IN_MONTH), color: cat.color };
       });
 
       const strongest = [...categoryStats].sort((a,b)=>b.done-a.done)[0] || { slug:'-' };
-      const weekNum = Math.floor((TODAY - 1) / 7) + 1;
-      const weekStart = (weekNum - 1) * 7 + 1;
-      const weekEnd = Math.min(weekNum * 7, DAYS_IN_MONTH);
-      const weekDone = checkIns.filter(c => {
-        const d = new Date(c.check_in_date).getDate();
-        return d >= weekStart && d <= weekEnd;
-      }).length;
-      const weekGoal = (weekEnd - weekStart + 1) * habits.length;
+      const weekDone = checkIns.filter(c => { const d = new Date(c.check_in_date).getDate(); return d >= TODAY - 7 && d <= TODAY; }).length;
       const todayDone = checkIns.filter(c => new Date(c.check_in_date).getDate() === TODAY).length;
-      const todayGoal = Math.max(1, Math.ceil((totalPossible - totalDone) / Math.max(1, DAYS_IN_MONTH - TODAY + 1)));
 
       const topHabit = [...habits].map(h => ({ ...h, count: checkDaysForHabit(h.id).length })).sort((a,b)=>b.count-a.count)[0];
       const closestWin = [...habits].map(h => ({ ...h, left: DAYS_IN_MONTH - checkDaysForHabit(h.id).length })).sort((a,b)=>a.left-b.left)[0];
@@ -1163,134 +986,66 @@
 
       document.getElementById('levelPanel').innerText = `🏆 LEVEL: ${totalDone < 50 ? 'Novice 🥚' : totalDone < 150 ? 'Apprentice 🌱' : 'Warrior ⚔️'}`;
       document.getElementById('streakPanel').innerText = `🔥 STREAK: ${streak} DAYS • BEST: ${best}`;
-      document.getElementById('motivationPanel').innerText =
-        totalDone === 0 ? '🚀 Ready for XP?' :
-        totalDone < 20 ? '✨ Nice start 🌱' :
-        totalDone < 60 ? '💪 Keep going' :
-        '🚀 Amazing rhythm';
-
+      document.getElementById('motivationPanel').innerText = totalDone < 20 ? '✨ Nice start 🌱' : '💪 Keep going';
       document.getElementById('focusInput').value = profile?.focus_text || '';
       document.getElementById('strongestVal').innerText = strongest.slug;
       document.getElementById('activeVal').innerText = `${activeDays.length}/${TODAY}`;
-      document.getElementById('weekVal').innerText = `${weekDone}/${weekGoal}`;
-      document.getElementById('todayGoalVal').innerText = todayDone > 0 ? 'done ✅' : `${Math.min(3, todayGoal)} check-in(s)`;
+      document.getElementById('weekVal').innerText = `${weekDone}`;
+      document.getElementById('todayGoalVal').innerText = todayDone > 0 ? 'done ✅' : 'waiting';
       document.getElementById('topHabitTitle').innerText = topHabit ? topHabit.title : '-';
-      document.getElementById('topHabitMeta').innerText = `${topHabit ? topHabit.count : 0} check-ins this month`;
       document.getElementById('closestWinTitle').innerText = closestWin ? closestWin.title : '-';
-      document.getElementById('closestWinMeta').innerText = `${closestWin ? closestWin.left : 0} left to full month`;
     }
 
     function renderToday(){
       const todayList = document.getElementById('todayList');
       todayList.innerHTML = '';
-
-      const totalDone = checkIns.length;
-      const totalPossible = habits.length * DAYS_IN_MONTH;
-      const todayDone = checkIns.filter(c => new Date(c.check_in_date).getDate() === TODAY).length;
-      const todayGoal = Math.max(1, Math.ceil((totalPossible - totalDone) / Math.max(1, DAYS_IN_MONTH - TODAY + 1)));
       const activeDays = getDaysFromCheckins(checkIns);
-
-      const strongest = categories.map(cat => {
-        const catHabits = habits.filter(h => h.category_id === cat.id);
-        const done = checkIns.filter(c => catHabits.some(h => h.id === c.habit_id)).length;
-        return { slug: cat.slug, done };
-      }).sort((a,b)=>b.done-a.done)[0];
 
       habits.forEach(habit => {
         const cat = categoryById(habit.category_id);
         const checked = checkDaysForHabit(habit.id).includes(TODAY);
-
         const row = document.createElement('div');
         row.className = 'today-row';
         row.innerHTML = `<div><strong>${escapeHtml(habit.title)}</strong><small>${cat?.slug || ''}</small></div>`;
-
         const btn = document.createElement('button');
-        btn.className = 'button';
-        btn.style.width = '160px';
-        btn.style.margin = '0';
+        btn.className = 'button'; btn.style.width = '160px';
         btn.style.background = checked ? cat.color : '#eef2ff';
         btn.style.color = checked ? '#fff' : '#2433f5';
         btn.innerText = checked ? 'Done' : 'Check in';
         btn.onclick = () => toggleCheck(habit.id, TODAY);
-
         row.appendChild(btn);
         todayList.appendChild(row);
       });
 
-      document.getElementById('todayBigGoal').innerText = todayDone > 0 ? 'Done ✅' : `${Math.min(3, todayGoal)} check-in(s)`;
-      document.getElementById('todayChip').innerText = totalDone === 0 ? 'Ready for XP? 🚀' : totalDone < 20 ? 'Nice start 🌱' : 'Keep going 💪';
       document.getElementById('momentumStreak').innerText = `${currentStreak(activeDays)} days`;
-      document.getElementById('momentumBest').innerText = `${bestStreak(activeDays)} days`;
-      document.getElementById('momentumStrongest').innerText = strongest?.slug || '-';
       document.getElementById('momentumReminder').innerText = profile?.reminder_time || '19:00';
-      document.getElementById('reminderInput').value = profile?.reminder_time || '19:00';
     }
 
     function renderTracker(){
       const wrap = document.getElementById('trackerWrap');
       wrap.innerHTML = '';
-
       categories.forEach(cat => {
-        const section = document.createElement('div');
-        section.className = 'tracker-section';
-
-        const head = document.createElement('div');
-        head.className = 'tracker-head';
-        head.style.background = cat.color;
-
-        const first = document.createElement('div');
-        first.className = 'habit-name';
-        first.textContent = `${META[cat.slug].emoji} ${cat.slug}`;
-        head.appendChild(first);
-
-        for(let d=1; d<=DAYS_IN_MONTH; d++){
-          const cell = document.createElement('div');
-          cell.textContent = d;
-          if(d === TODAY) cell.classList.add('today-cell');
-          head.appendChild(cell);
-        }
-
-        const last = document.createElement('div');
-        last.textContent = 'PROGRESS';
-        head.appendChild(last);
+        const section = document.createElement('div'); section.className = 'tracker-section';
+        const head = document.createElement('div'); head.className = 'tracker-head'; head.style.background = cat.color;
+        head.innerHTML = `<div class="habit-name">${META[cat.slug].emoji} ${cat.slug}</div>`;
+        for(let d=1; d<=DAYS_IN_MONTH; d++) head.innerHTML += `<div class="${d===TODAY?'today-cell':''}">${d}</div>`;
+        head.innerHTML += `<div>%</div>`;
         section.appendChild(head);
 
         habitsForCategory(cat.slug).forEach(habit => {
-          const row = document.createElement('div');
-          row.className = 'tracker-row';
-
-          const title = document.createElement('div');
-          title.className = 'habit-name';
-          title.textContent = habit.title;
-          row.appendChild(title);
-
+          const row = document.createElement('div'); row.className = 'tracker-row';
+          row.innerHTML = `<div class="habit-name">${habit.title}</div>`;
           const days = checkDaysForHabit(habit.id);
-
           for(let d=1; d<=DAYS_IN_MONTH; d++){
-            const cell = document.createElement('div');
-            if(d === TODAY) cell.classList.add('today-cell');
-
-            const btn = document.createElement('button');
-            btn.className = 'checkbox';
-            if(days.includes(d)){
-              btn.style.background = cat.color;
-              btn.style.borderColor = cat.color;
-            }
+            const cell = document.createElement('div'); if(d===TODAY) cell.classList.add('today-cell');
+            const btn = document.createElement('button'); btn.className = 'checkbox';
+            if(days.includes(d)){ btn.style.background = cat.color; btn.style.borderColor = cat.color; }
             btn.onclick = () => toggleCheck(habit.id, d);
-
-            cell.appendChild(btn);
-            row.appendChild(cell);
+            cell.appendChild(btn); row.appendChild(cell);
           }
-
-          const prog = document.createElement('div');
-          prog.className = 'progress';
-          prog.style.color = cat.color;
-          prog.textContent = `${percent(days.length, DAYS_IN_MONTH)}%`;
-          row.appendChild(prog);
-
+          row.innerHTML += `<div class="progress" style="color:${cat.color}">${percent(days.length, DAYS_IN_MONTH)}%</div>`;
           section.appendChild(row);
         });
-
         wrap.appendChild(section);
       });
     }
@@ -1298,121 +1053,39 @@
     function renderCommunity(){
       const spacesWrap = document.getElementById('spacesWrap');
       const postsWrap = document.getElementById('postsWrap');
-      spacesWrap.innerHTML = '';
-      postsWrap.innerHTML = '';
+      spacesWrap.innerHTML = ''; postsWrap.innerHTML = '';
+      if(!categories.length) return;
 
       document.getElementById('communityTitle').innerText = `${META[selectedSpace].emoji} ${selectedSpace} community`;
 
       categories.forEach(cat => {
-        const btn = document.createElement('button');
-        btn.className = 'space-btn';
-
-        if(selectedSpace === cat.slug){
-          btn.style.background = cat.color;
-          btn.style.color = '#fff';
-        }
-
+        const btn = document.createElement('button'); btn.className = 'space-btn';
+        if(selectedSpace === cat.slug){ btn.style.background = cat.color; btn.style.color = '#fff'; }
         btn.innerText = `${META[cat.slug].emoji} ${cat.slug}`;
-        btn.onclick = () => {
-          selectedSpace = cat.slug;
-          renderCommunity();
-        };
-
+        btn.onclick = () => { selectedSpace = cat.slug; renderCommunity(); };
         spacesWrap.appendChild(btn);
       });
 
-      const filteredPosts = posts.filter(p => p.categories?.slug === selectedSpace);
-
-      if(!filteredPosts.length){
-        const empty = document.createElement('div');
-        empty.className = 'card';
-        empty.innerHTML = '<div class="post-body">Поки що тут тихо. Створи перший пост у цьому напрямку ✨</div>';
-        postsWrap.appendChild(empty);
-        return;
-      }
-
-      filteredPosts.forEach(post => {
-        const card = document.createElement('div');
-        card.className = 'card post';
-
-        const postComments = comments.filter(c => c.post_id === post.id);
-
+      posts.filter(p => p.categories?.slug === selectedSpace).forEach(post => {
+        const card = document.createElement('div'); card.className = 'card post';
+        const pComments = comments.filter(c => c.post_id === post.id);
         card.innerHTML = `
-          <div class="post-meta">
-            <strong>${escapeHtml(post.profiles?.full_name || post.profiles?.email || 'member')}</strong>
-            <span>${selectedSpace}</span>
-          </div>
+          <div class="post-meta"><strong>${escapeHtml(post.profiles?.full_name || 'member')}</strong></div>
           <div class="post-body">${escapeHtml(post.body)}</div>
-          <div class="comment-box">
-            ${postComments.map(c => `
-              <div class="comment">
-                <small>${escapeHtml(c.profiles?.full_name || c.profiles?.email || 'member')}</small>
-                ${escapeHtml(c.body)}
-              </div>
-            `).join('')}
-          </div>
+          <div class="comment-box">${pComments.map(c => `<div class="comment"><small>${escapeHtml(c.profiles?.full_name)}</small>${escapeHtml(c.body)}</div>`).join('')}</div>
           <div class="inline" style="margin-top:12px;">
-            <input id="comment-${post.id}" class="input" placeholder="Напиши коментар..." />
-            <button class="button primary" style="width:auto; margin:0;" onclick="addComment('${post.id}')">Send</button>
-          </div>
-        `;
-
+            <input id="comment-${post.id}" class="input" placeholder="Коментар..." />
+            <button class="button primary" onclick="addComment('${post.id}')">Ok</button>
+          </div>`;
         postsWrap.appendChild(card);
       });
     }
 
     function renderAdmin(){
       if(profile?.role !== 'admin') return;
-
       document.getElementById('adminUsersVal').innerText = adminProfiles.length;
-      document.getElementById('adminCheckinsVal').innerText = adminAllCheckins.length;
-      document.getElementById('adminPostsVal').innerText = adminAllPosts.length;
-
-      const categoryCounts = {};
-      adminAllCheckins.forEach(ci => {
-        const habit = habits.find(h => h.id === ci.habit_id);
-        const cat = habit ? categoryById(habit.category_id) : null;
-        if(!cat) return;
-        categoryCounts[cat.slug] = (categoryCounts[cat.slug] || 0) + 1;
-      });
-
-      const topCategory = Object.entries(categoryCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || '-';
-      document.getElementById('adminTopCategoryVal').innerText = topCategory;
-
       const tbody = document.getElementById('adminUsersTable');
-      tbody.innerHTML = '';
-
-      adminProfiles.forEach(user => {
-        const rows = adminAllCheckins.filter(c => c.user_id === user.id);
-        const days = getDaysFromCheckins(rows);
-
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${escapeHtml(user.email || '-')}</td>
-          <td>${rows.length}</td>
-          <td>${days.length}</td>
-          <td>${bestStreak(days)}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    function bindTabs(){
-      document.querySelectorAll('.tab[data-view]').forEach(btn => {
-        btn.onclick = () => {
-          document.querySelectorAll('.tab[data-view]').forEach(x => x.classList.remove('active'));
-          document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-          btn.classList.add('active');
-          const target = document.getElementById(btn.dataset.view);
-          if(target) target.classList.add('active');
-        };
-      });
-
-      const adminTab = document.getElementById('adminTab');
-      if(adminTab){
-        if(profile?.role === 'admin') adminTab.classList.remove('hidden');
-        else adminTab.classList.add('hidden');
-      }
+      tbody.innerHTML = adminProfiles.map(u => `<tr><td>${u.email}</td><td>-</td><td>-</td><td>-</td></tr>`).join('');
     }
 
     function renderAll(){
@@ -1424,16 +1097,10 @@
       renderAdmin();
     }
 
+    // --- ЗАПУСК ---
     async function bootstrap(){
-      const authStatus = document.getElementById('authStatus');
-
       try {
-        const { data, error: sessionError } = await sb.auth.getSession();
-
-        if (sessionError) {
-          throw new Error('Session error: ' + sessionError.message);
-        }
-
+        const { data } = await sb.auth.getSession();
         currentUser = data.session?.user || null;
 
         if(!currentUser){
@@ -1445,30 +1112,30 @@
         document.getElementById('authView').classList.add('hidden');
         document.getElementById('appView').classList.remove('hidden');
 
+        // Покрокове завантаження
+        console.log("Loading profile...");
         await ensureProfileSafe();
+        console.log("Loading categories...");
         await ensureCategoriesSafe();
+        console.log("Loading habits...");
         await ensureDefaultHabits();
+        console.log("Loading checkins...");
         await loadCheckIns();
         await loadPosts();
         await loadComments();
         await loadAdminData();
+        
         renderAll();
 
       } catch (e) {
         console.error('BOOTSTRAP ERROR:', e);
-        document.getElementById('authView').classList.remove('hidden');
-        document.getElementById('appView').classList.add('hidden');
-        authStatus.innerText = 'Помилка завантаження: ' + e.message;
+        document.getElementById('authStatus').innerText = 'Помилка: ' + e.message;
       }
     }
 
-    sb.auth.onAuthStateChange(async (event) => {
-      if (event === 'SIGNED_OUT') {
-        document.getElementById('authView').classList.remove('hidden');
-        document.getElementById('appView').classList.add('hidden');
-        return;
-      }
-      await bootstrap();
+    sb.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN') bootstrap();
+      if (event === 'SIGNED_OUT') location.reload();
     });
 
     bootstrap();
