@@ -3,98 +3,72 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>EK Habit Tracker | Premium</title>
+  <title>EK Habit Tracker</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bg: #0f172a; /* Глибокий темно-синій як у eKreative */
-      --card: rgba(30, 41, 59, 0.7);
-      --accent: #3b82f6;
-      --text: #f8fafc;
-      --muted: #94a3b8;
-      --border: rgba(255, 255, 255, 0.1);
-      --glass: blur(12px);
+    :root{
+      --bg:#eaf2fb; --card:#ffffff; --text:#1b2433; --muted:#6f7f98; --border:#dbe3ee;
+      --shadow:0 10px 28px rgba(46,65,96,.08); --blue:#2f39f6; --green:#8bb26a;
+      --pink:#ba81a7; --move:#2f39f6; --mind:#7ea765; --create:#e3aed0; --slow:#6f87d8;
+      --today:#f3e39c; --dark:#111827;
     }
-
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { 
-      margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); 
-      background-image: radial-gradient(circle at top right, #1e293b, #0f172a); min-height: 100vh;
-    }
-
-    .hidden { display: none !important; }
-
-    /* --- AUTH Premium Look --- */
-    .auth-shell { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-    .auth-card { 
-      width: 100%; max-width: 400px; background: var(--card); backdrop-filter: var(--glass);
-      border-radius: 24px; padding: 40px; border: 1px solid var(--border); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-      text-align: center;
-    }
-    .auth-card h1 { font-weight: 800; letter-spacing: -1px; margin-bottom: 30px; font-size: 28px; }
-
-    /* --- Inputs & Buttons --- */
-    .input { 
-      width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 12px;
-      padding: 14px; color: #fff; font-size: 16px; transition: 0.3s; margin-bottom: 15px;
-    }
-    .input:focus { border-color: var(--accent); outline: none; background: rgba(0,0,0,0.3); }
-
-    .button { 
-      border: 0; border-radius: 12px; padding: 14px 24px; font-size: 15px; font-weight: 600; 
-      cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; justify-content: center;
-    }
-    .button.primary { background: var(--accent); color: #fff; width: 100%; }
-    .button.primary:hover { background: #2563eb; transform: translateY(-2px); }
-    .button.dark { background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--border); }
-
-    /* --- App Layout --- */
-    .app { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
-    .topbar { display: flex; gap: 15px; margin-bottom: 40px; align-items: center; }
-    .tab { 
-      color: var(--muted); font-weight: 600; cursor: pointer; padding: 10px 0; 
-      border-bottom: 2px solid transparent; transition: 0.3s; font-size: 15px;
-    }
-    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-    .view { display: none; animation: fadeIn 0.4s ease; }
-    .view.active { display: block; }
-
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-    /* --- Dashboard Premium --- */
-    .dashboard-grid { display: grid; grid-template-columns: 350px 1fr; gap: 30px; }
-    .card { background: var(--card); backdrop-filter: var(--glass); border-radius: 24px; border: 1px solid var(--border); padding: 25px; }
+    *{box-sizing:border-box}
+    body{margin:0; font-family:Inter,Arial,sans-serif; background:var(--bg); color:var(--text);}
+    .hidden{display:none !important}
     
-    .ring-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
-    .ring-card { text-align: center; padding: 30px 20px; transition: 0.3s; }
-    .ring-card:hover { background: rgba(255,255,255,0.03); }
-    .ring-label { font-size: 12px; font-weight: 800; letter-spacing: 1px; color: var(--muted); margin-bottom: 15px; text-transform: uppercase; }
-
-    /* --- Premium Tracker --- */
-    .tracker-section { overflow-x: auto; background: var(--card); border-radius: 24px; border: 1px solid var(--border); margin-bottom: 30px; }
-    .tracker-row { display: grid; grid-template-columns: 180px repeat(31, 35px); border-bottom: 1px solid var(--border); align-items: center; }
-    .tracker-row:last-child { border: 0; }
-    .tracker-cell { height: 45px; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--border); font-size: 12px; }
-    .habit-name { padding-left: 20px; font-weight: 600; font-size: 14px; justify-content: flex-start; }
+    /* Auth */
+    .auth-shell{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;}
+    .auth-card{width:100%; max-width:500px; background:#f7f8fc; border-radius:28px; padding:32px; box-shadow:var(--shadow); text-align:center;}
+    .input,.textarea{width:100%; border:1px solid var(--border); border-radius:14px; padding:12px 16px; font-size:16px; background:#fff; font-family: inherit; outline:none;}
+    .button{border:0; border-radius:14px; padding:14px 16px; font-size:16px; font-weight:700; cursor:pointer; transition:0.2s;}
+    .button:active{transform:scale(0.98);}
+    .button.primary{background:var(--blue);color:#fff}
+    .button.green{background:var(--green);color:#fff}
+    .button.dark{background:var(--dark);color:#fff}
     
-    .check-box { 
-      width: 18px; height: 18px; border: 2px solid var(--border); border-radius: 5px; cursor: pointer; transition: 0.2s;
-    }
-    .check-box.checked { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 10px var(--accent); }
+    /* Layout */
+    .app{max-width:1480px; margin:0 auto; padding:20px;}
+    .topbar{display:flex; gap:10px; margin-bottom:20px; flex-wrap: wrap;}
+    .tab{background:rgba(255,255,255,.72); border:1px solid var(--border); border-radius:16px; padding:14px 18px; text-align:center; cursor:pointer; font-weight:600; flex-grow:1;}
+    .tab.active{background:#fff; font-weight:800; border-color: var(--blue);}
+    .view{display:none} .view.active{display:block}
+    .card{background:var(--card); border-radius:28px; box-shadow:var(--shadow); padding:22px; margin-bottom:20px;}
+    
+    /* Dashboard */
+    .dashboard-grid { display: grid; grid-template-columns: 320px 1fr; gap: 20px; }
+    #ringsWrap { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+    .ring-card{min-height:220px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; text-align:center; transition:0.3s;}
+    .ring{width:110px; height:110px; border-radius:50%; position:relative; border:1px solid #d2d9e4;}
+    .ring::after{content:""; position:absolute; inset:12px; background:#fff; border-radius:50%;}
+    .ring-value{font-size:22px; font-weight:800; position:absolute; z-index:10; top:50%; left:50%; transform:translate(-50%, -50%);}
+    .side-block{color:#fff; min-height:75px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:15px; font-size:17px; font-weight:700; border-radius:22px; margin-bottom:12px;}
+    
+    /* Profiles & Avatars */
+    .avatar-circle { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; background: #eee; }
+    .avatar-large { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; background: #eee; margin-bottom: 10px; border: 3px solid #fff; box-shadow: var(--shadow); }
+    
+    /* Mentions */
+    .mention { color: #fff; background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 6px; font-weight: 800; }
+    .msg.own .mention { background: rgba(255,255,255,0.3); }
 
-    /* --- Community Chat --- */
-    .chat-box { height: 500px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; padding-right: 10px; }
-    .msg { max-width: 80%; padding: 15px; border-radius: 18px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); position: relative; }
-    .msg.own { align-self: flex-end; background: var(--accent); border: 0; }
-    .msg-user { font-weight: 800; font-size: 12px; margin-bottom: 5px; display: flex; align-items: center; gap: 8px; }
-    .avatar-sm { width: 24px; height: 24px; border-radius: 50%; }
+    /* Community */
+    .chat-box { height: 500px; overflow-y: auto; background: #f8fbff; border-radius: 22px; padding: 20px; display: flex; flex-direction: column; gap: 15px; border: 1px solid var(--border); }
+    .msg { max-width: 85%; padding: 14px 18px; border-radius: 20px; background: #fff; box-shadow: 0 3px 10px rgba(0,0,0,0.04); position: relative; }
+    .msg.own { align-self: flex-end; background: var(--blue); color: #fff; }
+    .msg-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; cursor: pointer; }
+    .msg-user { font-size: 13px; font-weight: 800; }
+    
+    /* Tracker */
+    .tracker-section{overflow-x:auto; margin-bottom:25px; background:#fff; border-radius:20px; border:1px solid var(--border); padding-bottom:5px; -webkit-overflow-scrolling: touch;}
+    .tracker-head, .tracker-row { display: grid; grid-template-columns: 200px repeat(31, 40px) 70px; align-items: center; min-width: 1510px; }
+    .tracker-head { color:#fff; font-size:12px; font-weight:700; height:45px; background: #333;}
+    .tracker-row { border-bottom: 1px solid #f0f0f0; height:50px; font-size:14px; }
+    .checkbox{width:22px; height:22px; border:2px solid #cbd5e1; border-radius:7px; cursor:pointer;}
 
-    /* Mobile */
     @media (max-width: 768px) {
       .dashboard-grid { grid-template-columns: 1fr; }
-      .topbar { overflow-x: auto; padding-bottom: 10px; gap: 20px; }
-      .app { padding: 20px 15px; }
+      #ringsWrap { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .chat-box { height: 400px; }
     }
   </style>
 </head>
@@ -102,42 +76,60 @@
 
   <div id="authView" class="auth-shell">
     <div class="auth-card">
-      <h1>🔥 EK TRACKER</h1>
-      <input id="emailInput" class="input" type="email" placeholder="Електронна пошта" />
-      <div style="position: relative;">
-        <input id="passwordInput" class="input" type="password" placeholder="Пароль (6+ символів)" />
-        <span onclick="togglePass()" style="position:absolute; right:15px; top:14px; cursor:pointer; opacity:0.5;">👁️</span>
+      <h1>🔥 EK Habit Tracker</h1>
+      <input id="emailInput" class="input" type="email" placeholder="Email" style="margin-bottom:12px;"/>
+      <div style="position: relative; margin-bottom: 12px;">
+        <input id="passwordInput" class="input" type="password" placeholder="Пароль (мін. 6 символів)" style="padding-right: 40px;" />
+        <div id="eyeIcon" onclick="togglePassword()" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); cursor: pointer; opacity: 0.6;">👁️</div>
       </div>
-      <button class="button primary" onclick="signIn()">Увійти</button>
-      <p style="font-size: 13px; color: var(--muted); margin-top: 20px;">Немає акаунту? <a href="#" onclick="signUp()" style="color: var(--accent); text-decoration: none;">Створити</a></p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <button id="loginBtn" class="button primary" onclick="signIn()">Увійти</button>
+        <button class="button green" onclick="signUp()">Створити</button>
+      </div>
     </div>
   </div>
 
   <div id="appView" class="app hidden">
     <div class="topbar">
-      <div style="font-weight: 800; font-size: 20px; margin-right: auto;">EK.</div>
-      <div class="tab active" onclick="switchView('dashboardView', this)">Dashboard</div>
-      <div class="tab" onclick="switchView('trackerView', this)">Tracker</div>
-      <div class="tab" onclick="switchView('communityView', this)">Community</div>
-      <div class="tab" onclick="switchView('settingsView', this)">Profile</div>
-      <button class="button dark" style="padding: 8px 15px; font-size: 12px;" onclick="logout()">Logout</button>
+      <div class="tab active" data-view="dashboardView">Dashboard</div>
+      <div class="tab" data-view="trackerView">Tracker</div>
+      <div class="tab" data-view="communityView">Community</div>
+      <div class="tab" data-view="settingsView">Settings</div>
+      <button class="button dark" onclick="logout()">Logout</button>
+    </div>
+
+    <div id="settingsView" class="view">
+       <div class="card" style="text-align:center;">
+           <h2>Мій Профіль</h2>
+           <div style="margin-bottom:20px;">
+              <img id="myAvatar" class="avatar-large" src="">
+              <br>
+              <label class="button dark" style="padding:10px 15px; font-size:12px; cursor:pointer;">
+                Змінити фото 📷 <input type="file" id="avatarInput" class="hidden" onchange="uploadAvatar()">
+              </label>
+           </div>
+           <div style="max-width:300px; margin:0 auto;">
+              <p style="text-align:left; font-size:14px; font-weight:700; margin-bottom:5px;">Твоє Ім'я (нікнейм):</p>
+              <input id="usernameInput" class="input" placeholder="Наприклад: Інна" style="margin-bottom:15px;">
+              <button class="button green" style="width:100%" onclick="saveProfileData()">Зберегти зміни</button>
+           </div>
+           <hr style="margin:30px 0; border:0; border-top:1px solid #eee;">
+           <p style="color:var(--muted)">Email: <span id="userEmailLabel"></span></p>
+       </div>
     </div>
 
     <div id="dashboardView" class="view active">
-      <div class="dashboard-grid">
-        <div class="card">
-          <h3 style="margin-top:0">Overview</h3>
-          <div style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 15px; margin-bottom: 20px;">
-            <div style="color: var(--muted); font-size: 12px; text-transform: uppercase; font-weight: 800;">Current Streak</div>
-            <div id="streakVal" style="font-size: 36px; font-weight: 800; color: var(--accent);">0 Days</div>
-          </div>
-          <div style="font-size: 14px; color: var(--muted);">
-            Ваш рівень: <strong id="levelVal" style="color: #fff;">Novice</strong>
-          </div>
-        </div>
-        <div id="ringsWrap" class="ring-container">
-          </div>
-      </div>
+       <div class="dashboard-grid">
+         <div>
+            <div id="levelPanel" class="side-block" style="background:var(--green)">🏆 LEVEL: Novice 🥚</div>
+            <div id="streakPanel" class="side-block" style="background:#ff9800">🔥 STREAK: 0 DAYS</div>
+            <div class="card" style="text-align:center; padding:15px;">
+              <div style="color:var(--muted); font-size:12px;">Active Days</div>
+              <div id="activeVal" style="font-size:28px; font-weight:800">0</div>
+            </div>
+         </div>
+         <div id="ringsWrap"></div>
+       </div>
     </div>
 
     <div id="trackerView" class="view">
@@ -146,46 +138,139 @@
 
     <div id="communityView" class="view">
       <div class="card">
+        <div id="spacesWrap" style="display:flex; gap:10px; margin-bottom:15px; overflow-x:auto;"></div>
         <div id="postsWrap" class="chat-box"></div>
-        <div style="display:flex; gap:12px;">
-          <textarea id="postInput" class="input" style="margin:0; resize:none; height:50px;" placeholder="Message..."></textarea>
-          <button class="button primary" style="width:120px;" onclick="createPost()">Send</button>
+        <div style="margin-top:15px; display:flex; gap:10px; align-items:center;">
+          <textarea id="postInput" class="textarea" style="min-height:50px; flex-grow:1;" placeholder="Напиши повідомлення (використовуй @ для тегу)..."></textarea>
+          <button class="button primary" onclick="createPost()">Надіслати</button>
         </div>
       </div>
     </div>
-
-    <div id="settingsView" class="view">
-       <div class="card" style="max-width: 500px; margin: 0 auto; text-align: center;">
-          <div id="avatarPlaceholder" style="width:100px; height:100px; border-radius:50%; background:var(--accent); margin:0 auto 20px; display:flex; align-items:center; justify-content:center; font-size:40px; font-weight:800;">?</div>
-          <input id="usernameInput" class="input" placeholder="Display Name">
-          <button class="button primary" onclick="saveProfile()">Save Profile</button>
-       </div>
-    </div>
-
   </div>
 
   <script>
-    // Тут залишається твоя логіка з Supabase, яку ми писали раніше.
-    // Я лише додав функцію перемикання вкладок у новому стилі.
-
     const SUPABASE_URL = "https://vnbcelodaueayobcvkjy.supabase.co";
     const SUPABASE_KEY = "sb_publishable_yfG2qoR_Cx8QKwEbNpzeUA_4VNjItCT";
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    function switchView(viewId, el) {
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.getElementById(viewId).classList.add('active');
-      el.classList.add('active');
+    let currentUser = null, profile = {}, categories = [], habits = [], checkIns = [], posts = [], selectedSpace = "";
+
+    const getEl = id => document.getElementById(id);
+
+    async function signIn(){
+      const { error } = await sb.auth.signInWithPassword({ email: getEl('emailInput').value, password: getEl('passwordInput').value });
+      if(error) alert(error.message); else bootstrap();
+    }
+    async function logout(){ await sb.auth.signOut(); location.reload(); }
+
+    async function bootstrap(){
+      const { data } = await sb.auth.getSession();
+      currentUser = data.session?.user; if(!currentUser) return;
+      getEl('authView').classList.add('hidden'); getEl('appView').classList.remove('hidden');
+      getEl('userEmailLabel').innerText = currentUser.email;
+      
+      await loadProfile();
+      await loadCategories();
+      await loadPosts();
+      await loadHabitsAndChecks();
+      renderAll();
     }
 
-    function togglePass() {
-      const p = document.getElementById('passwordInput');
-      p.type = p.type === 'password' ? 'text' : 'password';
+    // --- ПРОФІЛЬ ---
+    async function loadProfile(){
+      const { data } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+      if(data){
+        profile = data;
+        getEl('usernameInput').value = data.username || "";
+        getEl('myAvatar').src = data.avatar_url || "https://ui-avatars.com/api/?name=" + currentUser.email;
+      }
     }
 
-    // Решту функцій (signIn, signUp, loadData) встав сюди зі свого попереднього коду.
-    // Вони працюватимуть так само, але в новому дизайні.
+    async function saveProfileData(){
+      const username = getEl('usernameInput').value.trim();
+      await sb.from('profiles').upsert({ id: currentUser.id, username });
+      alert("Дані оновлено!");
+      await loadProfile();
+    }
+
+    async function uploadAvatar(){
+      const file = getEl('avatarInput').files[0];
+      if(!file) return;
+      const path = `${currentUser.id}/avatar_${Date.now()}.png`;
+      const { error } = await sb.storage.from('avatars').upload(path, file);
+      if(!error){
+        const url = sb.storage.from('avatars').getPublicUrl(path).data.publicUrl;
+        await sb.from('profiles').upsert({ id: currentUser.id, avatar_url: url });
+        await loadProfile();
+      }
+    }
+
+    // --- КОМ'ЮНІТІ ---
+    async function loadPosts(){
+      // Завантажуємо пости разом з даними профілів (якщо ти налаштувала зв'язки)
+      // Для простоти зараз завантажимо просто пости
+      const { data } = await sb.from('community_posts').select('*').order('created_at');
+      posts = data || [];
+      renderCommunity();
+    }
+
+    function tagUser(name) {
+        if(!name) return;
+        getEl('postInput').value += `@${name} `;
+        getEl('postInput').focus();
+    }
+
+    function formatBody(text) {
+        if(!text) return "";
+        // Підсвічуємо @username
+        return text.replace(/@(\w+|[а-яА-ЯёЁіІїЇєЄ]+)/g, '<span class="mention">@$1</span>');
+    }
+
+    async function createPost(){
+      const body = getEl('postInput').value.trim();
+      if(!body) return;
+      const catId = categories.find(c => c.slug === selectedSpace)?.id;
+      // Зберігаємо також ім'я та аватар у пост для швидкості (або краще робити Join у SQL)
+      await sb.from('community_posts').insert({ 
+        user_id: currentUser.id, 
+        category_id: catId, 
+        body, 
+        user_email: profile.username || currentUser.email,
+        // Додай колонку avatar_url у community_posts, якщо хочеш щоб старі пости не втрачали фото
+      });
+      getEl('postInput').value = "";
+      await loadPosts();
+    }
+
+    // --- РЕНДЕРИНГ ---
+    function renderCommunity(){
+      getEl('spacesWrap').innerHTML = categories.map(cat => `<button class="tab ${selectedSpace===cat.slug?'active':''}" onclick="selectedSpace='${cat.slug}'; renderCommunity();">${cat.slug}</button>`).join('');
+      const filtered = posts.filter(p => categories.find(c => c.id === p.category_id)?.slug === selectedSpace);
+      
+      getEl('postsWrap').innerHTML = filtered.map(p => {
+        const isOwn = p.user_id === currentUser.id;
+        return `
+          <div class="msg ${isOwn?'own':''}">
+            <div class="msg-header" onclick="tagUser('${p.user_email}')">
+              <img src="https://ui-avatars.com/api/?name=${p.user_email}" class="avatar-circle">
+              <span class="msg-user">${p.user_email}</span>
+            </div>
+            <div>${formatBody(p.body)}</div>
+          </div>
+        `;
+      }).join('');
+      getEl('postsWrap').scrollTop = getEl('postsWrap').scrollHeight;
+    }
+
+    // (Інші функції Tracker та Dashboard залишаються як були у попередніх версіях)
+    async function loadCategories(){ const { data } = await sb.from('categories').select('*').order('sort_order'); categories = data || []; if(categories.length && !selectedSpace) selectedSpace = categories[0].slug; }
+    async function loadHabitsAndChecks(){ /* ... твій код завантаження звичок ... */ }
+    function renderAll(){ renderCommunity(); /* ... інший рендер ... */ }
+    function bindTabs(){ document.querySelectorAll('.tab[data-view]').forEach(t => t.onclick = () => { document.querySelectorAll('.tab, .view').forEach(x => x.classList.remove('active')); t.classList.add('active'); getEl(t.dataset.view).classList.add('active'); }); }
+    
+    bootstrap();
+    bindTabs();
+    function togglePassword() { const i = getEl('passwordInput'); i.type = i.type==='password'?'text':'password'; }
   </script>
 </body>
 </html>
