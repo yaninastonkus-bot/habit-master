@@ -715,6 +715,13 @@
       SLOW:   { color: "#6F87D8", emoji: "🌿" }
     };
 
+    const DEFAULT_CATEGORIES = [
+      { slug: "MOVE", title: "Move", color: "#2F39F6", sort_order: 1 },
+      { slug: "MIND", title: "Mind", color: "#7EA765", sort_order: 2 },
+      { slug: "CREATE", title: "Create", color: "#E3AED0", sort_order: 3 },
+      { slug: "SLOW", title: "Slow", color: "#6F87D8", sort_order: 4 }
+    ];
+
     const DEFAULT_HABITS = {
       MOVE: ["10–20 min walk", "Stretching", "Short workout"],
       MIND: ["Journaling", "Reading", "Meditation"],
@@ -820,23 +827,19 @@
         return;
       }
 
-      const { data, error } = await sb.auth.signUp({
-        email,
-        password
-      });
+      const { data, error } = await sb.auth.signUp({ email, password });
 
       if(error){
         status.innerText = 'Помилка реєстрації: ' + error.message;
         return;
       }
 
-      if(data?.session){
-        status.innerText = 'Акаунт створено ✅';
-        await bootstrap();
+      if(data?.user){
+        status.innerText = 'Акаунт створено ✅ Тепер натисни "Увійти".';
         return;
       }
 
-      status.innerText = 'Акаунт створено. Якщо у тебе увімкнене підтвердження пошти в Supabase — підтвердь email.';
+      status.innerText = 'Акаунт створено.';
     }
 
     async function signIn(){
@@ -848,10 +851,7 @@
         return;
       }
 
-      const { error } = await sb.auth.signInWithPassword({
-        email,
-        password
-      });
+      const { error } = await sb.auth.signInWithPassword({ email, password });
 
       if(error){
         status.innerText = 'Помилка входу: ' + error.message;
@@ -867,28 +867,72 @@
       location.reload();
     }
 
-    async function ensureProfile(){
-      const { error } = await sb.from('profiles').upsert({
+    async function ensureProfileSafe(){
+      const { error: upsertError } = await sb.from('profiles').upsert({
         id: currentUser.id,
         email: currentUser.email,
         full_name: currentUser.email?.split('@')[0] || 'member'
       });
-      if(error) throw error;
 
-      const { data, error: readError } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
-      if(readError) throw readError;
+      if (upsertError) {
+        throw new Error('profiles upsert failed: ' + upsertError.message);
+      }
+
+      const { data, error } = await sb
+        .from('profiles')
+        .select('*')
+        .eq('id', currentUser.id)
+        .single();
+
+      if (error) {
+        throw new Error('profiles select failed: ' + error.message);
+      }
+
       profile = data;
     }
 
-    async function loadCategories(){
-      const { data, error } = await sb.from('categories').select('*').order('sort_order', { ascending: true });
-      if(error) throw error;
-      categories = data || [];
+    async function ensureCategoriesSafe(){
+      const { data, error } = await sb
+        .from('categories')
+        .select('*')
+        .order('sort_order', { ascending: true });
+
+      if (error) {
+        throw new Error('categories load failed: ' + error.message);
+      }
+
+      if (data && data.length) {
+        categories = data;
+        return;
+      }
+
+      const { error: insertError } = await sb.from('categories').insert(DEFAULT_CATEGORIES);
+
+      if (insertError) {
+        throw new Error('categories insert failed: ' + insertError.message);
+      }
+
+      const { data: fresh, error: reloadError } = await sb
+        .from('categories')
+        .select('*')
+        .order('sort_order', { ascending: true });
+
+      if (reloadError) {
+        throw new Error('categories reload failed: ' + reloadError.message);
+      }
+
+      categories = fresh || [];
     }
 
     async function ensureDefaultHabits(){
-      const { data, error } = await sb.from('habits').select('*').eq('user_id', currentUser.id).order('sort_order', { ascending: true });
-      if(error) throw error;
+      const { data, error } = await sb
+        .from('habits')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .order('sort_order', { ascending: true });
+
+      if(error) throw new Error('habits load failed: ' + error.message);
+
       habits = data || [];
       if(habits.length) return;
 
@@ -905,16 +949,21 @@
       });
 
       const { error: insertError } = await sb.from('habits').insert(inserts);
-      if(insertError) throw insertError;
+      if(insertError) throw new Error('habits insert failed: ' + insertError.message);
 
-      const { data: fresh, error: freshError } = await sb.from('habits').select('*').eq('user_id', currentUser.id).order('sort_order', { ascending: true });
-      if(freshError) throw freshError;
+      const { data: fresh, error: freshError } = await sb
+        .from('habits')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .order('sort_order', { ascending: true });
+
+      if(freshError) throw new Error('habits reload failed: ' + freshError.message);
       habits = fresh || [];
     }
 
     async function loadCheckIns(){
       const { data, error } = await sb.from('check_ins').select('*').eq('user_id', currentUser.id);
-      if(error) throw error;
+      if(error) throw new Error('check_ins load failed: ' + error.message);
       checkIns = data || [];
     }
 
@@ -923,7 +972,8 @@
         .from('community_posts')
         .select('*, profiles(full_name,email), categories(slug)')
         .order('created_at', { ascending: false });
-      if(error) throw error;
+
+      if(error) throw new Error('community_posts load failed: ' + error.message);
       posts = data || [];
     }
 
@@ -932,7 +982,8 @@
         .from('community_comments')
         .select('*, profiles(full_name,email)')
         .order('created_at', { ascending: true });
-      if(error) throw error;
+
+      if(error) throw new Error('community_comments load failed: ' + error.message);
       comments = data || [];
     }
 
@@ -954,7 +1005,11 @@
       const reminder_time = document.getElementById('reminderInput').value.trim() || '19:00';
       const focus_text = document.getElementById('focusInput').value.trim();
 
-      const { error } = await sb.from('profiles').update({ reminder_time, focus_text }).eq('id', currentUser.id);
+      const { error } = await sb
+        .from('profiles')
+        .update({ reminder_time, focus_text })
+        .eq('id', currentUser.id);
+
       document.getElementById('settingsStatus').innerText = error ? error.message : 'Збережено ✅';
 
       if(!error){
@@ -1370,8 +1425,15 @@
     }
 
     async function bootstrap(){
+      const authStatus = document.getElementById('authStatus');
+
       try {
-        const { data } = await sb.auth.getSession();
+        const { data, error: sessionError } = await sb.auth.getSession();
+
+        if (sessionError) {
+          throw new Error('Session error: ' + sessionError.message);
+        }
+
         currentUser = data.session?.user || null;
 
         if(!currentUser){
@@ -1383,19 +1445,20 @@
         document.getElementById('authView').classList.add('hidden');
         document.getElementById('appView').classList.remove('hidden');
 
-        await ensureProfile();
-        await loadCategories();
+        await ensureProfileSafe();
+        await ensureCategoriesSafe();
         await ensureDefaultHabits();
         await loadCheckIns();
         await loadPosts();
         await loadComments();
         await loadAdminData();
         renderAll();
+
       } catch (e) {
-        console.error(e);
-        document.getElementById('authStatus').innerText = 'Помилка завантаження. Перевір дані та спробуй ще раз.';
+        console.error('BOOTSTRAP ERROR:', e);
         document.getElementById('authView').classList.remove('hidden');
         document.getElementById('appView').classList.add('hidden');
+        authStatus.innerText = 'Помилка завантаження: ' + e.message;
       }
     }
 
