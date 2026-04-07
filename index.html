@@ -19,7 +19,7 @@
     /* Auth */
     .auth-shell{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;}
     .auth-card{width:100%; max-width:500px; background:#f7f8fc; border-radius:28px; padding:32px; box-shadow:var(--shadow); text-align:center;}
-    .input,.textarea{width:100%; border:1px solid var(--border); border-radius:14px; padding:12px 16px; font-size:16px; background:#fff; font-family: inherit; outline:none;}
+    .input,.textarea{width:100%; border:1px solid var(--border); border-radius:14px; padding:14px 16px; font-size:16px; background:#fff; font-family: inherit;}
     .button{border:0; border-radius:14px; padding:14px 16px; font-size:16px; font-weight:700; cursor:pointer; transition:0.2s;}
     .button:active{transform:scale(0.98);}
     .button.primary{background:var(--blue);color:#fff}
@@ -43,32 +43,45 @@
     .ring-value{font-size:22px; font-weight:800; position:absolute; z-index:10; top:50%; left:50%; transform:translate(-50%, -50%);}
     .side-block{color:#fff; min-height:75px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:15px; font-size:17px; font-weight:700; border-radius:22px; margin-bottom:12px;}
     
-    /* Profiles & Avatars */
-    .avatar-circle { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; background: #eee; }
-    .avatar-large { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; background: #eee; margin-bottom: 10px; border: 3px solid #fff; box-shadow: var(--shadow); }
-    
-    /* Mentions */
-    .mention { color: #fff; background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 6px; font-weight: 800; }
-    .msg.own .mention { background: rgba(255,255,255,0.3); }
+    /* Focus Chips */
+    .focus-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 10px; }
+    .focus-chip {
+      background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);
+      color: #fff; border-radius: 12px; padding: 8px 12px;
+      font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s; user-select: none;
+    }
+    .focus-chip.active { background: #fff; color: var(--pink); border-color: #fff; transform: scale(1.05); }
 
-    /* Community */
-    .chat-box { height: 500px; overflow-y: auto; background: #f8fbff; border-radius: 22px; padding: 20px; display: flex; flex-direction: column; gap: 15px; border: 1px solid var(--border); }
-    .msg { max-width: 85%; padding: 14px 18px; border-radius: 20px; background: #fff; box-shadow: 0 3px 10px rgba(0,0,0,0.04); position: relative; }
-    .msg.own { align-self: flex-end; background: var(--blue); color: #fff; }
-    .msg-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; cursor: pointer; }
-    .msg-user { font-size: 13px; font-weight: 800; }
-    
     /* Tracker */
-    .tracker-section{overflow-x:auto; margin-bottom:25px; background:#fff; border-radius:20px; border:1px solid var(--border); padding-bottom:5px; -webkit-overflow-scrolling: touch;}
+    .tracker-section{overflow-x:auto; margin-bottom:25px; background:#fff; border-radius:20px; border:1px solid var(--border); padding-bottom:5px; -webkit-overflow-scrolling: touch; border-collapse: separate;}
     .tracker-head, .tracker-row { display: grid; grid-template-columns: 200px repeat(31, 40px) 70px; align-items: center; min-width: 1510px; }
     .tracker-head { color:#fff; font-size:12px; font-weight:700; height:45px; background: #333;}
     .tracker-row { border-bottom: 1px solid #f0f0f0; height:50px; font-size:14px; }
-    .checkbox{width:22px; height:22px; border:2px solid #cbd5e1; border-radius:7px; cursor:pointer;}
+    .tracker-head > div, .tracker-row > div { display: flex; align-items: center; justify-content: center; height: 100%; border-right: 1px solid rgba(0,0,0,0.03); }
+    .today-cell { background: var(--today) !important; color: #000; font-weight: 800;}
+    .checkbox{width:22px; height:22px; border:2px solid #cbd5e1; border-radius:7px; cursor:pointer; transition: 0.1s;}
+    .checkbox:active { transform: scale(0.9); }
+
+    /* Community */
+    .community-layout{display:grid; grid-template-columns: 280px 1fr; gap:20px; align-items: start;}
+    .spaces-sidebar { display: flex; flex-direction: column; gap: 10px; }
+    .space-btn{width:100%; border:1px solid var(--border); border-radius:18px; padding:16px; text-align:left; font-size:16px; font-weight:700; cursor:pointer; background:#fff; box-shadow: var(--shadow); transition: 0.2s;}
+    .chat-box { height: 500px; overflow-y: auto; background: #f8fbff; border-radius: 22px; padding: 20px; display: flex; flex-direction: column; gap: 12px; border: 1px solid var(--border); }
+    .msg { max-width: 85%; padding: 14px 18px; padding-right: 65px; border-radius: 20px; background: #fff; box-shadow: 0 3px 10px rgba(0,0,0,0.04); color: var(--text); position: relative; word-wrap: break-word; line-height:1.4;}
+    .msg.own { align-self: flex-end; background: var(--blue); color: #fff; }
+    .post-img { max-width: 100%; border-radius: 14px; margin-top: 10px; display: block; border: 1px solid rgba(0,0,0,0.1); }
+    .action-btns { position: absolute; top: 12px; right: 12px; display: flex; gap: 5px; }
+    .action-btn { cursor: pointer; opacity: 0.8; font-size: 14px; transition: 0.2s; user-select: none; background: rgba(255,255,255,0.7); border-radius: 6px; padding: 4px; display:flex; align-items:center; justify-content:center;}
+    .action-btn:hover { opacity: 1; transform: scale(1.1); background: #fff; }
 
     @media (max-width: 768px) {
+      .app { padding: 12px; }
+      .topbar { gap: 8px; }
       .dashboard-grid { grid-template-columns: 1fr; }
-      #ringsWrap { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-      .chat-box { height: 400px; }
+      #ringsWrap { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .community-layout { grid-template-columns: 1fr; }
+      .spaces-sidebar { flex-direction: row; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .space-btn { min-width: 140px; text-align: center; }
     }
   </style>
 </head>
@@ -76,13 +89,15 @@
 
   <div id="authView" class="auth-shell">
     <div class="auth-card">
-      <h1>🔥 EK Habit Tracker</h1>
+      <h1 style="margin:0 0 10px 0;">🔥 EK Habit Tracker</h1>
+      <p style="color:var(--muted); margin-bottom:20px;">Увійдіть або створіть акаунт</p>
       <input id="emailInput" class="input" type="email" placeholder="Email" style="margin-bottom:12px;"/>
       <div style="position: relative; margin-bottom: 12px;">
         <input id="passwordInput" class="input" type="password" placeholder="Пароль (мін. 6 символів)" style="padding-right: 40px;" />
-        <div id="eyeIcon" onclick="togglePassword()" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); cursor: pointer; opacity: 0.6;">👁️</div>
+        <div id="eyeIcon" onclick="togglePassword()" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); cursor: pointer; opacity: 0.6; font-size: 18px;">👁️</div>
       </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+      <div id="loginError" style="color:red; font-size:12px; margin-top:5px; min-height:15px;"></div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:20px;">
         <button id="loginBtn" class="button primary" onclick="signIn()">Увійти</button>
         <button class="button green" onclick="signUp()">Створити</button>
       </div>
@@ -98,34 +113,26 @@
       <button class="button dark" onclick="logout()">Logout</button>
     </div>
 
-    <div id="settingsView" class="view">
-       <div class="card" style="text-align:center;">
-           <h2>Мій Профіль</h2>
-           <div style="margin-bottom:20px;">
-              <img id="myAvatar" class="avatar-large" src="">
-              <br>
-              <label class="button dark" style="padding:10px 15px; font-size:12px; cursor:pointer;">
-                Змінити фото 📷 <input type="file" id="avatarInput" class="hidden" onchange="uploadAvatar()">
-              </label>
-           </div>
-           <div style="max-width:300px; margin:0 auto;">
-              <p style="text-align:left; font-size:14px; font-weight:700; margin-bottom:5px;">Твоє Ім'я (нікнейм):</p>
-              <input id="usernameInput" class="input" placeholder="Наприклад: Інна" style="margin-bottom:15px;">
-              <button class="button green" style="width:100%" onclick="saveProfileData()">Зберегти зміни</button>
-           </div>
-           <hr style="margin:30px 0; border:0; border-top:1px solid #eee;">
-           <p style="color:var(--muted)">Email: <span id="userEmailLabel"></span></p>
-       </div>
-    </div>
-
     <div id="dashboardView" class="view active">
        <div class="dashboard-grid">
          <div>
             <div id="levelPanel" class="side-block" style="background:var(--green)">🏆 LEVEL: Novice 🥚</div>
             <div id="streakPanel" class="side-block" style="background:#ff9800">🔥 STREAK: 0 DAYS</div>
+            <div id="motivationPanel" class="side-block" style="background:var(--blue)">✨ Nice start!</div>
             <div class="card" style="text-align:center; padding:15px;">
-              <div style="color:var(--muted); font-size:12px;">Active Days</div>
-              <div id="activeVal" style="font-size:28px; font-weight:800">0</div>
+              <div style="color:var(--muted); font-size:14px;">Active Days</div>
+              <div id="activeVal" style="font-size:32px; font-weight:800">0</div>
+            </div>
+            <div class="card" style="background:var(--pink); color:#fff; padding: 20px 15px; border-radius: 22px; text-align:center;">
+              <div style="font-size: 14px; margin-bottom: 12px; opacity: 0.9; font-weight:700;">🎯 YOUR FOCUS:</div>
+              <div class="focus-chips">
+                <div class="focus-chip" data-val="MOVE" onclick="toggleFocusChip('MOVE')">🏃 MOVE</div>
+                <div class="focus-chip" data-val="MIND" onclick="toggleFocusChip('MIND')">🧠 MIND</div>
+                <div class="focus-chip" data-val="CREATE" onclick="toggleFocusChip('CREATE')">🎨 CREATE</div>
+                <div class="focus-chip" data-val="SLOW" onclick="toggleFocusChip('SLOW')">🌿 SLOW</div>
+              </div>
+              <hr style="border:0; border-top:1px solid rgba(255,255,255,0.3); margin:15px 0;">
+              <div style="font-size: 15px; font-weight:800;">🎁 REWARD: <span style="opacity:0.9; font-weight:normal;">merch</span></div>
             </div>
          </div>
          <div id="ringsWrap"></div>
@@ -137,14 +144,37 @@
     </div>
 
     <div id="communityView" class="view">
-      <div class="card">
-        <div id="spacesWrap" style="display:flex; gap:10px; margin-bottom:15px; overflow-x:auto;"></div>
-        <div id="postsWrap" class="chat-box"></div>
-        <div style="margin-top:15px; display:flex; gap:10px; align-items:center;">
-          <textarea id="postInput" class="textarea" style="min-height:50px; flex-grow:1;" placeholder="Напиши повідомлення (використовуй @ для тегу)..."></textarea>
-          <button class="button primary" onclick="createPost()">Надіслати</button>
+      <div class="community-layout">
+        <div id="spacesWrap" class="spaces-sidebar"></div>
+        <div>
+          <div class="card">
+            <h3 id="communityTitle" style="margin:0 0 15px 0;">Community</h3>
+            <div id="postsWrap" class="chat-box"></div>
+            <div style="margin-top:15px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+              <div id="attachWrap" style="display:flex; align-items:center; gap:8px;">
+                <label class="button dark" style="padding:14px; cursor:pointer;">📎<input type="file" id="fileInput" class="hidden" onchange="updateFileName()"></label>
+                <span id="fileNameDisplay" style="font-size: 10px; color: var(--muted); max-width: 80px; overflow: hidden;"></span>
+              </div>
+              <textarea id="postInput" class="textarea" style="min-height:50px; flex-grow:1;" placeholder="Поділися успіхом..."></textarea>
+              <button id="cancelEditBtn" class="button dark hidden" onclick="cancelEdit()">Скасувати</button>
+              <button id="sendBtn" class="button primary" onclick="createPost()">Надіслати</button>
+            </div>
+            <div id="uploadStatus" style="font-size:12px; color:var(--blue); margin-top:5px;"></div>
+          </div>
         </div>
       </div>
+    </div>
+
+    <div id="settingsView" class="view">
+       <div class="card">
+           <h2 style="margin:0 0 15px 0;">Налаштування</h2>
+           <p>Email: <strong id="userEmailLabel"></strong></p>
+           <button id="notifBtn" class="button primary" style="width:100%" onclick="enableNotifications()">🔔 Увімкнути сповіщення</button>
+           <div id="adminSection" class="hidden" style="margin-top:20px; border-top:1px solid #eee; padding-top:20px;">
+              <h3 style="color:var(--blue)">👑 Панель власника</h3>
+              <div id="adminStats" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap:10px;"></div>
+           </div>
+       </div>
     </div>
   </div>
 
@@ -153,13 +183,30 @@
     const SUPABASE_KEY = "sb_publishable_yfG2qoR_Cx8QKwEbNpzeUA_4VNjItCT";
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    let currentUser = null, profile = {}, categories = [], habits = [], checkIns = [], posts = [], selectedSpace = "";
+    const OWNER_EMAIL = "yaninastonkus@gmail.com"; 
+
+    let currentUser = null, categories = [], habits = [], checkIns = [], posts = [], selectedSpace = "", editingPostId = null, selectedFocuses = [];
+    const TODAY_DAY = new Date().getDate();
+
+    const META = { MOVE: { color: "#2F39F6", emoji: "🏃" }, MIND: { color: "#7EA765", emoji: "🧠" }, CREATE: { color: "#E3AED0", emoji: "🎨" }, SLOW: { color: "#6F87D8", emoji: "🌿" } };
+    const DEFAULT_HABITS = { MOVE: ["10–20 min walk", "Stretching", "Short workout"], MIND: ["Journaling", "Reading", "Meditation"], CREATE: ["Sketching", "Drawing", "New recipe"], SLOW: ["No phone tea", "Early bed", "Self-care"] };
 
     const getEl = id => document.getElementById(id);
+    function getMeta(slug) { return META[slug?.toUpperCase()] || { emoji: "📌", color: "#6f7f98" }; }
 
+    function updateFileName() { const file = getEl('fileInput').files[0]; getEl('fileNameDisplay').innerText = file ? file.name : ''; }
+    function togglePassword() { const input = getEl('passwordInput'); const icon = getEl('eyeIcon'); if (input.type === 'password') { input.type = 'text'; icon.innerText = '🙈'; } else { input.type = 'password'; icon.innerText = '👁️'; } }
+
+    async function signUp(){
+      const email = getEl('emailInput').value.trim(); const password = getEl('passwordInput').value;
+      if(!email || password.length < 6) return alert("Перевірте дані (пароль від 6 симв.)");
+      const { error } = await sb.auth.signUp({ email, password });
+      if(error) alert(error.message); else alert("Акаунт створено! Увійдіть.");
+    }
     async function signIn(){
+      getEl('loginBtn').innerText = "⏳...";
       const { error } = await sb.auth.signInWithPassword({ email: getEl('emailInput').value, password: getEl('passwordInput').value });
-      if(error) alert(error.message); else bootstrap();
+      if(error) { alert(error.message); getEl('loginBtn').innerText = "Увійти"; } else bootstrap();
     }
     async function logout(){ await sb.auth.signOut(); location.reload(); }
 
@@ -168,109 +215,119 @@
       currentUser = data.session?.user; if(!currentUser) return;
       getEl('authView').classList.add('hidden'); getEl('appView').classList.remove('hidden');
       getEl('userEmailLabel').innerText = currentUser.email;
-      
-      await loadProfile();
-      await loadCategories();
-      await loadPosts();
-      await loadHabitsAndChecks();
+      if(currentUser.email === OWNER_EMAIL) getEl('adminSection').classList.remove('hidden');
+      await loadCategories(); await syncHabits(); await loadCheckIns(); await loadPosts(); await loadProfile();
       renderAll();
     }
 
-    // --- ПРОФІЛЬ ---
-    async function loadProfile(){
-      const { data } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
-      if(data){
-        profile = data;
-        getEl('usernameInput').value = data.username || "";
-        getEl('myAvatar').src = data.avatar_url || "https://ui-avatars.com/api/?name=" + currentUser.email;
+    async function loadProfile() { const { data } = await sb.from('profiles').select('focus_text').eq('id', currentUser.id).single(); if(data?.focus_text) { selectedFocuses = data.focus_text.split(',').filter(Boolean); updateFocusUI(); } }
+    function toggleFocusChip(val) { const idx = selectedFocuses.indexOf(val); if (idx > -1) selectedFocuses.splice(idx, 1); else selectedFocuses.push(val); updateFocusUI(); saveFocus(); }
+    function updateFocusUI() { document.querySelectorAll('.focus-chip').forEach(c => selectedFocuses.includes(c.dataset.val) ? c.classList.add('active') : c.classList.remove('active')); renderDashboard(); }
+    async function saveFocus() { await sb.from('profiles').upsert({ id: currentUser.id, focus_text: selectedFocuses.join(',') }); }
+
+    async function loadCategories(){ const { data } = await sb.from('categories').select('*').order('sort_order'); categories = data || []; if(categories.length && !selectedSpace) selectedSpace = categories[0].slug; }
+    
+    async function syncHabits(){
+      const { data } = await sb.from('habits').select('*').eq('user_id', currentUser.id);
+      if(!data || data.length === 0){
+        let ins = []; categories.forEach(c => (DEFAULT_HABITS[c.slug?.toUpperCase()] || []).forEach(t => ins.push({ user_id:currentUser.id, category_id:c.id, title:t })));
+        if(ins.length) await sb.from('habits').insert(ins);
       }
+      const { data: fresh } = await sb.from('habits').select('*').eq('user_id', currentUser.id);
+      habits = fresh || [];
     }
+    async function loadCheckIns(){ const { data } = await sb.from('check_ins').select('*').eq('user_id', currentUser.id); checkIns = data || []; }
+    async function loadPosts(){ const { data } = await sb.from('community_posts').select('*').order('created_at', { ascending: true }); posts = data || []; renderCommunity(); }
 
-    async function saveProfileData(){
-      const username = getEl('usernameInput').value.trim();
-      await sb.from('profiles').upsert({ id: currentUser.id, username });
-      alert("Дані оновлено!");
-      await loadProfile();
-    }
-
-    async function uploadAvatar(){
-      const file = getEl('avatarInput').files[0];
-      if(!file) return;
-      const path = `${currentUser.id}/avatar_${Date.now()}.png`;
-      const { error } = await sb.storage.from('avatars').upload(path, file);
-      if(!error){
-        const url = sb.storage.from('avatars').getPublicUrl(path).data.publicUrl;
-        await sb.from('profiles').upsert({ id: currentUser.id, avatar_url: url });
-        await loadProfile();
-      }
-    }
-
-    // --- КОМ'ЮНІТІ ---
-    async function loadPosts(){
-      // Завантажуємо пости разом з даними профілів (якщо ти налаштувала зв'язки)
-      // Для простоти зараз завантажимо просто пости
-      const { data } = await sb.from('community_posts').select('*').order('created_at');
-      posts = data || [];
-      renderCommunity();
-    }
-
-    function tagUser(name) {
-        if(!name) return;
-        getEl('postInput').value += `@${name} `;
-        getEl('postInput').focus();
-    }
-
-    function formatBody(text) {
-        if(!text) return "";
-        // Підсвічуємо @username
-        return text.replace(/@(\w+|[а-яА-ЯёЁіІїЇєЄ]+)/g, '<span class="mention">@$1</span>');
+    async function toggleCheck(habitId, day){
+      const dateStr = new Date(new Date().getFullYear(), new Date().getMonth(), day+1).toISOString().split('T')[0];
+      const exist = checkIns.find(c => c.habit_id === habitId && c.check_in_date === dateStr);
+      if(exist) await sb.from('check_ins').delete().eq('id', exist.id);
+      else await sb.from('check_ins').insert({ user_id:currentUser.id, habit_id:habitId, check_in_date:dateStr });
+      await loadCheckIns(); renderAll();
     }
 
     async function createPost(){
-      const body = getEl('postInput').value.trim();
-      if(!body) return;
-      const catId = categories.find(c => c.slug === selectedSpace)?.id;
-      // Зберігаємо також ім'я та аватар у пост для швидкості (або краще робити Join у SQL)
-      await sb.from('community_posts').insert({ 
-        user_id: currentUser.id, 
-        category_id: catId, 
-        body, 
-        user_email: profile.username || currentUser.email,
-        // Додай колонку avatar_url у community_posts, якщо хочеш щоб старі пости не втрачали фото
-      });
-      getEl('postInput').value = "";
-      await loadPosts();
+      const body = getEl('postInput').value.trim(); const file = getEl('fileInput').files[0];
+      if(!body && !file && !editingPostId) return;
+      getEl('uploadStatus').innerText = "⏳...";
+      try {
+        if(editingPostId) { await sb.from('community_posts').update({ body }).eq('id', editingPostId); cancelEdit(); }
+        else {
+          let url = null;
+          if(file){
+            const fName = `${currentUser.id}/${Date.now()}_${file.name}`;
+            const { error: upErr } = await sb.storage.from('community').upload(fName, file);
+            if(!upErr) url = sb.storage.from('community').getPublicUrl(fName).data.publicUrl;
+          }
+          await sb.from('community_posts').insert({ user_id: currentUser.id, category_id: categories.find(c => c.slug === selectedSpace)?.id, body, media_url: url, user_email: currentUser.email });
+          getEl('postInput').value = ''; getEl('fileInput').value = ''; getEl('fileNameDisplay').innerText = '';
+        }
+        await loadPosts(); getEl('uploadStatus').innerText = "";
+      } catch(e) { alert(e.message); }
+    }
+    function startEdit(id) { editingPostId = id; const p = posts.find(x => x.id === id); getEl('postInput').value = p.body; getEl('sendBtn').innerText = "Зберегти"; getEl('cancelEditBtn').classList.remove('hidden'); getEl('attachWrap').classList.add('hidden'); }
+    function cancelEdit() { editingPostId = null; getEl('postInput').value = ''; getEl('sendBtn').innerText = "Надіслати"; getEl('cancelEditBtn').classList.add('hidden'); getEl('attachWrap').classList.remove('hidden'); }
+    async function deletePost(id, url) { if(!confirm("Видалити?")) return; if(url) await sb.storage.from('community').remove([url.split('community/')[1]]); await sb.from('community_posts').delete().eq('id', id); await loadPosts(); }
+
+    function getStreak(){
+      const dates = [...new Set(checkIns.map(c => c.check_in_date))].sort().reverse();
+      let s = 0, check = new Date().toISOString().split('T')[0];
+      for(let d of dates){ if(d === check || d === new Date(Date.now()-86400000).toISOString().split('T')[0]){ s++; check = new Date(new Date(d).getTime()-86400000).toISOString().split('T')[0]; } else break; }
+      return s;
     }
 
-    // --- РЕНДЕРИНГ ---
-    function renderCommunity(){
-      getEl('spacesWrap').innerHTML = categories.map(cat => `<button class="tab ${selectedSpace===cat.slug?'active':''}" onclick="selectedSpace='${cat.slug}'; renderCommunity();">${cat.slug}</button>`).join('');
-      const filtered = posts.filter(p => categories.find(c => c.id === p.category_id)?.slug === selectedSpace);
-      
-      getEl('postsWrap').innerHTML = filtered.map(p => {
-        const isOwn = p.user_id === currentUser.id;
-        return `
-          <div class="msg ${isOwn?'own':''}">
-            <div class="msg-header" onclick="tagUser('${p.user_email}')">
-              <img src="https://ui-avatars.com/api/?name=${p.user_email}" class="avatar-circle">
-              <span class="msg-user">${p.user_email}</span>
-            </div>
-            <div>${formatBody(p.body)}</div>
-          </div>
-        `;
+    function renderAll(){
+      const sections = document.querySelectorAll('.tracker-section');
+      const scrolls = Array.from(sections).map(s => s.scrollLeft);
+      renderDashboard(); renderTracker(); renderCommunity(); renderAdmin(); bindTabs();
+      document.querySelectorAll('.tracker-section').forEach((s, i) => { if(scrolls[i]) s.scrollLeft = scrolls[i]; });
+    }
+
+    function renderDashboard(){
+      getEl('streakPanel').innerText = `🔥 STREAK: ${getStreak()} DAYS`;
+      getEl('activeVal').innerText = [...new Set(checkIns.map(c => c.check_in_date))].length;
+      getEl('levelPanel').innerText = `🏆 LEVEL: ${checkIns.length < 20 ? 'Novice 🥚' : 'Warrior ⚔️'}`;
+      const totalPerc = habits.length ? Math.min(100, Math.round((checkIns.length / (habits.length * 31)) * 100)) : 0;
+      let html = `<div class="card ring-card" style="border: 2px solid var(--blue)"><div style="font-weight:800; font-size:14px; color:var(--blue)">🏆 TOTAL</div><div class="ring" style="background: conic-gradient(var(--blue) ${totalPerc*3.6}deg, #dfe3ea 0deg);"><div class="ring-value">${totalPerc}%</div></div></div>`;
+      html += categories.map(cat => {
+        const hbits = habits.filter(h => h.category_id === cat.id);
+        const done = checkIns.filter(c => hbits.some(h => h.id === c.habit_id)).length;
+        const perc = hbits.length ? Math.min(100, Math.round((done / (hbits.length * 31)) * 100)) : 0;
+        const foc = selectedFocuses.includes(cat.slug);
+        return `<div class="card ring-card" style="${foc?'border:2px solid '+cat.color:''}"><div style="font-weight:800; font-size:14px;">${foc?'🎯':''}${getMeta(cat.slug).emoji} ${cat.slug}</div><div class="ring" style="background: conic-gradient(${cat.color} ${perc*3.6}deg, #dfe3ea 0deg);"><div class="ring-value">${perc}%</div></div></div>`;
       }).join('');
-      getEl('postsWrap').scrollTop = getEl('postsWrap').scrollHeight;
+      getEl('ringsWrap').innerHTML = html;
     }
 
-    // (Інші функції Tracker та Dashboard залишаються як були у попередніх версіях)
-    async function loadCategories(){ const { data } = await sb.from('categories').select('*').order('sort_order'); categories = data || []; if(categories.length && !selectedSpace) selectedSpace = categories[0].slug; }
-    async function loadHabitsAndChecks(){ /* ... твій код завантаження звичок ... */ }
-    function renderAll(){ renderCommunity(); /* ... інший рендер ... */ }
-    function bindTabs(){ document.querySelectorAll('.tab[data-view]').forEach(t => t.onclick = () => { document.querySelectorAll('.tab, .view').forEach(x => x.classList.remove('active')); t.classList.add('active'); getEl(t.dataset.view).classList.add('active'); }); }
-    
+    function renderTracker(){
+      getEl('trackerWrap').innerHTML = categories.map(cat => {
+        const hbits = habits.filter(h => h.category_id === cat.id);
+        return `<div class="tracker-section"><div class="tracker-head" style="background:${cat.color}"><div style="justify-content:flex-start; padding-left:15px;">${getMeta(cat.slug).emoji} ${cat.slug}</div>${Array.from({length:31}, (_,i)=>`<div class="${i+1===TODAY_DAY?'today-cell':''}">${i+1}</div>`).join('')}<div>%</div></div>${hbits.map(h => {
+            const hChecks = checkIns.filter(c => c.habit_id === h.id);
+            return `<div class="tracker-row"><div style="justify-content:flex-start; padding-left:15px; font-weight:600;">${h.title}</div>${Array.from({length:31}, (_,i)=>{
+                const dStr = new Date(new Date().getFullYear(), new Date().getMonth(), i+2).toISOString().split('T')[0];
+                return `<div class="${i+1===TODAY_DAY?'today-cell':''}"><div class="checkbox" style="${hChecks.some(c=>c.check_in_date===dStr)?'background:'+cat.color:''}" onclick="toggleCheck('${h.id}', ${i+1})"></div></div>`;
+            }).join('')}<div style="font-weight:bold; color:${cat.color}">${Math.round((hChecks.length/31)*100)}%</div></div>`;
+          }).join('')}</div>`;
+      }).join('');
+    }
+
+    function renderCommunity(){
+      getEl('spacesWrap').innerHTML = categories.map(cat => `<button class="space-btn" style="${selectedSpace===cat.slug?'background:'+cat.color+'; color:#fff':''}" onclick="selectedSpace='${cat.slug}'; cancelEdit(); renderCommunity();">${getMeta(cat.slug).emoji} ${cat.slug}</button>`).join('');
+      const filtered = posts.filter(p => categories.find(c => c.id === p.category_id)?.slug === selectedSpace);
+      getEl('postsWrap').innerHTML = filtered.map(p => `<div class="msg ${p.user_id===currentUser.id?'own':''}">
+        ${p.user_id===currentUser.id?`<div class="action-btns"><span class="action-btn" onclick="startEdit('${p.id}')">✏️</span><span class="action-btn" onclick="deletePost('${p.id}','${p.media_url}')">🗑️</span></div>`:''}
+        <div style="font-size:10px; opacity:0.8; margin-bottom:4px;">${p.user_email || 'Member'}</div><div>${p.body || ''}</div>${p.media_url ? `<img src="${p.media_url}" class="post-img">` : ''}</div>`).join('');
+      getEl('postsWrap').scrollTop = getEl('postsWrap').scrollHeight;
+      getEl('communityTitle').innerText = `${getMeta(selectedSpace).emoji} ${selectedSpace} Community`;
+    }
+
+    async function renderAdmin() { if(currentUser?.email !== OWNER_EMAIL) return; const { data } = await sb.from('community_posts').select('category_id'); const s = {}; data?.forEach(p => { const c = categories.find(x => x.id === p.category_id); if(c) s[c.slug] = (s[c.slug] || 0) + 1; }); getEl('adminStats').innerHTML = categories.map(c => `<div class="card" style="padding:15px; text-align:center; border-bottom:4px solid ${c.color}"><div style="font-size:12px; color:var(--muted)">${c.slug} Posts</div><div style="font-size:20px; font-weight:800">${s[c.slug] || 0}</div></div>`).join(''); }
+
+    async function enableNotifications(){ if(!("Notification" in window)) return alert("Не підтримується"); const p = await Notification.requestPermission(); if(p === "granted") { getEl('notifBtn').innerText = "✅ Увімкнено"; getEl('notifBtn').classList.replace('primary', 'green'); } else alert("Блокується браузером"); }
+    function bindTabs(){ document.querySelectorAll('.tab').forEach(t => t.onclick = () => { document.querySelectorAll('.tab, .view').forEach(x => x.classList.remove('active')); t.classList.add('active'); getEl(t.dataset.view).classList.add('active'); }); }
     bootstrap();
-    bindTabs();
-    function togglePassword() { const i = getEl('passwordInput'); i.type = i.type==='password'?'text':'password'; }
   </script>
 </body>
 </html>
