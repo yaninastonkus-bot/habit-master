@@ -1015,8 +1015,26 @@
     }
 
     async function loadPosts(){
-      const { data } = await sb.from('community_posts').select('*').order('created_at', { ascending: true });
-      posts = data || [];
+      const { data, error } = await sb
+        .from('community_posts')
+        .select('*')
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        alert(error.message);
+        posts = [];
+        renderCommunity();
+        return;
+      }
+
+      posts = (data || []).map(p => {
+        const cat = categories.find(c => c.id === p.category_id);
+        if (cat && (cat.slug || '').toUpperCase() === 'GENERAL') {
+          return { ...p, category_id: null };
+        }
+        return p;
+      });
+
       renderCommunity();
     }
 
@@ -1033,30 +1051,68 @@
       const body = getEl('postInput').value.trim();
       const file = getEl('fileInput').files[0];
       if(!body && !file) return;
+
       try {
         let url = null;
+
         if(file){
           const fName = `${currentUser.id}/${Date.now()}_${file.name}`;
           const { error: upErr } = await sb.storage.from('community').upload(fName, file);
-          if(!upErr) url = sb.storage.from('community').getPublicUrl(fName).data.publicUrl;
+          if(upErr) {
+            alert(upErr.message);
+            return;
+          }
+          url = sb.storage.from('community').getPublicUrl(fName).data.publicUrl;
         }
+
         const catId = selectedSpace === 'GENERAL'
           ? null
           : (categories.find(c => c.slug === selectedSpace)?.id ?? null);
+
         if(editingPostId){
-          const payload = { body };
+          const payload = {
+            body,
+            category_id: catId
+          };
+
           if(url) payload.media_url = url;
-          await sb.from('community_posts').update(payload).eq('id', editingPostId).eq('user_id', currentUser.id);
+
+          const { error } = await sb
+            .from('community_posts')
+            .update(payload)
+            .eq('id', editingPostId)
+            .eq('user_id', currentUser.id);
+
+          if(error){
+            alert(error.message);
+            return;
+          }
+
           editingPostId = null;
           getEl('sendBtn').innerText = 'Send';
         } else {
-          await sb.from('community_posts').insert({ user_id: currentUser.id, category_id: catId, body, media_url: url, user_email: currentUser.email });
+          const { error } = await sb.from('community_posts').insert({
+            user_id: currentUser.id,
+            category_id: catId,
+            body,
+            media_url: url,
+            user_email: currentUser.email
+          });
+
+          if(error){
+            alert(error.message);
+            return;
+          }
         }
+
         getEl('postInput').value = '';
         getEl('fileInput').value = '';
         getEl('fileNameDisplay').innerText = '';
+
         await loadPosts();
-      } catch(e) { alert(e.message); }
+      } catch(e) {
+        alert(e.message);
+      }
     }
 
     function startEditPost(postId){
@@ -1206,13 +1262,15 @@
 
     function renderCommunity(){
       let spacesHtml = `<button class="space-btn ${selectedSpace==='GENERAL'?'active':''}" onclick="selectedSpace='GENERAL'; renderCommunity();">💬 GENERAL</button>`;
-      spacesHtml += categories.map(cat => `<button class="space-btn ${selectedSpace===cat.slug?'active':''}" onclick="selectedSpace='${cat.slug}'; renderCommunity();">${getMeta(cat.slug).emoji} ${cat.slug}</button>`).join('');
+      spacesHtml += categories
+        .filter(cat => (cat.slug || '').toUpperCase() !== 'GENERAL')
+        .map(cat => `<button class="space-btn ${selectedSpace===cat.slug?'active':''}" onclick="selectedSpace='${cat.slug}'; renderCommunity();">${getMeta(cat.slug).emoji} ${cat.slug}</button>`)
+        .join('');
       getEl('spacesWrap').innerHTML = spacesHtml;
 
       const filtered = posts.filter(p => {
         if(selectedSpace === 'GENERAL') {
-          const generalCategoryId = categories.find(c => (c.slug || '').toUpperCase() === 'GENERAL')?.id;
-          return p.category_id === null || p.category_id === generalCategoryId;
+          return p.category_id === null;
         }
         return categories.find(c => c.id === p.category_id)?.slug === selectedSpace;
       });
