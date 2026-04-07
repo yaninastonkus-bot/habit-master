@@ -515,8 +515,15 @@
     <div class="auth-card">
       <div class="auth-title">🔥 Habit Master</div>
       <div class="auth-subtitle">Увійди через email, щоб зберігати прогрес.</div>
+
       <input id="emailInput" class="input" type="email" placeholder="твій email" />
-      <button class="button primary" onclick="login()">Login</button>
+      <button class="button primary" onclick="sendCode()">Надіслати код</button>
+
+      <div id="codeWrap" class="hidden" style="margin-top:14px;">
+        <input id="codeInput" class="input" type="text" placeholder="введи код з листа" />
+        <button class="button primary" style="margin-top:12px;" onclick="verifyCode()">Підтвердити код</button>
+      </div>
+
       <div id="authStatus" class="status"></div>
     </div>
   </div>
@@ -670,14 +677,14 @@
   <script>
     const SUPABASE_URL = "https://vnbcelodaueayobcvkjy.supabase.co";
     const SUPABASE_KEY = "sb_publishable_yfG2qoR_Cx8QKwEbNpzeUA_4VNjItCT";
+
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-  auth: {
-    flowType: 'pkce',
-    detectSessionInUrl: true,
-    persistSession: true,
-    autoRefreshToken: true
-  }
-});
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    });
 
     const TODAY = new Date().getDate();
     const DAYS_IN_MONTH = 31;
@@ -773,39 +780,49 @@
       `;
     }
 
-    function handleAuthErrorFromUrl(){
-      const hash = window.location.hash || "";
-      const search = window.location.search || "";
-      const raw = hash + "&" + search;
-
-      if (
-        raw.includes("error_code=otp_expired") ||
-        raw.includes("error=access_denied") ||
-        raw.includes("invalid or has expired")
-      ) {
-        window.history.replaceState({}, document.title, window.location.pathname);
-        document.getElementById("authView").classList.remove("hidden");
-        document.getElementById("appView").classList.add("hidden");
-        document.getElementById("authStatus").innerText =
-          "Лінк для входу прострочений. Запроси новий login link.";
-        throw new Error("Expired or invalid OTP link");
-      }
-    }
-
-    async function login(){
+    async function sendCode(){
       const email = document.getElementById('emailInput').value.trim();
       const status = document.getElementById('authStatus');
-      if(!email){
+
+      if (!email) {
         status.innerText = 'Введи email';
         return;
       }
 
-      const { error } = await sb.auth.signInWithOtp({
+      const { error } = await sb.auth.signInWithOtp({ email });
+
+      if (error) {
+        status.innerText = 'Помилка надсилання коду: ' + error.message;
+        return;
+      }
+
+      document.getElementById('codeWrap').classList.remove('hidden');
+      status.innerText = 'Код відправлено на пошту 📩';
+    }
+
+    async function verifyCode(){
+      const email = document.getElementById('emailInput').value.trim();
+      const token = document.getElementById('codeInput').value.trim();
+      const status = document.getElementById('authStatus');
+
+      if (!email || !token) {
+        status.innerText = 'Введи email і код';
+        return;
+      }
+
+      const { error } = await sb.auth.verifyOtp({
         email,
-        options: { emailRedirectTo: window.location.origin }
+        token,
+        type: 'email'
       });
 
-      status.innerText = error ? ('Помилка логіну: ' + error.message) : 'Лист відправлено 📩 Перевір пошту';
+      if (error) {
+        status.innerText = 'Помилка підтвердження: ' + error.message;
+        return;
+      }
+
+      status.innerText = 'Успішний вхід ✅';
+      await bootstrap();
     }
 
     async function logout(){
@@ -1317,8 +1334,6 @@
 
     async function bootstrap(){
       try {
-        handleAuthErrorFromUrl();
-
         const { data } = await sb.auth.getSession();
         currentUser = data.session?.user || null;
 
@@ -1341,10 +1356,9 @@
         renderAll();
       } catch (e) {
         console.error(e);
+        document.getElementById('authStatus').innerText = 'Помилка завантаження. Перевір дані та спробуй ще раз.';
         document.getElementById('authView').classList.remove('hidden');
         document.getElementById('appView').classList.add('hidden');
-        document.getElementById('authStatus').innerText =
-          'Сесія недійсна або лінк прострочений. Увійди ще раз.';
       }
     }
 
