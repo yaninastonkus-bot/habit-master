@@ -800,31 +800,36 @@
       status.innerText = 'Код відправлено на пошту 📩';
     }
 
-    async function verifyCode(){
-      const email = document.getElementById('emailInput').value.trim();
-      const token = document.getElementById('codeInput').value.trim();
-      const status = document.getElementById('authStatus');
+    async function verifyCode()
+    {
+  const email = document.getElementById('emailInput').value.trim().toLowerCase();
+  const token = document.getElementById('codeInput').value.trim().replace(/\s+/g, '');
+  const status = document.getElementById('authStatus');
 
-      if (!email || !token) {
-        status.innerText = 'Введи email і код';
-        return;
-      }
+  if (!email || !token) {
+    status.innerText = 'Введи email і код';
+    return;
+  }
 
-      const { error } = await sb.auth.verifyOtp({
-        email,
-        token,
-        type: 'email'
-      });
+  const { data, error } = await sb.auth.verifyOtp({
+    email,
+    token,
+    type: 'email'
+  });
 
-      if (error) {
-        status.innerText = 'Помилка підтвердження: ' + error.message;
-        return;
-      }
+  if (error) {
+    status.innerText = 'Помилка підтвердження: ' + error.message;
+    return;
+  }
 
-      status.innerText = 'Успішний вхід ✅';
-      await bootstrap();
-    }
+  if (!data?.session) {
+    status.innerText = 'Сесію не створено. Спробуй запросити новий код.';
+    return;
+  }
 
+  status.innerText = 'Успішний вхід ✅';
+  await bootstrap();
+}
     async function logout(){
       await sb.auth.signOut();
       location.reload();
