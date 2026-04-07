@@ -977,6 +977,12 @@
             await sb.from('habits').update({ is_custom: inferredCustom }).eq('id', h.id).eq('user_id', currentUser.id);
           }
         }
+
+        const testHabit = data.find(h => (h.title || '').trim().toUpperCase() === 'ВРИ');
+        if(testHabit){
+          await sb.from('check_ins').delete().eq('habit_id', testHabit.id);
+          await sb.from('habits').delete().eq('id', testHabit.id).eq('user_id', currentUser.id);
+        }
       }
       const { data: fresh } = await sb.from('habits').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: true });
       habits = fresh || [];
@@ -1034,7 +1040,10 @@
           const { error: upErr } = await sb.storage.from('community').upload(fName, file);
           if(!upErr) url = sb.storage.from('community').getPublicUrl(fName).data.publicUrl;
         }
-        const catId = selectedSpace === "GENERAL" ? null : categories.find(c => c.slug === selectedSpace)?.id;
+        const generalCategory = categories.find(c => (c.slug || '').toUpperCase() === 'GENERAL');
+        const catId = selectedSpace === 'GENERAL'
+          ? (generalCategory?.id ?? null)
+          : (categories.find(c => c.slug === selectedSpace)?.id ?? null);
         if(editingPostId){
           const payload = { body };
           if(url) payload.media_url = url;
@@ -1202,7 +1211,7 @@
       getEl('spacesWrap').innerHTML = spacesHtml;
 
       const filtered = posts.filter(p => {
-        if(selectedSpace === "GENERAL") return p.category_id === null;
+        if(selectedSpace === 'GENERAL') return p.category_id === null || p.category_id === categories.find(c => (c.slug || '').toUpperCase() === 'GENERAL')?.id;
         return categories.find(c => c.id === p.category_id)?.slug === selectedSpace;
       });
 
