@@ -794,7 +794,6 @@
           <h2 class="stats-title">Total<br>Progress</h2>
           <p class="stats-subtitle">Загальний показник виконання по всіх звичках і категоріях</p>
           <div id="totalProgressWrap" style="margin-bottom:22px;"></div>
-          <div id="rewardBannerWrap" style="margin-bottom:22px;"></div>
           <div id="ringsWrap" class="rings-grid"></div>
         </div>
       </div>
@@ -960,36 +959,8 @@
     }
 
     async function loadCategories(){
-      let { data, error } = await sb.from('categories').select('*').order('sort_order');
-      if(error){
-        alert(error.message);
-        categories = [];
-        return;
-      }
-
+      const { data } = await sb.from('categories').select('*').order('sort_order');
       categories = data || [];
-
-      const hasGeneral = categories.some(c => (c.slug || '').toUpperCase() === 'GENERAL');
-      if(!hasGeneral){
-        const maxSort = categories.length ? Math.max(...categories.map(c => Number(c.sort_order) || 0)) : 0;
-        const { error: insertError } = await sb.from('categories').insert({
-          slug: 'GENERAL',
-          sort_order: maxSort + 1
-        });
-
-        if(insertError){
-          alert('Не вдалося автоматично створити GENERAL: ' + insertError.message);
-          return;
-        }
-
-        const { data: refreshed, error: refreshError } = await sb.from('categories').select('*').order('sort_order');
-        if(refreshError){
-          alert(refreshError.message);
-          categories = [];
-          return;
-        }
-        categories = refreshed || [];
-      }
     }
 
     async function syncHabits(){
@@ -1056,7 +1027,14 @@
         return;
       }
 
-      posts = data || [];
+      posts = (data || []).map(p => {
+        const cat = categories.find(c => c.id === p.category_id);
+        if (cat && (cat.slug || '').toUpperCase() === 'GENERAL') {
+          return { ...p, category_id: null };
+        }
+        return p;
+      });
+
       renderCommunity();
     }
 
@@ -1087,16 +1065,9 @@
           url = sb.storage.from('community').getPublicUrl(fName).data.publicUrl;
         }
 
-        const generalCategory = categories.find(c => (c.slug || '').toUpperCase() === 'GENERAL');
-        const generalCategory = categories.find(c => (c.slug || '').toUpperCase() === 'GENERAL');
         const catId = selectedSpace === 'GENERAL'
-          ? generalCategory?.id
+          ? null
           : (categories.find(c => c.slug === selectedSpace)?.id ?? null);
-
-        if(!catId) {
-          alert('Не знайдена категорія для цього чату. Онови сторінку.');
-          return;
-        }
 
         if(editingPostId){
           const payload = {
@@ -1218,20 +1189,6 @@
           </div>
         </div>`;
 
-      const rewardReached = totalPerc >= 70;
-      const rewardLeft = Math.max(0, 70 - totalPerc);
-      getEl('rewardBannerWrap').innerHTML = `
-        <div class="card" style="margin-bottom:0; border-radius:28px; background:${rewardReached ? 'linear-gradient(135deg, #b8f23a, #d9ff7a)' : 'linear-gradient(135deg, #14141a, #0b0b10)'}; color:${rewardReached ? '#000' : '#fff'}; border:${rewardReached ? '1px solid rgba(184,242,58,0.7)' : '1px solid rgba(255,255,255,0.08)'};">
-          <div style="display:flex; justify-content:space-between; gap:16px; align-items:center; flex-wrap:wrap;">
-            <div>
-              <div style="font-size:12px; text-transform:uppercase; letter-spacing:0.16em; font-weight:800; opacity:0.8; margin-bottom:8px;">Reward Challenge</div>
-              <div style="font-size:28px; font-weight:800; letter-spacing:-0.04em; line-height:1.05; margin-bottom:8px;">Зроби 70% загального трекінгу — і отримай у подарунок мерч</div>
-              <div style="font-size:15px; color:${rewardReached ? 'rgba(0,0,0,0.72)' : 'rgba(255,255,255,0.72)'};">${rewardReached ? 'Ціль досягнута. Час забирати свій подарунок.' : `Залишилось ще ${rewardLeft}% до reward milestone.`}</div>
-            </div>
-            <div style="font-size:42px;">${rewardReached ? '🎁' : '🏁'}</div>
-          </div>
-        </div>`;
-
       let html = '';
       categories.forEach(cat => {
         const hbits = habits.filter(h => h.category_id === cat.id);
@@ -1311,10 +1268,9 @@
         .join('');
       getEl('spacesWrap').innerHTML = spacesHtml;
 
-      const generalCategoryId = categories.find(c => (c.slug || '').toUpperCase() === 'GENERAL')?.id;
       const filtered = posts.filter(p => {
         if(selectedSpace === 'GENERAL') {
-          return p.category_id === generalCategoryId;
+          return p.category_id === null;
         }
         return categories.find(c => c.id === p.category_id)?.slug === selectedSpace;
       });
