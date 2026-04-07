@@ -3,100 +3,132 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>EK Habit Tracker | eKreative Style</title>
+  <title>EK Habit Tracker | Pro</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      /* Кольори eKreative.com */
-      --bg: #0a0e17; 
-      --card: #161b22; 
-      --accent: #2f39f6; 
+      --bg: #000000;
+      --card-blue: #0024f0;
+      --accent-lime: #ccff00;
       --text: #ffffff;
-      --muted: #8b949e;
-      --border: #30363d;
-      --today: rgba(47, 57, 246, 0.2);
+      --muted: #888888;
+      --border: rgba(255,255,255,0.1);
+      --today-bg: rgba(204, 255, 0, 0.15);
     }
-    
+
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body { 
-      margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); 
-      line-height: 1.6;
+      margin: 0; 
+      font-family: 'Inter', sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      line-height: 1.5;
     }
     .hidden { display: none !important; }
 
-    /* Auth - Стійкий мінімалізм */
+    /* Auth */
     .auth-shell { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-    .auth-card { width: 100%; max-width: 400px; background: var(--card); border-radius: 12px; padding: 40px; border: 1px solid var(--border); text-align: center; }
-    .auth-card h1 { font-size: 32px; font-weight: 800; letter-spacing: -1.5px; margin-bottom: 10px; }
-    
-    .input, .textarea { 
-      width: 100%; background: #0d1117; border: 1px solid var(--border); border-radius: 8px; 
-      padding: 14px 16px; color: #fff; font-size: 16px; margin-bottom: 15px; outline: none; transition: 0.2s;
+    .auth-card { 
+      width: 100%; max-width: 450px; background: #111; border-radius: 24px; padding: 40px; 
+      border: 1px solid var(--border); text-align: center; 
     }
-    .input:focus { border-color: var(--accent); }
+    .auth-card h1 { font-size: 42px; font-weight: 800; letter-spacing: -2px; margin-bottom: 10px; }
+
+    .input, .textarea { 
+      width: 100%; background: #1a1a1a; border: 1px solid var(--border); border-radius: 12px; 
+      padding: 16px; color: #fff; font-size: 16px; font-family: inherit; outline: none; transition: 0.3s;
+    }
+    .input:focus { border-color: var(--card-blue); }
 
     .button { 
-      border: 0; border-radius: 8px; padding: 14px 24px; font-size: 15px; font-weight: 700; 
-      cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center;
+      border: 0; border-radius: 100px; padding: 16px 24px; font-size: 16px; font-weight: 700; 
+      cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; justify-content: center;
     }
-    .button.primary { background: var(--accent); color: #fff; width: 100%; }
+    .button.primary { background: var(--accent-lime); color: #000; width: 100%; }
+    .button.primary:hover { transform: scale(1.02); background: #dfff33; }
     .button.dark { background: transparent; color: #fff; border: 1px solid var(--border); }
-    .button:hover { opacity: 0.9; }
+    .button.blue { background: var(--card-blue); color: #fff; }
 
     /* Layout */
     .app { max-width: 1400px; margin: 0 auto; padding: 40px 20px; }
-    .topbar { display: flex; gap: 30px; margin-bottom: 40px; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 15px; overflow-x: auto; }
-    .nav-logo { font-weight: 800; font-size: 24px; letter-spacing: -1px; margin-right: 20px; }
-    .tab { color: var(--muted); font-weight: 600; cursor: pointer; padding: 10px 0; transition: 0.3s; font-size: 14px; text-transform: uppercase; white-space: nowrap; }
-    .tab.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
-    
+    .topbar { display: flex; gap: 15px; margin-bottom: 40px; flex-wrap: wrap; align-items: center; }
+    .nav-logo { font-size: 28px; font-weight: 800; margin-right: auto; letter-spacing: -1px; }
+    .tab { 
+      background: transparent; color: var(--muted); border-radius: 100px; padding: 12px 24px; 
+      cursor: pointer; font-weight: 700; transition: 0.3s; border: 1px solid transparent;
+    }
+    .tab.active { background: #fff; color: #000; }
     .view { display: none; } .view.active { display: block; }
-    .card { background: var(--card); border-radius: 12px; border: 1px solid var(--border); padding: 30px; margin-bottom: 30px; }
+    
+    .card { background: #111; border-radius: 32px; border: 1px solid var(--border); padding: 32px; margin-bottom: 24px; }
+    .card-hero { background: var(--card-blue); border: none; }
 
     /* Dashboard */
-    .dashboard-grid { display: grid; grid-template-columns: 350px 1fr; gap: 30px; }
-    .side-block { padding: 25px; border-radius: 12px; margin-bottom: 15px; font-weight: 800; font-size: 18px; text-align: center; color: #fff; }
-    .ring-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px; }
-    .focus-chip { padding: 10px 15px; border-radius: 8px; background: #0d1117; border: 1px solid var(--border); font-size: 12px; font-weight: 700; cursor: pointer; color: var(--muted); margin: 5px; display: inline-block; }
-    .focus-chip.active { background: #fff; color: #000; border-color: #fff; }
+    .dashboard-grid { display: grid; grid-template-columns: 380px 1fr; gap: 32px; }
+    .side-block { padding: 24px; border-radius: 20px; margin-bottom: 16px; font-weight: 800; font-size: 20px; }
+    
+    .ring-card { text-align: center; padding: 24px; background: #111; border: 1px solid var(--border); border-radius: 24px; }
+    .ring { width: 100px; height: 100px; border-radius: 50%; position: relative; margin: 0 auto 16px; border: 2px solid #222; }
+    .ring-value { font-size: 22px; font-weight: 800; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+
+    /* Focus Chips */
+    .focus-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+    .focus-chip {
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      color: #fff; border-radius: 100px; padding: 10px 20px;
+      font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s;
+    }
+    .focus-chip.active { background: var(--accent-lime); color: #000; border-color: var(--accent-lime); }
 
     /* Tracker */
-    .tracker-section { overflow-x: auto; background: #0d1117; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 40px; }
-    .tracker-head, .tracker-row { display: grid; grid-template-columns: 220px repeat(31, 40px) 70px; align-items: center; min-width: 1530px; }
-    .tracker-head { height: 45px; background: rgba(255,255,255,0.03); font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; }
-    .tracker-row { height: 55px; border-top: 1px solid var(--border); }
-    .tracker-cell { display: flex; align-items: center; justify-content: center; height: 100%; border-right: 1px solid var(--border); }
-    .habit-title { justify-content: space-between; padding: 0 20px; font-weight: 600; font-size: 14px; color: #fff; text-align: left; }
+    .category-row-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding: 0 8px; }
+    .category-title { font-size: 24px; font-weight: 800; text-transform: uppercase; }
+    .add-habit-btn { width: 32px; height: 32px; border-radius: 50%; background: var(--accent-lime); color: #000; display: flex; align-items: center; justify-content: center; font-weight: 800; cursor: pointer; }
+
+    .tracker-section { overflow-x: auto; background: #111; border-radius: 24px; border: 1px solid var(--border); margin-bottom: 40px; }
+    .tracker-head, .tracker-row { display: grid; grid-template-columns: 240px repeat(31, 45px) 80px; align-items: center; min-width: 1600px; }
+    .tracker-head { height: 50px; background: #1a1a1a; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+    .tracker-row { border-bottom: 1px solid #1a1a1a; height: 60px; font-size: 15px; }
+    .tracker-head > div, .tracker-row > div { height: 100%; display: flex; align-items: center; justify-content: center; border-right: 1px solid rgba(255,255,255,0.02); }
+    .habit-title-cell { justify-content: flex-start !important; padding-left: 24px; font-weight: 700; }
     
-    .checkbox { width: 20px; height: 20px; border: 2px solid #30363d; border-radius: 4px; cursor: pointer; transition: 0.1s; }
-    .checkbox.active { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 10px rgba(47, 57, 246, 0.5); }
-    .today-cell { background: var(--today); }
+    .checkbox { width: 24px; height: 24px; border: 2px solid #333; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+    .checkbox.active { background: var(--card-blue); border-color: var(--card-blue); }
+    .today-cell { background: var(--today-bg) !important; color: var(--accent-lime); font-weight: 800; }
 
     /* Community */
-    .chat-box { height: 500px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; padding-right: 15px; }
-    .msg { max-width: 80%; padding: 16px; border-radius: 12px; background: #1c2128; border: 1px solid var(--border); position: relative; font-size: 15px; }
-    .msg.own { align-self: flex-end; background: var(--accent); border: 0; }
-    .space-btn { padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; background: #0d1117; border: 1px solid var(--border); margin-right: 10px; color: var(--muted); }
-    .space-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-
-    @media (max-width: 768px) { .dashboard-grid { grid-template-columns: 1fr; } .tracker-row { grid-template-columns: 160px repeat(31, 40px) 70px; } }
+    .community-layout { display: grid; grid-template-columns: 280px 1fr; gap: 32px; }
+    .space-btn { 
+      width: 100%; border: 1px solid var(--border); border-radius: 16px; padding: 18px; 
+      text-align: left; font-size: 16px; font-weight: 700; cursor: pointer; background: #111; color: #fff; margin-bottom: 12px;
+    }
+    .space-btn.active { background: var(--card-blue); border-color: var(--card-blue); }
+    .chat-box { height: 600px; overflow-y: auto; background: #080808; border-radius: 24px; padding: 24px; border: 1px solid var(--border); }
+    .msg { max-width: 80%; padding: 16px 20px; border-radius: 20px; background: #1a1a1a; margin-bottom: 12px; position: relative; }
+    .msg.own { align-self: flex-end; background: var(--card-blue); margin-left: auto; }
+    
+    @media (max-width: 768px) {
+      .dashboard-grid, .community-layout { grid-template-columns: 1fr; }
+      .app { padding: 20px 12px; }
+      .nav-logo { margin-bottom: 10px; width: 100%; }
+    }
   </style>
 </head>
 <body>
 
   <div id="authView" class="auth-shell">
     <div class="auth-card">
-      <h1 class="nav-logo">EK.</h1>
+      <h1>EK.</h1>
       <p style="color:var(--muted); margin-bottom:30px;">Track your evolution.</p>
-      <input id="emailInput" class="input" type="email" placeholder="Email" />
-      <div style="position: relative;">
-        <input id="passwordInput" class="input" type="password" placeholder="Password (min. 6 chars)" />
-        <span onclick="togglePassword()" style="position:absolute; right:15px; top:13px; cursor:pointer; font-size:20px; opacity:0.5;">👁️</span>
+      <input id="emailInput" class="input" type="email" placeholder="Email" style="margin-bottom:12px;"/>
+      <div style="position: relative; margin-bottom: 24px;">
+        <input id="passwordInput" class="input" type="password" placeholder="Пароль" style="padding-right: 40px;" />
+        <div id="eyeIcon" onclick="togglePassword()" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); cursor: pointer; opacity: 0.5;">👁️</div>
       </div>
-      <div id="loginError" style="color:#ff6b6b; font-size:12px; margin: 10px 0;"></div>
-      <button id="loginBtn" class="button primary" onclick="signIn()">Sign In</button>
-      <button class="button dark" style="width:100%; margin-top:10px;" onclick="signUp()">Create Account</button>
+      <div id="loginError" style="color:#ff4444; font-size:12px; margin-bottom:15px; min-height:15px;"></div>
+      <button id="loginBtn" class="button primary" onclick="signIn()">Увійти</button>
+      <button class="button dark" style="width:100%; margin-top:12px;" onclick="signUp()">Створити акаунт</button>
     </div>
   </div>
 
@@ -106,31 +138,30 @@
       <div class="tab active" data-view="dashboardView">Dashboard</div>
       <div class="tab" data-view="trackerView">Tracker</div>
       <div class="tab" data-view="communityView">Community</div>
-      <div class="tab" data-view="supportView">Support</div>
       <div class="tab" data-view="settingsView">Settings</div>
-      <button class="button dark" style="margin-left:auto; padding:8px 15px; font-size:11px;" onclick="logout()">Logout</button>
+      <button class="button dark" style="padding: 10px 20px; font-size: 14px;" onclick="logout()">Вихід</button>
     </div>
 
     <div id="dashboardView" class="view active">
        <div class="dashboard-grid">
          <div>
-            <div id="streakPanel" class="side-block" style="background: var(--accent);">🔥 0 DAYS STREAK</div>
-            <div id="levelPanel" class="side-block" style="background: #10b981;">🏆 NOVICE LEVEL</div>
-            <div class="card" style="text-align:center; padding:20px;">
-              <div style="color:var(--muted); font-size:12px; text-transform:uppercase; font-weight:800; letter-spacing:1px;">Active Days</div>
-              <div id="activeVal" style="font-size:42px; font-weight:800">0</div>
-            </div>
+            <div id="streakPanel" class="side-block" style="background:var(--card-blue)">🔥 0 DAYS STREAK</div>
+            <div id="levelPanel" class="side-block" style="background:var(--accent-lime); color:#000;">🏆 NOVICE LEVEL</div>
             <div class="card" style="text-align:center;">
-              <div style="font-size: 11px; margin-bottom: 15px; color:var(--muted); font-weight:800; text-transform:uppercase;">Current Focus:</div>
-              <div class="focus-chips" id="focusChipsContainer">
-                <div class="focus-chip" data-val="MOVE" onclick="toggleFocusChip('MOVE')">🏃 MOVE</div>
-                <div class="focus-chip" data-val="MIND" onclick="toggleFocusChip('MIND')">🧠 MIND</div>
-                <div class="focus-chip" data-val="CREATE" onclick="toggleFocusChip('CREATE')">🎨 CREATE</div>
-                <div class="focus-chip" data-val="SLOW" onclick="toggleFocusChip('SLOW')">🌿 SLOW</div>
+              <div style="color:var(--muted); font-size:12px; text-transform:uppercase; font-weight:800; letter-spacing:1px; margin-bottom:10px;">Active Days</div>
+              <div id="activeVal" style="font-size:64px; font-weight:800; letter-spacing:-2px;">0</div>
+            </div>
+            <div class="card">
+              <div style="font-size: 12px; color:var(--muted); font-weight:800; text-transform:uppercase; letter-spacing:1px;">Focus Areas</div>
+              <div class="focus-chips">
+                <div class="focus-chip" data-val="MOVE" onclick="toggleFocusChip('MOVE')">MOVE</div>
+                <div class="focus-chip" data-val="MIND" onclick="toggleFocusChip('MIND')">MIND</div>
+                <div class="focus-chip" data-val="CREATE" onclick="toggleFocusChip('CREATE')">CREATE</div>
+                <div class="focus-chip" data-val="SLOW" onclick="toggleFocusChip('SLOW')">SLOW</div>
               </div>
             </div>
          </div>
-         <div id="ringsWrap" class="ring-grid"></div>
+         <div id="ringsWrap" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;"></div>
        </div>
     </div>
 
@@ -139,35 +170,36 @@
     </div>
 
     <div id="communityView" class="view">
-      <div class="card">
-        <div id="spacesWrap" style="display:flex; overflow-x:auto; margin-bottom:20px; padding-bottom:10px;"></div>
-        <div id="postsWrap" class="chat-box"></div>
-        <div style="margin-top:25px; display:flex; gap:15px; align-items:center;">
-          <label class="button dark" style="padding:14px;">📎<input type="file" id="fileInput" class="hidden" onchange="getEl('fileStatus').innerText = this.files[0].name"></label>
-          <textarea id="postInput" class="textarea" style="margin:0; height:52px;" placeholder="Share your progress..."></textarea>
-          <button class="button primary" style="width:110px;" onclick="createPost()">Send</button>
-        </div>
-        <div id="fileStatus" style="font-size:10px; color:var(--accent); margin-top:5px;"></div>
-      </div>
-    </div>
-
-    <div id="supportView" class="view">
-      <div class="card" style="max-width: 600px; margin: 0 auto;">
-        <h2 style="margin-top:0">Support</h2>
-        <textarea id="supportMsg" class="textarea" placeholder="Як ми можемо допомогти?"></textarea>
-        <button class="button primary" onclick="sendSupport()">Send Ticket</button>
-        <div id="adminPanel" class="hidden" style="margin-top:30px; border-top: 1px solid var(--border); padding-top:20px;">
-          <h3 style="color:var(--accent)">👑 Admin View</h3>
-          <div id="adminTickets"></div>
+      <div class="community-layout">
+        <div id="spacesWrap" class="spaces-sidebar"></div>
+        <div>
+          <div class="card" style="padding:0; background:transparent; border:none;">
+            <h2 id="communityTitle" style="font-size:32px; font-weight:800; margin-bottom:20px;">Community</h2>
+            <div id="postsWrap" class="chat-box"></div>
+            <div style="margin-top:20px; display:flex; gap:12px; align-items:flex-end;">
+              <div id="attachWrap" style="margin-bottom:8px;">
+                <label class="button dark" style="padding:14px; border-radius:12px; cursor:pointer;">📎<input type="file" id="fileInput" class="hidden" onchange="updateFileName()"></label>
+              </div>
+              <div style="flex-grow:1;">
+                <textarea id="postInput" class="textarea" style="min-height:60px;" placeholder="Що нового?"></textarea>
+                <div id="fileNameDisplay" style="font-size: 11px; color: var(--accent-lime); margin-top:4px;"></div>
+              </div>
+              <button id="sendBtn" class="button blue" style="margin-bottom:8px;" onclick="createPost()">Send</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
     <div id="settingsView" class="view">
        <div class="card">
-           <h2 style="margin-top:0">Account</h2>
-           <p style="color:var(--muted)">Email: <strong style="color:#fff;" id="userEmailLabel"></strong></p>
-           <button class="button primary" style="width:auto;" onclick="alert('Сповіщення увімкнено!')">Enable Notifications</button>
+           <h2 style="font-size:32px; font-weight:800; margin:0 0 24px 0;">Settings</h2>
+           <p style="color:var(--muted)">Email: <strong style="color:#fff" id="userEmailLabel"></strong></p>
+           <button class="button primary" style="width:auto;" onclick="enableNotifications()">🔔 Увімкнути сповіщення</button>
+           <div id="adminSection" class="hidden" style="margin-top:40px; border-top:1px solid #222; padding-top:24px;">
+              <h3 style="color:var(--card-blue)">👑 Owner Panel</h3>
+              <div id="adminStats" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:16px;"></div>
+           </div>
        </div>
     </div>
   </div>
@@ -179,211 +211,214 @@
 
     const OWNER_EMAIL = "yaninastonkus@gmail.com"; 
 
-    let currentUser = null, categories = [], habits = [], checkIns = [], posts = [], selectedSpace = "GENERAL", selectedFocuses = [];
+    let currentUser = null, categories = [], habits = [], checkIns = [], posts = [], selectedSpace = "GENERAL", editingPostId = null, selectedFocuses = [];
     const TODAY_DAY = new Date().getDate();
+
     const META = { 
-      MOVE: { color: "#3b82f6", emoji: "🏃" }, 
-      MIND: { color: "#10b981", emoji: "🧠" }, 
-      CREATE: { color: "#f43f5e", emoji: "🎨" }, 
-      SLOW: { color: "#8b5cf6", emoji: "🌿" },
-      GENERAL: { color: "#94a3b8", emoji: "💬" }
+      MOVE: { color: "#0024f0", emoji: "🏃" }, 
+      MIND: { color: "#0024f0", emoji: "🧠" }, 
+      CREATE: { color: "#0024f0", emoji: "🎨" }, 
+      SLOW: { color: "#0024f0", emoji: "🌿" },
+      GENERAL: { color: "#333", emoji: "💬" }
+    };
+    const DEFAULT_HABITS = { 
+      MOVE: ["10–20 min walk", "Stretching"], 
+      MIND: ["Journaling", "Reading"], 
+      CREATE: ["Sketching"], 
+      SLOW: ["No phone tea"] 
     };
 
     const getEl = id => document.getElementById(id);
+    function getMeta(slug) { return META[slug?.toUpperCase()] || { emoji: "📌", color: "#333" }; }
+
+    function updateFileName() { const file = getEl('fileInput').files[0]; getEl('fileNameDisplay').innerText = file ? "Прикріплено: " + file.name : ''; }
+    function togglePassword() { const input = getEl('passwordInput'); if (input.type === 'password') input.type = 'text'; else input.type = 'password'; }
+
+    async function signUp(){
+      const email = getEl('emailInput').value.trim(); const password = getEl('passwordInput').value;
+      if(!email || password.length < 6) return alert("Мінімум 6 символів");
+      const { error } = await sb.auth.signUp({ email, password });
+      if(error) alert(error.message); else alert("Готово! Тепер увійдіть.");
+    }
+    async function signIn(){
+      getEl('loginBtn').innerText = "Wait...";
+      const { error } = await sb.auth.signInWithPassword({ email: getEl('emailInput').value, password: getEl('passwordInput').value });
+      if(error) { alert(error.message); getEl('loginBtn').innerText = "Увійти"; } else bootstrap();
+    }
+    async function logout(){ await sb.auth.signOut(); location.reload(); }
 
     async function bootstrap(){
       const { data } = await sb.auth.getSession();
       currentUser = data.session?.user; if(!currentUser) return;
-      getEl('authView').classList.add('hidden');
-      getEl('appView').classList.remove('hidden');
+      getEl('authView').classList.add('hidden'); getEl('appView').classList.remove('hidden');
       getEl('userEmailLabel').innerText = currentUser.email;
-      
-      const res = await Promise.all([
-        sb.from('categories').select('*').order('sort_order'),
-        sb.from('habits').select('*').eq('user_id', currentUser.id),
-        sb.from('check_ins').select('*').eq('user_id', currentUser.id),
-        sb.from('community_posts').select('*').order('created_at'),
-        sb.from('profiles').select('focus_text').eq('id', currentUser.id).single()
-      ]);
-      
-      // Додаємо General в список категорій для чату
-      categories = [{slug: 'GENERAL', id: 'gen_space'}, ...res[0].data];
-      habits = res[1].data || [];
-      checkIns = res[2].data || [];
-      posts = res[3].data || [];
-      if(res[4].data?.focus_text) selectedFocuses = res[4].data.focus_text.split(',').filter(Boolean);
-
-      if(currentUser.email === OWNER_EMAIL) {
-        getEl('adminPanel').classList.remove('hidden');
-        loadAdminTickets();
-      }
-      
+      if(currentUser.email === OWNER_EMAIL) getEl('adminSection').classList.remove('hidden');
+      await loadCategories(); await syncHabits(); await loadCheckIns(); await loadPosts(); await loadProfile();
       renderAll();
     }
 
-    // --- TRACKER LOGIC (FIXED) ---
-    async function toggleCheck(hId, day){
-      // Виправлено зміщення дати: створюємо дату саме для обраного дня
-      const year = new Date().getFullYear();
-      const month = new Date().getMonth();
-      const dStr = new Date(year, month, day).toISOString().split('T')[0];
-      
-      const exist = checkIns.find(c => c.habit_id === hId && c.check_in_date === dStr);
+    async function loadProfile() { 
+      const { data } = await sb.from('profiles').select('focus_text').eq('id', currentUser.id).single(); 
+      if(data?.focus_text) { selectedFocuses = data.focus_text.split(',').filter(Boolean); updateFocusUI(); } 
+    }
+    function toggleFocusChip(val) { 
+      const idx = selectedFocuses.indexOf(val); 
+      if (idx > -1) selectedFocuses.splice(idx, 1); else selectedFocuses.push(val); 
+      updateFocusUI(); saveFocus(); 
+    }
+    function updateFocusUI() { document.querySelectorAll('.focus-chip').forEach(c => selectedFocuses.includes(c.dataset.val) ? c.classList.add('active') : c.classList.remove('active')); renderDashboard(); }
+    async function saveFocus() { await sb.from('profiles').upsert({ id: currentUser.id, focus_text: selectedFocuses.join(',') }); }
+
+    async function loadCategories(){ 
+      const { data } = await sb.from('categories').select('*').order('sort_order'); 
+      categories = data || []; 
+    }
+    
+    async function syncHabits(){
+      const { data } = await sb.from('habits').select('*').eq('user_id', currentUser.id);
+      if(!data || data.length === 0){
+        let ins = []; 
+        categories.forEach(c => (DEFAULT_HABITS[c.slug?.toUpperCase()] || []).forEach(t => ins.push({ user_id:currentUser.id, category_id:c.id, title:t })));
+        if(ins.length) await sb.from('habits').insert(ins);
+      }
+      const { data: fresh } = await sb.from('habits').select('*').eq('user_id', currentUser.id);
+      habits = fresh || [];
+    }
+
+    async function addNewHabit(catId) {
+      const title = prompt("Введіть назву своєї звички:");
+      if(!title) return;
+      const { error } = await sb.from('habits').insert({ user_id: currentUser.id, category_id: catId, title: title });
+      if(error) alert(error.message); else { await syncHabits(); renderTracker(); }
+    }
+
+    async function loadCheckIns(){ const { data } = await sb.from('check_ins').select('*').eq('user_id', currentUser.id); checkIns = data || []; }
+    async function loadPosts(){ const { data } = await sb.from('community_posts').select('*').order('created_at', { ascending: true }); posts = data || []; renderCommunity(); }
+
+    async function toggleCheck(habitId, day){
+      const dateStr = new Date(new Date().getFullYear(), new Date().getMonth(), day+1).toISOString().split('T')[0];
+      const exist = checkIns.find(c => c.habit_id === habitId && c.check_in_date === dateStr);
       if(exist) await sb.from('check_ins').delete().eq('id', exist.id);
-      else await sb.from('check_ins').insert({user_id:currentUser.id, habit_id:hId, check_in_date:dStr});
-      
-      const fresh = await sb.from('check_ins').select('*').eq('user_id', currentUser.id);
-      checkIns = fresh.data; renderAll();
+      else await sb.from('check_ins').insert({ user_id:currentUser.id, habit_id:habitId, check_in_date:dateStr });
+      await loadCheckIns(); renderAll();
     }
 
-    async function addHabit(catId){
-      const t = prompt("Назва нової звички:");
-      if(t) {
-        await sb.from('habits').insert({user_id: currentUser.id, title: t, category_id: catId});
-        location.reload(); // Перевантажуємо для оновлення списку
-      }
+    async function createPost(){
+      const body = getEl('postInput').value.trim(); const file = getEl('fileInput').files[0];
+      if(!body && !file) return;
+      try {
+          let url = null;
+          if(file){
+            const fName = `${currentUser.id}/${Date.now()}_${file.name}`;
+            const { error: upErr } = await sb.storage.from('community').upload(fName, file);
+            if(!upErr) url = sb.storage.from('community').getPublicUrl(fName).data.publicUrl;
+          }
+          const catId = selectedSpace === "GENERAL" ? null : categories.find(c => c.slug === selectedSpace)?.id;
+          await sb.from('community_posts').insert({ user_id: currentUser.id, category_id: catId, body, media_url: url, user_email: currentUser.email });
+          getEl('postInput').value = ''; getEl('fileInput').value = ''; getEl('fileNameDisplay').innerText = '';
+          await loadPosts();
+      } catch(e) { alert(e.message); }
     }
 
-    async function toggleFocusChip(val) {
-      const idx = selectedFocuses.indexOf(val);
-      if (idx > -1) selectedFocuses.splice(idx, 1); else selectedFocuses.push(val);
-      await sb.from('profiles').upsert({ id: currentUser.id, focus_text: selectedFocuses.join(',') });
-      renderAll();
-    }
-
-    // --- COMMUNITY & SUPPORT ---
-    async function sendPost(){
-      const b = getEl('postInput').value;
-      const file = getEl('fileInput').files[0];
-      if(!b && !file) return;
-      
-      let url = null;
-      if(file) {
-        const path = `${currentUser.id}/c_${Date.now()}.png`;
-        await sb.storage.from('community').upload(path, file);
-        url = sb.storage.from('community').getPublicUrl(path).data.publicUrl;
-      }
-
-      const cat = categories.find(c => c.slug === selectedSpace);
-      await sb.from('community_posts').insert({
-        user_id: currentUser.id, 
-        body: b, 
-        category_id: cat.id === 'gen_space' ? null : cat.id, 
-        media_url: url,
-        user_email: currentUser.email
-      });
-      getEl('postInput').value = ""; getEl('fileInput').value = ""; getEl('fileStatus').innerText = "";
-      bootstrap();
-    }
-
-    async function sendSupport() {
-      const msg = getEl('supportMsg').value;
-      if(!msg) return;
-      await sb.from('support_tickets').insert({user_id:currentUser.id, user_email:currentUser.email, message:msg});
-      alert("Надіслано!"); getEl('supportMsg').value = "";
-    }
-
-    async function loadAdminTickets() {
-      const { data } = await sb.from('support_tickets').select('*').order('created_at', {ascending:false});
-      if(data) getEl('adminTickets').innerHTML = data.map(t => `<div class="msg" style="margin-bottom:10px;"><b>${t.user_email}</b>: ${t.message}</div>`).join('');
-    }
-
-    // --- RENDERERS ---
-    function renderAll(){
-      const streak = calculateStreak();
-      getEl('streakPanel').innerText = `🔥 ${streak} DAYS STREAK`;
-      getEl('levelPanel').innerText = streak > 10 ? '🏆 WARRIOR LEVEL' : '🏆 NOVICE LEVEL';
-      getEl('activeVal').innerText = [...new Set(checkIns.map(c => c.check_in_date))].length;
-      
-      // Tracker
-      getEl('trackerWrap').innerHTML = categories.filter(c => c.slug !== 'GENERAL').map(cat => {
-        const catH = habits.filter(h => h.category_id === cat.id);
-        return `
-          <div class="category-group" style="margin-bottom:30px; padding:0 20px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-              <h3 style="margin:0; font-size:18px;">${META[cat.slug].emoji} ${cat.slug}</h3>
-              <button class="button dark" style="padding:6px 12px; font-size:11px" onclick="addHabit('${cat.id}')">+ ADD HABIT</button>
-            </div>
-            <div class="tracker-section">
-              <div class="tracker-head">
-                <div class="tracker-cell" style="justify-content:flex-start; padding-left:20px;">Habit</div>
-                ${Array.from({length:31}, (_,i)=>`<div class="tracker-cell ${i+1===TODAY_DAY?'today-cell':''}">${i+1}</div>`).join('')}
-                <div class="tracker-cell">%</div>
-              </div>
-              ${catH.map(h => {
-                const hChecks = checkIns.filter(c => c.habit_id === h.id);
-                return `
-                  <div class="tracker-row">
-                    <div class="tracker-cell habit-title">${h.title}</div>
-                    ${Array.from({length:31}, (_,i)=>{
-                      const active = checkIns.some(c => c.habit_id === h.id && new Date(c.check_in_date).getDate() === i+1);
-                      return `<div class="tracker-cell ${i+1===TODAY_DAY?'today-cell':''}"><div class="checkbox ${active?'active':''}" onclick="toggleCheck('${h.id}',${i+1})"></div></div>`;
-                    }).join('')}
-                    <div class="tracker-cell" style="font-weight:800; color:${META[cat.slug].color}">${Math.round((hChecks.length/31)*100)}%</div>
-                  </div>`;
-              }).join('')}
-            </div>
-          </div>`;
-      }).join('');
-
-      // Rings
-      getEl('ringsWrap').innerHTML = categories.filter(c => c.slug !== 'GENERAL').map(cat => {
-        const hbits = habits.filter(h => h.category_id === cat.id);
-        const done = checkIns.filter(c => hbits.some(h => h.id === c.habit_id)).length;
-        const perc = hbits.length ? Math.min(100, Math.round((done / (hbits.length * 31)) * 100)) : 0;
-        const foc = selectedFocuses.includes(cat.slug);
-        return `
-          <div class="card" style="text-align:center; padding:20px; ${foc?'border:2px solid #fff':''}">
-            <div style="width:60px; height:60px; border-radius:50%; margin:0 auto 10px; background:conic-gradient(${META[cat.slug].color} ${perc*3.6}deg, #0d1117 0deg); display:flex; align-items:center; justify-content:center; font-weight:800;">${perc}%</div>
-            <div style="font-size:11px; font-weight:800; color:var(--muted)">${cat.slug}</div>
-          </div>`;
-      }).join('');
-
-      // Focus
-      document.querySelectorAll('.focus-chip').forEach(c => c.classList.toggle('active', selectedFocuses.includes(c.dataset.val)));
-
-      // Community
-      getEl('spacesWrap').innerHTML = categories.map(cat => `<div class="space-btn ${selectedSpace===cat.slug?'active':''}" onclick="selectedSpace='${cat.slug}'; renderAll();">${META[cat.slug].emoji} ${cat.slug}</div>`).join('');
-      const filtered = posts.filter(p => {
-        const pCat = categories.find(c => c.id === p.category_id);
-        return (pCat ? pCat.slug : 'GENERAL') === selectedSpace;
-      });
-      getEl('postsWrap').innerHTML = filtered.map(p => `
-        <div class="msg ${p.user_id===currentUser.id?'own':''}">
-          <div style="font-size:11px; font-weight:800; margin-bottom:5px; opacity:0.6;">${p.user_email}</div>
-          <div>${p.body}</div>
-          ${p.media_url ? `<img src="${p.media_url}" style="width:100%; border-radius:8px; margin-top:10px;">` : ''}
-        </div>`).join('');
-      getEl('postsWrap').scrollTop = 9999;
-    }
-
-    function calculateStreak() {
+    function getStreak(){
       const dates = [...new Set(checkIns.map(c => c.check_in_date))].sort().reverse();
-      if(!dates.length) return 0;
-      let s = 0, now = new Date().toISOString().split('T')[0];
-      for(let d of dates) { if(d === now || d === new Date(Date.now()-86400000).toISOString().split('T')[0]) { s++; now = new Date(new Date(d).getTime()-86400000).toISOString().split('T')[0]; } else break; }
+      let s = 0, check = new Date().toISOString().split('T')[0];
+      for(let d of dates){ if(d === check || d === new Date(Date.now()-86400000).toISOString().split('T')[0]){ s++; check = new Date(new Date(d).getTime()-86400000).toISOString().split('T')[0]; } else break; }
       return s;
     }
 
-    async function signIn() { 
-      const { error } = await sb.auth.signInWithPassword({ email: getEl('emailInput').value, password: getEl('passwordInput').value });
-      if(!error) bootstrap(); else getEl('loginError').innerText = error.message; 
+    function renderAll(){
+      renderDashboard(); renderTracker(); renderCommunity(); renderAdmin(); bindTabs();
     }
-    async function signUp() {
-      const p = getEl('passwordInput').value;
-      if(p.length < 6) return alert("Пароль має бути від 6 символів");
-      const { error } = await sb.auth.signUp({ email: getEl('emailInput').value, password: p });
-      if(!error) alert("Перевірте пошту!"); else alert(error.message);
+
+    function renderDashboard(){
+      getEl('streakPanel').innerText = `🔥 ${getStreak()} DAYS STREAK`;
+      getEl('activeVal').innerText = [...new Set(checkIns.map(c => c.check_in_date))].length;
+      getEl('levelPanel').innerText = `🏆 ${checkIns.length < 30 ? 'NOVICE' : 'WARRIOR'} LEVEL`;
+      
+      let html = '';
+      categories.forEach(cat => {
+        const hbits = habits.filter(h => h.category_id === cat.id);
+        const done = checkIns.filter(c => hbits.some(h => h.id === c.habit_id)).length;
+        const perc = hbits.length ? Math.round((done / (hbits.length * 31)) * 100) : 0;
+        const isFoc = selectedFocuses.includes(cat.slug);
+        html += `
+          <div class="ring-card" style="${isFoc ? 'border-color:var(--accent-lime)' : ''}">
+            <div class="ring" style="background: conic-gradient(var(--card-blue) ${perc*3.6}deg, #222 0deg);">
+              <div class="ring-value">${perc}%</div>
+            </div>
+            <div style="font-weight:800; font-size:12px; text-transform:uppercase; letter-spacing:1px;">${cat.slug}</div>
+          </div>`;
+      });
+      getEl('ringsWrap').innerHTML = html;
     }
-    async function logout() { await sb.auth.signOut(); location.reload(); }
-    function togglePassword() { const i = getEl('passwordInput'); i.type = i.type==='password'?'text':'password'; }
 
-    document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
-      document.querySelectorAll('.tab, .view').forEach(el => el.classList.remove('active'));
-      t.classList.add('active');
-      getEl(t.dataset.view).classList.add('active');
-    });
+    function renderTracker(){
+      getEl('trackerWrap').innerHTML = categories.map(cat => {
+        const hbits = habits.filter(h => h.category_id === cat.id);
+        return `
+          <div class="category-row-header">
+            <div class="category-title">${cat.slug}</div>
+            <div class="add-habit-btn" onclick="addNewHabit('${cat.id}')">+</div>
+          </div>
+          <div class="tracker-section">
+            <div class="tracker-head">
+              <div class="habit-title-cell">Habit</div>
+              ${Array.from({length:31}, (_,i)=>`<div class="${i+1===TODAY_DAY?'today-cell':''}">${i+1}</div>`).join('')}
+              <div>%</div>
+            </div>
+            ${hbits.map(h => {
+              const hChecks = checkIns.filter(c => c.habit_id === h.id);
+              return `<div class="tracker-row">
+                <div class="habit-title-cell">${h.title}</div>
+                ${Array.from({length:31}, (_,i)=>{
+                  const dStr = new Date(new Date().getFullYear(), new Date().getMonth(), i+2).toISOString().split('T')[0];
+                  return `<div class="${i+1===TODAY_DAY?'today-cell':''}">
+                    <div class="checkbox ${hChecks.some(c=>c.check_in_date===dStr)?'active':''}" onclick="toggleCheck('${h.id}', ${i+1})"></div>
+                  </div>`;
+                }).join('')}
+                <div style="font-weight:800; color:var(--card-blue)">${Math.round((hChecks.length/31)*100)}%</div>
+              </div>`;
+            }).join('')}
+          </div>`;
+      }).join('');
+    }
 
+    function renderCommunity(){
+      let spacesHtml = `<button class="space-btn ${selectedSpace==='GENERAL'?'active':''}" onclick="selectedSpace='GENERAL'; renderCommunity();">💬 GENERAL</button>`;
+      spacesHtml += categories.map(cat => `<button class="space-btn ${selectedSpace===cat.slug?'active':''}" onclick="selectedSpace='${cat.slug}'; renderCommunity();">${getMeta(cat.slug).emoji} ${cat.slug}</button>`).join('');
+      getEl('spacesWrap').innerHTML = spacesHtml;
+
+      const filtered = posts.filter(p => {
+        if(selectedSpace === "GENERAL") return p.category_id === null;
+        return categories.find(c => c.id === p.category_id)?.slug === selectedSpace;
+      });
+
+      getEl('postsWrap').innerHTML = filtered.map(p => `
+        <div class="msg ${p.user_id===currentUser.id?'own':''}">
+          <div style="font-size:10px; font-weight:800; margin-bottom:4px; opacity:0.6;">${p.user_email}</div>
+          <div>${p.body || ''}</div>
+          ${p.media_url ? `<img src="${p.media_url}" class="post-img" style="width:100%; border-radius:12px; margin-top:10px;">` : ''}
+        </div>`).join('');
+      getEl('postsWrap').scrollTop = getEl('postsWrap').scrollHeight;
+      getEl('communityTitle').innerText = selectedSpace + " CHAT";
+    }
+
+    async function renderAdmin() { 
+      if(currentUser?.email !== OWNER_EMAIL) return; 
+      const { data } = await sb.from('community_posts').select('category_id'); 
+      const s = {}; data?.forEach(p => { const c = categories.find(x => x.id === p.category_id); const slug = c ? c.slug : 'General'; s[slug] = (s[slug] || 0) + 1; }); 
+      getEl('adminStats').innerHTML = Object.entries(s).map(([slug, count]) => `<div class="card" style="padding:15px; text-align:center;"><div style="font-size:12px; color:var(--muted)">${slug}</div><div style="font-size:24px; font-weight:800">${count}</div></div>`).join(''); 
+    }
+
+    async function enableNotifications(){ alert("Сповіщення активовано!"); }
+    function bindTabs(){ 
+      document.querySelectorAll('.tab').forEach(t => t.onclick = () => { 
+        document.querySelectorAll('.tab, .view').forEach(x => x.classList.remove('active')); 
+        t.classList.add('active'); 
+        getEl(t.dataset.view).classList.add('active'); 
+      }); 
+    }
     bootstrap();
   </script>
 </body>
