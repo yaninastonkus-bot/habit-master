@@ -44,7 +44,7 @@
 
     .auth-card{
       width:100%;
-      max-width:520px;
+      max-width:560px;
       background:#f7f8fc;
       border-radius:28px;
       padding:32px;
@@ -53,7 +53,7 @@
     }
 
     .auth-title{
-      font-size:28px;
+      font-size:30px;
       font-weight:800;
       margin-bottom:10px;
     }
@@ -62,6 +62,12 @@
       color:var(--muted);
       margin-bottom:18px;
       font-size:18px;
+    }
+
+    .auth-grid{
+      display:grid;
+      gap:12px;
+      margin-top:14px;
     }
 
     .input,.textarea{
@@ -94,11 +100,19 @@
     .button.dark{background:var(--dark);color:#fff}
     .button.soft{background:#eef2ff;color:var(--blue)}
 
+    .auth-actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-top:12px;
+    }
+
     .status{
       margin-top:14px;
       min-height:18px;
       color:var(--muted);
       font-size:14px;
+      white-space:pre-line;
     }
 
     .app{
@@ -507,6 +521,9 @@
       .topbar{
         grid-template-columns:1fr 1fr;
       }
+      .auth-actions{
+        grid-template-columns:1fr;
+      }
     }
   </style>
 </head>
@@ -514,14 +531,16 @@
   <div id="authView" class="auth-shell">
     <div class="auth-card">
       <div class="auth-title">🔥 Habit Master</div>
-      <div class="auth-subtitle">Увійди через email, щоб зберігати прогрес.</div>
+      <div class="auth-subtitle">Увійди або створи акаунт через email + password.</div>
 
-      <input id="emailInput" class="input" type="email" placeholder="твій email" />
-      <button class="button primary" onclick="sendCode()">Надіслати код</button>
+      <div class="auth-grid">
+        <input id="emailInput" class="input" type="email" placeholder="твій email" />
+        <input id="passwordInput" class="input" type="password" placeholder="пароль" />
+      </div>
 
-      <div id="codeWrap" class="hidden" style="margin-top:14px;">
-        <input id="codeInput" class="input" type="text" placeholder="введи код з листа" />
-        <button class="button primary" style="margin-top:12px;" onclick="verifyCode()">Підтвердити код</button>
+      <div class="auth-actions">
+        <button class="button primary" onclick="signIn()">Увійти</button>
+        <button class="button green" onclick="signUp()">Зареєструватися</button>
       </div>
 
       <div id="authStatus" class="status"></div>
@@ -780,56 +799,69 @@
       `;
     }
 
-    async function sendCode(){
-      const email = document.getElementById('emailInput').value.trim();
-      const status = document.getElementById('authStatus');
-
-      if (!email) {
-        status.innerText = 'Введи email';
-        return;
-      }
-
-      const { error } = await sb.auth.signInWithOtp({ email });
-
-      if (error) {
-        status.innerText = 'Помилка надсилання коду: ' + error.message;
-        return;
-      }
-
-      document.getElementById('codeWrap').classList.remove('hidden');
-      status.innerText = 'Код відправлено на пошту 📩';
+    function getAuthForm(){
+      return {
+        email: document.getElementById('emailInput').value.trim().toLowerCase(),
+        password: document.getElementById('passwordInput').value
+      };
     }
 
-    async function verifyCode()
-    {
-  const email = document.getElementById('emailInput').value.trim().toLowerCase();
-  const token = document.getElementById('codeInput').value.trim().replace(/\s+/g, '');
-  const status = document.getElementById('authStatus');
+    async function signUp(){
+      const status = document.getElementById('authStatus');
+      const { email, password } = getAuthForm();
 
-  if (!email || !token) {
-    status.innerText = 'Введи email і код';
-    return;
-  }
+      if(!email || !password){
+        status.innerText = 'Введи email і пароль';
+        return;
+      }
 
-  const { data, error } = await sb.auth.verifyOtp({
-    email,
-    token,
-    type: 'email'
-  });
+      if(password.length < 6){
+        status.innerText = 'Пароль має бути мінімум 6 символів';
+        return;
+      }
 
-  if (error) {
-    status.innerText = 'Помилка підтвердження: ' + error.message;
-    return;
-  }
+      const { data, error } = await sb.auth.signUp({
+        email,
+        password
+      });
 
-  if (!data?.session) {
-    status.innerText = 'Сесію не створено. Спробуй запросити новий код.';
-    return;
-  }
+      if(error){
+        status.innerText = 'Помилка реєстрації: ' + error.message;
+        return;
+      }
 
-  status.innerText = 'Успішний вхід ✅';
-  await bootstrap();
-}
+      if(data?.session){
+        status.innerText = 'Акаунт створено ✅';
+        await bootstrap();
+        return;
+      }
+
+      status.innerText = 'Акаунт створено. Якщо у тебе увімкнене підтвердження пошти в Supabase — підтвердь email.';
+    }
+
+    async function signIn(){
+      const status = document.getElementById('authStatus');
+      const { email, password } = getAuthForm();
+
+      if(!email || !password){
+        status.innerText = 'Введи email і пароль';
+        return;
+      }
+
+      const { error } = await sb.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if(error){
+        status.innerText = 'Помилка входу: ' + error.message;
+        return;
+      }
+
+      status.innerText = 'Успішний вхід ✅';
+      await bootstrap();
+    }
+
     async function logout(){
       await sb.auth.signOut();
       location.reload();
