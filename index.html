@@ -315,6 +315,7 @@
     const OWNER_EMAIL = "yaninastonkus@gmail.com";
 
     let currentUser = null, categories = [], habits = [], checkIns = [], posts = [], selectedSpace = 'GENERAL', editingPostId = null, selectedFocuses = [];
+    let notificationsPoller = null;
     const TODAY_DAY = new Date().getDate();
     const META = { MOVE:{emoji:'🏃'}, MIND:{emoji:'🧠'}, CREATE:{emoji:'🎨'}, SLOW:{emoji:'🌿'}, GENERAL:{emoji:'💬'} };
     const DEFAULT_HABITS = {
@@ -397,10 +398,11 @@
       await loadCategories();
       await syncHabits();
       await loadCheckIns();
-      await loadPosts();
+      await loadPosts(false);
       await loadProfile();
       renderAll();
       bindTabs();
+      startNotificationsPolling();
     }
 
     async function loadCategories(){
@@ -529,7 +531,14 @@
       await loadCheckIns(); renderAll();
     }
 
-    async function loadPosts(){ const { data, error } = await sb.from('community_posts').select('*').order('created_at', { ascending:true }); if(error){ alert(error.message); posts=[]; renderCommunity(); return; } posts = data || []; renderCommunity(); }
+    async function loadPosts(triggerNotifications = false){
+      const previousPosts = [...posts];
+      const { data, error } = await sb.from('community_posts').select('*').order('created_at', { ascending:true });
+      if(error){ alert(error.message); posts=[]; renderCommunity(); return; }
+      posts = data || [];
+      if(triggerNotifications) maybeNotifyAboutNewPosts(previousPosts, posts);
+      renderCommunity();
+    }
     function getSpaceStorageKey(space){ return `ek_read_${currentUser?.id || 'guest'}_${space}`; }
     function getPostsForSpace(space){
       const generalCategoryId = categories.find(c => (c.slug || '').toUpperCase() === 'GENERAL')?.id;
@@ -649,8 +658,79 @@
     async function renderAdmin(){ if(currentUser?.email !== OWNER_EMAIL) return; const { data } = await sb.from('community_posts').select('category_id'); const s = {}; data?.forEach(p => { const c = categories.find(x => x.id === p.category_id); const slug = c ? c.slug : 'General'; s[slug] = (s[slug] || 0) + 1; }); getEl('adminStats').innerHTML = Object.entries(s).map(([slug,count]) => `<div class="card" style="padding:18px; margin-bottom:0;"><div style="font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.16em; font-weight:800; margin-bottom:8px;">${slug}</div><div style="font-size:40px; font-weight:800; letter-spacing:-.05em; line-height:1;">${count}</div></div>`).join(''); }
 
     function getNotificationStorageKey(){ return `ek_notifications_${currentUser?.id || 'guest'}`; }
-    function syncNotificationsUI(){ const btn = getEl('notificationsToggleBtn'); if(!btn) return; const enabled = localStorage.getItem(getNotificationStorageKey()) === '1'; btn.innerText = enabled ? '🔕 Вимкнути сповіщення' : '🔔 Увімкнути сповіщення'; }
-    async function toggleNotifications(){ const key = getNotificationStorageKey(); const enabled = localStorage.getItem(key) === '1'; localStorage.setItem(key, enabled ? '0' : '1'); syncNotificationsUI(); alert(enabled ? 'Сповіщення вимкнено!' : 'Сповіщення активовано!'); }
+    function getLastNotificationSeenKey(){ return `ek_notifications_seen_${currentUser?.id || 'guest'}`; }
+    function syncNotificationsUI(){
+      const btn = getEl('notificationsToggleBtn');
+      if(!btn) return;
+      const enabled = localStorage.getItem(getNotificationStorageKey()) === '1';
+      const permission = typeof Notification !== 'undefined' ? Notification.permission : 'unsupported';
+      btn.innerText = enabled && permission === 'granted' ? '🔕 Вимкнути сповіщення' : '🔔 Увімкнути сповіщення';
+    }
+    async function toggleNotifications(){
+      const key = getNotificationStorageKey();
+      const enabled = localStorage.getItem(key) === '1';
+
+      if(enabled){
+        localStorage.setItem(key, '0');
+        syncNotificationsUI();
+        alert('Сповіщення вимкнено!');
+        return;
+      }
+
+      if(typeof Notification === 'undefined'){
+        alert('Цей браузер не підтримує сповіщення.');
+        return;
+      }
+
+      let permission = Notification.permission;
+      if(permission !== 'granted') permission = await Notification.requestPermission();
+
+      if(permission !== 'granted'){
+        localStorage.setItem(key, '0');
+        syncNotificationsUI();
+        alert('Щоб отримувати сповіщення, дозволь їх у браузері.');
+        return;
+      }
+
+      localStorage.setItem(key, '1');
+      const latestTs = posts.map(p => new Date(p.created_at || 0).getTime()).filter(Boolean).reduce((max, ts) => Math.max(max, ts), Date.now());
+      localStorage.setItem(getLastNotificationSeenKey(), String(latestTs || Date.now()));
+      syncNotificationsUI();
+      alert('Сповіщення активовано!');
+    }
+
+    function maybeNotifyAboutNewPosts(previousPosts, nextPosts){
+      const enabled = localStorage.getItem(getNotificationStorageKey()) === '1';
+      if(!enabled || typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+
+      const previousIds = new Set(previousPosts.map(p => p.id));
+      const newIncoming = nextPosts.filter(p => !previousIds.has(p.id) && p.user_id !== currentUser?.id);
+      if(!newIncoming.length) return;
+
+      const lastSeen = Number(localStorage.getItem(getLastNotificationSeenKey()) || 0);
+      const freshIncoming = newIncoming.filter(p => new Date(p.created_at || 0).getTime() > lastSeen);
+      if(!freshIncoming.length) return;
+
+      const latest = freshIncoming[freshIncoming.length - 1];
+      const category = categories.find(c => c.id === latest.category_id);
+      const spaceName = category?.slug || 'GENERAL';
+      const messageText = (latest.body || '').trim() || 'Нове зображення';
+
+      new Notification(`Нове повідомлення в ${spaceName}`, {
+        body: `${latest.user_email || 'User'}: ${messageText.slice(0, 120)}`,
+        tag: `community-${spaceName}`
+      });
+
+      const latestTs = freshIncoming.map(p => new Date(p.created_at || 0).getTime()).reduce((max, ts) => Math.max(max, ts), lastSeen);
+      localStorage.setItem(getLastNotificationSeenKey(), String(latestTs));
+    }
+
+    function startNotificationsPolling(){
+      if(notificationsPoller) clearInterval(notificationsPoller);
+      notificationsPoller = setInterval(() => {
+        loadPosts(true);
+      }, 15000);
+    }
 
     function renderAll(){ renderDashboard(); renderTracker(); renderCommunity(); renderAdmin(); updateCommunityTabBadge(); syncNotificationsUI(); }
 
