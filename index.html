@@ -315,10 +315,24 @@
     function clearSelectedFile(){ getEl('fileInput').value=''; getEl('fileNameDisplay').innerText=''; getEl('attachmentActions').classList.add('hidden'); }
 
     async function signUp(){
-      const email = getEl('emailInput').value.trim(), password = getEl('passwordInput').value;
-      if(!email || password.length < 6) return alert('Мінімум 6 символів');
+      const email = getEl('emailInput').value.trim().toLowerCase();
+      const password = getEl('passwordInput').value;
+
+      if(!email.endsWith('@ekreative.com')) {
+        return alert('Реєстрація доступна тільки з робочої пошти @ekreative.com');
+      }
+
+      if(!email || password.length < 6) {
+        return alert('Мінімум 6 символів');
+      }
+
       const { error } = await sb.auth.signUp({ email, password });
-      if(error) alert(error.message); else alert('Готово! Тепер увійдіть.');
+
+      if(error) {
+        alert(error.message);
+      } else {
+        alert('Готово! Тепер увійдіть.');
+      }
     }
     async function signIn(){
       getEl('loginBtn').innerText = 'Wait...';
