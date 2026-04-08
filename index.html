@@ -61,6 +61,31 @@
       margin-bottom: 22px; padding: 14px 16px; border-radius: 28px;
       background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03)), rgba(15,15,21,.82);
       backdrop-filter: blur(16px); border: 1px solid var(--border); box-shadow: var(--shadow-soft);
+      transition: transform .22s ease, padding .22s ease, border-radius .22s ease, background .22s ease;
+      transform: translateY(0);
+    }
+    .topbar.mobile-collapsed {
+      padding: 10px 14px;
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.025)), rgba(10,10,14,.88);
+    }
+    .topbar.mobile-collapsed .topbar-right {
+      display: none;
+    }
+    .mobile-topbar-toggle {
+      display: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.04);
+      color: #fff;
+      font-size: 18px;
+      font-weight: 800;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
     }
     .brand-lockup { display:flex; align-items:center; gap:12px; margin-right:auto; }
     .topbar-right { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
@@ -175,6 +200,17 @@
       .chat-box { height:460px; }
       .dashboard-hero { display:block; }
       .stats-section { display:none; }
+      .mobile-topbar-toggle { display:inline-flex; }
+      .topbar {
+        align-items: center;
+      }
+      .topbar.mobile-collapsed .brand-lockup {
+        width: auto;
+        margin-right: auto;
+      }
+      .topbar.mobile-collapsed .mobile-topbar-toggle {
+        display: inline-flex;
+      }
     }
   </style>
 </head>
@@ -202,6 +238,7 @@
         <div class="brand-badge">EK</div>
         <div class="nav-logo">ekreative</div>
       </div>
+      <button id="mobileTopbarToggle" class="mobile-topbar-toggle" type="button" onclick="toggleMobileTopbar()">☰</button>
       <div class="topbar-right">
         <div class="tab active" data-view="dashboardView" onclick="switchView('dashboardView', this)">Dashboard</div>
         <div class="tab" data-view="trackerView" onclick="switchView('trackerView', this)">Tracker</div>
@@ -316,6 +353,8 @@
 
     let currentUser = null, categories = [], habits = [], checkIns = [], posts = [], selectedSpace = 'GENERAL', editingPostId = null, selectedFocuses = [];
     let notificationsPoller = null;
+    let mobileTopbarExpanded = true;
+    let lastScrollY = 0;
     const TODAY_DAY = new Date().getDate();
     const META = { MOVE:{emoji:'🏃'}, MIND:{emoji:'🧠'}, CREATE:{emoji:'🎨'}, SLOW:{emoji:'🌿'}, GENERAL:{emoji:'💬'} };
     const DEFAULT_HABITS = {
@@ -330,6 +369,43 @@
 
     function sanitizeFileName(name){ return (name||'file').normalize('NFKD').replace(/[^a-zA-Z0-9._-]+/g,'_').replace(/_+/g,'_').replace(/^_+|_+$/g,'') || 'file'; }
     function togglePassword(){ const input = getEl('passwordInput'); input.type = input.type === 'password' ? 'text' : 'password'; }
+    function applyMobileTopbarState(){
+      const topbar = document.querySelector('.topbar');
+      const toggleBtn = getEl('mobileTopbarToggle');
+      if(!topbar || !toggleBtn) return;
+      const isMobile = window.innerWidth <= 768;
+      if(!isMobile){
+        topbar.classList.remove('mobile-collapsed');
+        mobileTopbarExpanded = true;
+        toggleBtn.innerText = '☰';
+        return;
+      }
+      topbar.classList.toggle('mobile-collapsed', !mobileTopbarExpanded);
+      toggleBtn.innerText = mobileTopbarExpanded ? '−' : '☰';
+    }
+    function toggleMobileTopbar(forceExpanded = null){
+      if(window.innerWidth > 768) return;
+      mobileTopbarExpanded = typeof forceExpanded === 'boolean' ? forceExpanded : !mobileTopbarExpanded;
+      applyMobileTopbarState();
+    }
+    function initMobileTopbarBehavior(){
+      applyMobileTopbarState();
+      window.addEventListener('resize', applyMobileTopbarState);
+      window.addEventListener('scroll', () => {
+        if(window.innerWidth > 768) return;
+        const currentY = window.scrollY || 0;
+        const delta = currentY - lastScrollY;
+        if(currentY < 40){
+          mobileTopbarExpanded = true;
+        } else if(delta > 12){
+          mobileTopbarExpanded = false;
+        } else if(delta < -12){
+          mobileTopbarExpanded = true;
+        }
+        lastScrollY = currentY;
+        applyMobileTopbarState();
+      }, { passive: true });
+    }
     function switchView(viewId, clickedTab = null){
       document.querySelectorAll('.tab[data-view]').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -408,6 +484,7 @@
       await loadProfile();
       renderAll();
       bindTabs();
+      initMobileTopbarBehavior();
       startNotificationsPolling();
     }
 
