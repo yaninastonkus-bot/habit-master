@@ -4,815 +4,174 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>EK Habit Tracker | Pro</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='white'/%3E%3Ctext x='50%25' y='53%25' dominant-baseline='middle' text-anchor='middle' font-family='Inter,Arial,sans-serif' font-size='28' font-weight='800' fill='black'%3EEK%3C/text%3E%3C/svg%3E" />
-  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='42' fill='white'/%3E%3Ctext x='50%25' y='53%25' dominant-baseline='middle' text-anchor='middle' font-family='Inter,Arial,sans-serif' font-size='76' font-weight='800' fill='black'%3EEK%3C/text%3E%3C/svg%3E" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='white'/%3E%3Ctext x='50%25' y='53%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial,sans-serif' font-size='28' font-weight='800' fill='black'%3EEK%3C/text%3E%3C/svg%3E" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #000000;
+      --bg: #000;
       --surface: #0b0b0f;
-      --surface-2: #101015;
-      --card-blue: #1325e8;
-      --card-blue-2: #0b1bd0;
+      --surface-2: #111118;
+      --card-blue: #1733ff;
+      --card-blue-2: #0f23d1;
       --accent-lime: #b8f23a;
-      --text: #ffffff;
+      --text: #fff;
       --muted: rgba(255,255,255,0.66);
-      --muted-2: rgba(255,255,255,0.42);
       --border: rgba(255,255,255,0.08);
-      --border-strong: rgba(255,255,255,0.16);
-      --today-bg: rgba(184, 242, 58, 0.14);
-      --radius-xl: 34px;
-      --radius-lg: 26px;
-      --radius-md: 18px;
-      --shadow-soft: 0 12px 40px rgba(0,0,0,0.32);
-      --maxw: 1280px;
+      --radius-xl: 32px;
+      --radius-lg: 24px;
+      --shadow-soft: 0 12px 40px rgba(0,0,0,0.28);
+      --maxw: 1180px;
     }
-
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html { scroll-behavior: smooth; }
     body {
       margin: 0;
       font-family: 'Inter', sans-serif;
-      background:
-        radial-gradient(circle at 82% 14%, rgba(19,37,232,0.34), transparent 22%),
-        radial-gradient(circle at 68% 28%, rgba(19,37,232,0.14), transparent 24%),
-        #000;
+      background: radial-gradient(circle at 88% 18%, rgba(23,51,255,0.24), transparent 24%), #000;
       color: var(--text);
-      line-height: 1.45;
     }
     .hidden { display: none !important; }
-    img { max-width: 100%; display: block; }
-
-    /* Auth */
-    .auth-shell {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      background:
-        radial-gradient(circle at 80% 20%, rgba(19,37,232,0.42), transparent 24%),
-        #000;
-    }
-    .auth-card {
-      width: 100%;
-      max-width: 430px;
-      background: linear-gradient(180deg, rgba(17,17,24,0.96), rgba(8,8,11,0.98));
-      border-radius: 32px;
-      padding: 34px 26px;
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow-soft);
-      text-align: left;
-    }
-    .auth-brand {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      margin-bottom: 22px;
-    }
-    .auth-logo-box {
-      width: 52px;
-      height: 52px;
-      border-radius: 14px;
-      background: #fff;
-      color: #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      letter-spacing: -1px;
-      font-size: 22px;
-    }
-    .auth-brand-word {
-      font-size: 38px;
-      font-weight: 800;
-      letter-spacing: -2px;
-      line-height: 1;
-    }
-    .auth-subtitle {
-      color: var(--muted);
-      font-size: 15px;
-      margin: 0 0 26px;
-    }
-
     .input, .textarea {
-      width: 100%;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 16px;
-      padding: 16px 18px;
-      color: #fff;
-      font-size: 16px;
-      font-family: inherit;
-      outline: none;
-      transition: 0.25s ease;
+      width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+      border-radius: 16px; padding: 16px; color: #fff; font-size: 16px; font-family: inherit; outline: none;
     }
-    .input:focus, .textarea:focus {
-      border-color: rgba(184,242,58,0.55);
-      box-shadow: 0 0 0 4px rgba(184,242,58,0.08);
-    }
-
     .button {
-      border: 0;
-      border-radius: 999px;
-      padding: 16px 24px;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: 0.25s ease;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      font-family: inherit;
+      border: 0; border-radius: 999px; padding: 15px 22px; font-size: 15px; font-weight: 700;
+      cursor: pointer; transition: .2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
     }
     .button:hover { transform: translateY(-1px); }
-    .button.primary {
-      background: var(--accent-lime);
-      color: #000;
-      width: 100%;
-      box-shadow: 0 8px 24px rgba(184,242,58,0.18);
-    }
-    .button.dark {
-      background: rgba(255,255,255,0.03);
-      color: #fff;
-      border: 1px solid rgba(255,255,255,0.1);
-      backdrop-filter: blur(8px);
-    }
-    .button.blue {
-      background: linear-gradient(180deg, var(--card-blue), var(--card-blue-2));
-      color: #fff;
-    }
+    .button.primary { background: var(--accent-lime); color: #000; }
+    .button.dark { background: rgba(255,255,255,0.03); color: #fff; border: 1px solid var(--border); }
+    .button.blue { background: linear-gradient(180deg, var(--card-blue), var(--card-blue-2)); color: #fff; }
 
-    /* Layout */
-    .app {
-      max-width: var(--maxw);
-      margin: 0 auto;
-      padding: 22px 18px 48px;
+    .auth-shell { min-height: 100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+    .auth-card {
+      width:100%; max-width:430px; background: linear-gradient(180deg, rgba(17,17,24,.96), rgba(8,8,11,.98));
+      border-radius: 32px; padding: 32px 24px; border: 1px solid var(--border); box-shadow: var(--shadow-soft);
     }
+    .auth-brand { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
+    .auth-logo-box, .brand-badge {
+      width:48px; height:48px; border-radius:14px; background:#fff; color:#000; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:22px;
+    }
+    .auth-brand-word, .nav-logo { font-size:26px; font-weight:800; letter-spacing:-.04em; }
 
+    .app { max-width: var(--maxw); margin:0 auto; padding: 18px 16px 42px; }
     .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 20;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
-      margin-bottom: 24px;
-      padding: 16px 18px;
-      border-radius: 28px;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03)),
-        rgba(14,14,18,0.78);
-      backdrop-filter: blur(18px);
-      border: 1px solid rgba(255,255,255,0.08);
-      box-shadow: var(--shadow-soft);
+      position: sticky; top: 0; z-index: 50; display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+      margin-bottom: 22px; padding: 14px 16px; border-radius: 28px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03)), rgba(15,15,21,.82);
+      backdrop-filter: blur(16px); border: 1px solid var(--border); box-shadow: var(--shadow-soft);
     }
-    .brand-lockup {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-right: auto;
-      min-width: 180px;
-    }
-    .brand-badge {
-      width: 48px;
-      height: 48px;
-      border-radius: 14px;
-      background: #fff;
-      color: #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 22px;
-      letter-spacing: -1px;
-      flex: 0 0 auto;
-    }
-    .nav-logo {
-      font-size: 26px;
-      font-weight: 800;
-      letter-spacing: -1.4px;
-    }
-    .topbar-right {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
+    .brand-lockup { display:flex; align-items:center; gap:12px; margin-right:auto; }
+    .topbar-right { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
     .tab {
-      background: transparent;
-      color: var(--muted);
-      border-radius: 999px;
-      padding: 12px 18px;
-      cursor: pointer;
-      font-weight: 700;
-      transition: 0.25s ease;
-      border: 1px solid transparent;
-      font-size: 14px;
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
+      background: transparent; color: var(--muted); border-radius: 999px; padding: 11px 16px; cursor:pointer;
+      font-weight:700; border: 1px solid transparent; font-size:14px; position:relative; display:inline-flex; align-items:center; gap:8px;
     }
+    .tab.active { background:#fff; color:#000; }
     .tab-badge {
-      min-width: 18px;
-      height: 18px;
-      border-radius: 999px;
-      background: var(--accent-lime);
-      color: #000;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      font-weight: 800;
-      padding: 0 5px;
-      line-height: 1;
+      min-width:18px; height:18px; border-radius:999px; background:var(--accent-lime); color:#000; display:inline-flex;
+      align-items:center; justify-content:center; font-size:11px; font-weight:800; padding:0 5px; box-shadow: 0 4px 14px rgba(184,242,58,.22);
     }
-    .tab:hover { color: #fff; }
-    .tab.active {
-      background: #fff;
-      color: #000;
-      box-shadow: 0 4px 14px rgba(255,255,255,0.12);
-    }
-    .view { display: none; }
-    .view.active { display: block; }
-
+    .view { display:none; }
+    .view.active { display:block; }
     .card {
-      background: linear-gradient(180deg, rgba(17,17,23,0.98), rgba(10,10,14,0.98));
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border);
-      padding: 26px;
-      margin-bottom: 20px;
-      box-shadow: var(--shadow-soft);
+      background: linear-gradient(180deg, rgba(12,12,18,.98), rgba(7,7,10,.98)); border-radius: var(--radius-lg);
+      border: 1px solid var(--border); padding: 24px; box-shadow: var(--shadow-soft); margin-bottom: 20px;
     }
-    .card-hero {
-      background:
-        radial-gradient(circle at 78% 36%, rgba(36,78,255,0.36), transparent 22%),
-        linear-gradient(135deg, #1c004b 0%, #0f0f7f 42%, #1325e8 100%);
-      border: none;
+    .settings-hero, .tracker-hero, .community-hero {
+      border-radius: var(--radius-xl); background: radial-gradient(circle at 82% 36%, rgba(23,51,255,.18), transparent 26%), linear-gradient(180deg, #09090d, #040406);
+      border:1px solid var(--border); padding: 26px;
     }
-    .section-title {
-      font-size: clamp(34px, 5vw, 64px);
-      line-height: 0.94;
-      letter-spacing: -0.05em;
-      margin: 0 0 14px;
-      font-weight: 800;
-    }
-    .section-subtitle {
-      font-size: clamp(18px, 2.1vw, 26px);
-      color: rgba(255,255,255,0.92);
-      line-height: 1.28;
-      margin: 0;
-    }
+    .settings-hero h2, .tracker-hero h2, .community-hero h2, .stats-title { margin:0; font-size: clamp(42px, 6vw, 72px); letter-spacing:-.07em; line-height:.92; }
+    .settings-hero p, .tracker-hero p, .community-hero p, .stats-subtitle { margin:12px 0 0; color: var(--muted); font-size: 18px; }
 
-    /* Dashboard */
-    .hero-banner {
-      padding: 30px;
-      border-radius: var(--radius-xl);
-      min-height: 290px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      margin-bottom: 26px;
-      position: relative;
-      overflow: hidden;
-    }
-    .hero-banner::after {
-      content: '';
-      position: absolute;
-      inset: auto -8% -18% auto;
-      width: 260px;
-      height: 260px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(184,242,58,0.18), transparent 62%);
-      pointer-events: none;
-    }
-    .eyebrow {
-      display: inline-block;
-      font-size: 13px;
-      text-transform: uppercase;
-      letter-spacing: 0.18em;
-      color: rgba(255,255,255,0.74);
-      font-weight: 700;
-      margin-bottom: 10px;
-    }
-    .hero-cta-row {
-      display: flex;
-      gap: 14px;
-      flex-wrap: wrap;
-      align-items: center;
-      margin-top: 24px;
-    }
-    .hero-url {
-      padding: 14px 24px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(0,0,0,0.22);
-      color: #fff;
-      font-weight: 600;
-      letter-spacing: 0.01em;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
-    }
+    .dashboard-grid { display:grid; grid-template-columns: 280px 1fr; gap: 20px; align-items:start; }
+    .stack-col { display:grid; gap:16px; }
+    .metric-card { border-radius:28px; padding:20px; min-height:110px; display:flex; flex-direction:column; justify-content:space-between; }
+    .metric-card.blue { background: linear-gradient(180deg, var(--card-blue), var(--card-blue-2)); }
+    .metric-card.lime { background: var(--accent-lime); color:#000; }
+    .metric-kicker { font-size:11px; text-transform:uppercase; letter-spacing:.18em; font-weight:800; opacity:.84; }
+    .metric-value { font-size:56px; font-weight:800; letter-spacing:-.07em; line-height:.9; }
+    .metric-label { font-size:16px; font-weight:700; }
+    .stats-section { border-radius: var(--radius-xl); padding: 28px; background:#020202; border:1px solid rgba(255,255,255,.05); }
+    .rings-grid { display:grid; grid-template-columns: repeat(2, minmax(220px, 1fr)); gap:18px; }
+    .ring-card { padding:24px; border-radius:28px; background: linear-gradient(180deg, rgba(14,14,22,1), rgba(5,5,8,1)); border:1px solid rgba(255,255,255,.06); min-height:220px; display:flex; flex-direction:column; justify-content:space-between; }
+    .ring { width:112px; height:112px; position:relative; flex:0 0 auto; }
+    .ring svg { width:100%; height:100%; transform: rotate(-90deg); overflow:visible; }
+    .ring-track { fill:none; stroke:#2a2a34; stroke-width:10; }
+    .ring-progress { fill:none; stroke: var(--card-blue); stroke-width:10; stroke-linecap:round; }
+    .ring-progress.total { stroke: var(--accent-lime); }
+    .ring-hole { fill:#050505; stroke:rgba(255,255,255,.04); stroke-width:1; }
+    .ring-value { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#fff; font-size:24px; font-weight:800; letter-spacing:-.05em; z-index:2; }
+    .ring-meta { display:flex; justify-content:space-between; align-items:flex-end; gap:16px; }
+    .ring-title { font-size:28px; font-weight:800; letter-spacing:-.04em; }
+    .ring-copy { font-size:12px; text-transform:uppercase; letter-spacing:.15em; color:var(--muted); font-weight:700; margin-top:5px; }
+    .focus-chips { display:flex; flex-wrap:wrap; gap:10px; margin-top:16px; }
+    .focus-chip { background: rgba(255,255,255,.04); border:1px solid var(--border); color:#fff; border-radius:999px; padding:10px 14px; font-size:13px; font-weight:800; cursor:pointer; }
+    .focus-chip.active { background: var(--accent-lime); color:#000; border-color: var(--accent-lime); }
 
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: 340px 1fr;
-      gap: 24px;
-      align-items: start;
-    }
-    .stack-col { display: grid; gap: 18px; }
-    .metric-card {
-      border-radius: 28px;
-      padding: 22px;
-      min-height: 128px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      box-shadow: var(--shadow-soft);
-      border: 1px solid rgba(255,255,255,0.06);
-    }
-    .metric-card.blue {
-      background: linear-gradient(180deg, #1330ff, #1022cf);
-    }
-    .metric-card.lime {
-      background: var(--accent-lime);
-      color: #000;
-    }
-    .metric-kicker {
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.16em;
-      opacity: 0.8;
-      font-weight: 800;
-    }
-    .metric-value {
-      font-size: 48px;
-      font-weight: 800;
-      letter-spacing: -0.06em;
-      line-height: 0.95;
-    }
-    .metric-label {
-      font-size: 18px;
-      font-weight: 700;
-      line-height: 1.15;
-    }
-    .metric-card.minor .metric-value { font-size: 64px; }
-
-    .focus-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 18px;
-    }
-    .focus-chip {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      color: #fff;
-      border-radius: 999px;
-      padding: 10px 16px;
-      font-size: 13px;
-      font-weight: 800;
-      cursor: pointer;
-      transition: 0.22s ease;
-      letter-spacing: 0.04em;
-    }
-    .focus-chip.active {
-      background: var(--accent-lime);
-      color: #000;
-      border-color: var(--accent-lime);
-      box-shadow: 0 8px 20px rgba(184,242,58,0.16);
-    }
-
-    .stats-section {
-      background: #020202;
-      border-radius: var(--radius-xl);
-      border: 1px solid rgba(255,255,255,0.05);
-      padding: 30px;
-    }
-    .stats-title {
-      font-size: clamp(42px, 6vw, 88px);
-      letter-spacing: -0.07em;
-      line-height: 0.9;
-      margin: 0 0 28px;
-      text-align: center;
-    }
-    .stats-subtitle {
-      text-align: center;
-      color: rgba(255,255,255,0.9);
-      font-size: clamp(18px, 2.2vw, 26px);
-      margin: 0 0 34px;
-    }
-    .rings-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(220px, 1fr));
-      gap: 18px;
-    }
-    .ring-card {
-      text-align: left;
-      padding: 24px;
-      background: linear-gradient(180deg, rgba(19,19,24,1), rgba(8,8,11,1));
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 28px;
-      min-height: 216px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    .ring {
-      width: 112px;
-      height: 112px;
-      position: relative;
-      flex: 0 0 auto;
-    }
-    .ring svg {
-      width: 100%;
-      height: 100%;
-      transform: rotate(-90deg);
-      overflow: visible;
-    }
-    .ring-track {
-      fill: none;
-      stroke: #2a2a34;
-      stroke-width: 10;
-    }
-    .ring-progress {
-      fill: none;
-      stroke: var(--card-blue);
-      stroke-width: 10;
-      stroke-linecap: round;
-      transition: stroke-dashoffset 0.25s ease;
-    }
-    .ring-progress.total {
-      stroke: var(--accent-lime);
-    }
-    .ring-hole {
-      fill: #050505;
-      stroke: rgba(255,255,255,0.04);
-      stroke-width: 1;
-    }
-    .ring-value {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      font-weight: 800;
-      letter-spacing: -0.05em;
-      color: #fff;
-      z-index: 2;
-      pointer-events: none;
-    }
-    
-    .ring-meta {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      gap: 14px;
-    }
-    .ring-title {
-      font-weight: 800;
-      font-size: 28px;
-      line-height: 1;
-      letter-spacing: -0.04em;
-      text-transform: uppercase;
-    }
-    .ring-copy {
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.13em;
-      color: var(--muted);
-      font-weight: 700;
-      margin-top: 4px;
-    }
-
-    /* Tracker */
-    .tracker-hero {
-      margin-bottom: 20px;
-      padding: 26px 28px;
-      border-radius: var(--radius-xl);
-      background:
-        radial-gradient(circle at 82% 40%, rgba(184,242,58,0.16), transparent 15%),
-        linear-gradient(180deg, #0a0a0e, #030304);
-      border: 1px solid rgba(255,255,255,0.06);
-    }
-    .tracker-hero h2,
-    .community-hero h2,
-    .settings-hero h2 {
-      margin: 0;
-      font-size: clamp(34px, 5vw, 68px);
-      line-height: 0.95;
-      letter-spacing: -0.06em;
-    }
-    .tracker-hero p,
-    .community-hero p,
-    .settings-hero p {
-      margin: 12px 0 0;
-      color: var(--muted);
-      font-size: 18px;
-    }
-
-    .category-row-header {
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      gap: 12px;
-      margin-bottom: 12px;
-      padding: 0 4px;
-    }
-    .category-title {
-      font-size: 26px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: -0.03em;
-    }
+    .category-row-header { display:flex; align-items:center; justify-content:flex-start; gap:12px; margin-bottom:12px; padding:0 4px; }
+    .category-title { font-size:26px; font-weight:800; letter-spacing:-.03em; text-transform:uppercase; }
     .add-habit-btn {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      background: var(--accent-lime);
-      color: #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      cursor: pointer;
-      box-shadow: 0 8px 20px rgba(184,242,58,0.12);
-      transition: 0.2s ease;
-      font-size: 22px;
-      flex: 0 0 auto;
+      width:42px; height:42px; border-radius:50%; background:var(--accent-lime); color:#000; display:flex; align-items:center; justify-content:center;
+      font-weight:800; cursor:pointer; font-size:22px; flex:0 0 auto;
     }
-    .add-habit-btn:hover { transform: scale(1.04); }
-    .habit-actions {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      margin-left: auto;
-      flex: 0 0 auto;
-    }
-    .habit-action-btn {
-      border: 0;
-      background: transparent;
-      cursor: pointer;
-      font-weight: 800;
-      line-height: 1;
-      padding: 0;
-      transition: 0.18s ease;
-    }
-    .habit-action-btn:hover { transform: scale(1.08); }
-    .habit-action-btn.edit {
-      color: #ffffff;
-      font-size: 16px;
-      opacity: 0.9;
-    }
-    .habit-action-btn.delete {
-      color: #ff5b5b;
-      font-size: 22px;
-    }
-
-    .tracker-section {
-      overflow-x: auto;
-      background: linear-gradient(180deg, rgba(12,12,17,0.98), rgba(6,6,8,0.98));
-      border-radius: 28px;
-      border: 1px solid rgba(255,255,255,0.06);
-      margin-bottom: 30px;
-      box-shadow: var(--shadow-soft);
-    }
-    .tracker-head, .tracker-row {
-      display: grid;
-      grid-template-columns: 240px repeat(31, 45px) 84px;
-      align-items: center;
-      min-width: 1715px;
-    }
-    .tracker-head {
-      height: 58px;
-      background: rgba(255,255,255,0.035);
-      font-size: 11px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.16em;
-      color: var(--muted-2);
-      position: sticky;
-      top: 0;
-      z-index: 2;
-    }
-    .tracker-row {
-      border-bottom: 1px solid rgba(255,255,255,0.04);
-      height: 62px;
-      font-size: 15px;
-    }
-    .tracker-head > div,
-    .tracker-row > div {
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-right: 1px solid rgba(255,255,255,0.03);
-    }
+    .tracker-section { overflow-x:auto; background: linear-gradient(180deg, rgba(12,12,17,.98), rgba(6,6,8,.98)); border-radius:28px; border:1px solid rgba(255,255,255,.06); margin-bottom:28px; }
+    .tracker-head, .tracker-row { display:grid; grid-template-columns: 260px repeat(31, 45px) 84px; align-items:center; min-width: 1740px; }
+    .tracker-head { height:56px; background: rgba(255,255,255,.03); font-size:11px; text-transform:uppercase; letter-spacing:.16em; font-weight:800; color: rgba(255,255,255,.48); }
+    .tracker-row { height:56px; border-bottom:1px solid rgba(255,255,255,.04); }
+    .tracker-head > div, .tracker-row > div { height:100%; display:flex; align-items:center; justify-content:center; border-right:1px solid rgba(255,255,255,.03); }
     .habit-title-cell {
-      justify-content: flex-start !important;
-      padding-left: 24px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      position: sticky;
-      left: 0;
-      z-index: 3;
-      background: linear-gradient(180deg, rgba(10,10,14,0.98), rgba(5,5,7,0.98));
-      box-shadow: 10px 0 16px rgba(0,0,0,0.18);
+      justify-content:flex-start !important; padding-left:24px; font-weight:700; letter-spacing:-.02em; position:sticky; left:0; z-index:3;
+      background: linear-gradient(180deg, rgba(10,10,14,.98), rgba(5,5,7,.98)); box-shadow:10px 0 16px rgba(0,0,0,.18);
     }
-    .checkbox {
-      width: 24px;
-      height: 24px;
-      border: 2px solid rgba(255,255,255,0.16);
-      border-radius: 7px;
-      cursor: pointer;
-      transition: 0.18s ease;
-      background: rgba(255,255,255,0.02);
-    }
-    .checkbox:hover { transform: scale(1.04); }
-    .checkbox.active {
-      background: linear-gradient(180deg, #2145ff, #1022cf);
-      border-color: #2145ff;
-      box-shadow: 0 8px 18px rgba(19,37,232,0.22);
-    }
-    .today-cell {
-      background: var(--today-bg) !important;
-      color: var(--accent-lime);
-      font-weight: 800;
-    }
+    .habit-actions { display:inline-flex; align-items:center; gap:10px; margin-left:auto; flex:0 0 auto; }
+    .habit-action-btn { border:0; background:transparent; cursor:pointer; font-weight:800; padding:0; }
+    .habit-action-btn.edit { color:#fff; font-size:16px; }
+    .habit-action-btn.delete { color:#ff5b5b; font-size:22px; }
+    .checkbox { width:22px; height:22px; border:2px solid rgba(255,255,255,.16); border-radius:7px; cursor:pointer; background:rgba(255,255,255,.02); }
+    .checkbox.active { background: linear-gradient(180deg, var(--card-blue), var(--card-blue-2)); border-color: var(--card-blue); }
+    .today-cell { background: rgba(184,242,58,.14) !important; color: var(--accent-lime); font-weight:800; }
 
-    /* Community */
-    .community-hero,
-    .settings-hero {
-      margin-bottom: 20px;
-      padding: 26px 28px;
-      border-radius: var(--radius-xl);
-      background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
-      border: 1px solid rgba(255,255,255,0.06);
-    }
-    .community-layout {
-      display: grid;
-      grid-template-columns: 260px 1fr;
-      gap: 22px;
-    }
-    .space-panel,
-    .community-panel {
-      background: linear-gradient(180deg, rgba(12,12,17,0.96), rgba(7,7,10,0.98));
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 28px;
-      padding: 18px;
-      box-shadow: var(--shadow-soft);
-    }
-    .space-btn {
-      width: 100%;
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 18px;
-      padding: 16px 18px;
-      text-align: left;
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
-      background: rgba(255,255,255,0.03);
-      color: #fff;
-      margin-bottom: 10px;
-      transition: 0.2s ease;
-    }
-    .space-btn:hover { border-color: rgba(255,255,255,0.16); }
-    .space-btn.active {
-      background: linear-gradient(180deg, var(--card-blue), var(--card-blue-2));
-      border-color: transparent;
-    }
-    .chat-box {
-      height: 560px;
-      overflow-y: auto;
-      background:
-        radial-gradient(circle at 70% 20%, rgba(19,37,232,0.10), transparent 24%),
-        #060609;
-      border-radius: 24px;
-      padding: 20px;
-      border: 1px solid rgba(255,255,255,0.06);
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .msg {
-      max-width: 80%;
-      padding: 16px 18px;
-      border-radius: 22px;
-      background: rgba(255,255,255,0.05);
-      position: relative;
-      border: 1px solid rgba(255,255,255,0.05);
-    }
-    .msg.own {
-      align-self: flex-end;
-      background: linear-gradient(180deg, var(--card-blue), #0e1fca);
-      margin-left: auto;
-    }
-    .composer {
-      margin-top: 16px;
-      display: flex;
-      gap: 12px;
-      align-items: flex-end;
-    }
-    .attach-btn {
-      min-width: 54px;
-      height: 54px;
-      border-radius: 16px;
-      padding: 0;
-    }
+    .community-layout { display:grid; grid-template-columns: 250px 1fr; gap:20px; }
+    .space-panel, .community-panel { background: linear-gradient(180deg, rgba(12,12,17,.96), rgba(7,7,10,.98)); border:1px solid rgba(255,255,255,.06); border-radius:28px; padding:18px; }
+    .space-btn { width:100%; border:1px solid rgba(255,255,255,.08); border-radius:18px; padding:16px 18px; text-align:left; font-size:15px; font-weight:700; cursor:pointer; background:rgba(255,255,255,.03); color:#fff; margin-bottom:10px; }
+    .space-btn.active { background: linear-gradient(180deg, var(--card-blue), var(--card-blue-2)); border-color: transparent; }
+    .chat-box { height: 560px; overflow-y:auto; background:#060609; border-radius:24px; padding:18px; border:1px solid rgba(255,255,255,.06); display:flex; flex-direction:column; gap:12px; }
+    .msg { max-width:80%; padding:16px 18px; border-radius:22px; background: rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.05); }
+    .msg.own { align-self:flex-end; background: linear-gradient(180deg, var(--card-blue), var(--card-blue-2)); }
+    .composer { margin-top:16px; display:flex; gap:12px; align-items:flex-end; }
+    .attach-btn { min-width:54px; height:54px; border-radius:16px; padding:0; }
 
-    /* Settings */
-    .settings-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 18px;
+    @media (max-width: 960px) {
+      .dashboard-grid, .community-layout, .rings-grid { grid-template-columns:1fr; }
     }
-    .settings-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-    .owner-panel-title {
-      color: var(--card-blue);
-      margin: 0 0 18px;
-      font-size: 22px;
-      letter-spacing: -0.03em;
-    }
-    #adminStats {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 14px;
-    }
-
-    @media (max-width: 1024px) {
-      .dashboard-grid,
-      .community-layout,
-      .rings-grid {
-        grid-template-columns: 1fr;
-      }
-      .metric-card.minor .metric-value { font-size: 54px; }
-    }
-
     @media (max-width: 768px) {
-      .app { padding: 14px 12px 34px; }
-      .topbar {
-        padding: 14px;
-        gap: 8px;
-        border-radius: 24px;
-      }
-      .brand-lockup { width: 100%; }
-      .topbar-right { width: 100%; }
-      .tab {
-        flex: 1 1 calc(50% - 8px);
-        text-align: center;
-      }
-      .button.logout-btn { width: 100%; }
-      .hero-banner,
-      .stats-section,
-      .tracker-hero,
-      .community-hero,
-      .settings-hero,
-      .card,
-      .space-panel,
-      .community-panel,
-      .tracker-section,
-      .metric-card,
-      .ring-card {
-        border-radius: 24px;
-      }
-      .hero-banner { min-height: 360px; }
-      .section-title { font-size: 58px; }
-      .section-subtitle { font-size: 18px; }
-      .stats-title { font-size: 64px; }
-      .stats-subtitle { font-size: 18px; }
-      .chat-box { height: 460px; }
-      .composer { flex-wrap: wrap; }
-      .composer > * { width: 100%; }
+      .app { padding:14px 12px 32px; }
+      .brand-lockup, .topbar-right { width:100%; }
+      .topbar-right { gap:8px; }
+      .tab { flex:1 1 calc(50% - 8px); text-align:center; justify-content:center; }
+      .composer { flex-wrap:wrap; }
+      .composer > * { width:100%; }
+      .chat-box { height:460px; }
     }
   </style>
 </head>
 <body>
-
   <div id="authView" class="auth-shell">
     <div class="auth-card">
       <div class="auth-brand">
         <div class="auth-logo-box">EK</div>
         <div class="auth-brand-word">ekreative</div>
       </div>
-      <p class="auth-subtitle">AI-powered habit tracking and focused personal growth.</p>
+      <p style="color:var(--muted); margin:0 0 24px;">AI-powered habit tracking and focused personal growth.</p>
       <input id="emailInput" class="input" type="email" placeholder="Email" style="margin-bottom:12px;"/>
-      <div style="position: relative; margin-bottom: 16px;">
-        <input id="passwordInput" class="input" type="password" placeholder="Пароль" style="padding-right: 48px;" />
-        <div id="eyeIcon" onclick="togglePassword()" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); cursor: pointer; opacity: 0.7;">👁️</div>
+      <div style="position:relative; margin-bottom:16px;">
+        <input id="passwordInput" class="input" type="password" placeholder="Пароль" style="padding-right:44px;" />
+        <div onclick="togglePassword()" style="position:absolute; right:14px; top:50%; transform:translateY(-50%); cursor:pointer; opacity:.7;">👁️</div>
       </div>
-      <div id="loginError" style="color:#ff6161; font-size:12px; margin-bottom:15px; min-height:15px;"></div>
-      <button id="loginBtn" class="button primary" onclick="signIn()">Увійти</button>
+      <button id="loginBtn" class="button primary" style="width:100%;" onclick="signIn()">Увійти</button>
       <button class="button dark" style="width:100%; margin-top:12px;" onclick="signUp()">Створити акаунт</button>
     </div>
   </div>
@@ -828,34 +187,23 @@
         <div class="tab" data-view="trackerView" onclick="switchView('trackerView', this)">Tracker</div>
         <div class="tab" data-view="communityView" onclick="switchView('communityView', this)">Community <span id="communityTabBadge" class="tab-badge hidden">0</span></div>
         <div class="tab" data-view="settingsView" onclick="switchView('settingsView', this)">Settings</div>
-        <button class="button dark logout-btn" style="padding: 12px 18px; font-size: 14px;" onclick="logout()">Вихід</button>
+        <button class="button dark" style="padding: 12px 18px; font-size:14px;" onclick="logout()">Вихід</button>
       </div>
     </div>
 
     <div id="dashboardView" class="view active">
       <div class="dashboard-grid">
         <div class="stack-col">
-          <div id="streakPanel" class="metric-card blue">
-            <div class="metric-kicker">Current Streak</div>
-            <div class="metric-value">0</div>
-            <div class="metric-label">days in a row</div>
-          </div>
-
-          <div id="levelPanel" class="metric-card lime">
-            <div class="metric-kicker">Level</div>
-            <div class="metric-value">NOVICE</div>
-            <div class="metric-label">keep building momentum</div>
-          </div>
-
-          <div class="metric-card minor" style="background:#0a0a0d;">
+          <div id="streakPanel" class="metric-card blue"></div>
+          <div id="levelPanel" class="metric-card lime"></div>
+          <div class="metric-card card" style="margin-bottom:0;">
             <div class="metric-kicker">Active Days</div>
             <div id="activeVal" class="metric-value">0</div>
             <div class="metric-label" style="color:var(--muted);">days with completed check-ins</div>
           </div>
-
           <div class="card" style="margin-bottom:0;">
-            <div class="metric-kicker" style="margin-bottom:4px;">Focus Areas</div>
-            <div style="font-size:28px; font-weight:800; letter-spacing:-0.04em;">Choose your lane</div>
+            <div class="metric-kicker">Focus Areas</div>
+            <div style="font-size:30px; font-weight:800; letter-spacing:-.04em; margin-top:4px;">Choose your lane</div>
             <div class="focus-chips">
               <div class="focus-chip" data-val="MOVE" onclick="toggleFocusChip('MOVE')">MOVE</div>
               <div class="focus-chip" data-val="MIND" onclick="toggleFocusChip('MIND')">MIND</div>
@@ -864,11 +212,10 @@
             </div>
           </div>
         </div>
-
         <div class="stats-section">
           <h2 class="stats-title">Total<br>Progress</h2>
           <p class="stats-subtitle">Загальний показник виконання по всіх звичках і категоріях</p>
-          <div id="totalProgressWrap" style="margin-bottom:22px;"></div>
+          <div id="totalProgressWrap" style="margin:22px 0;"></div>
           <div id="rewardBannerWrap" style="margin-bottom:22px;"></div>
           <div id="ringsWrap" class="rings-grid"></div>
         </div>
@@ -876,61 +223,52 @@
     </div>
 
     <div id="trackerView" class="view">
-      <div class="tracker-hero">
-        <h2>Habit Tracker</h2>
-        <p>Твій фіксований календар звичок із швидким керуванням.</p>
-      </div>
+      <div class="tracker-hero card"><h2>Habit Tracker</h2><p>Фіксований календар, кастомні звички з видаленням і зручна робота без повернення в початок таблиці.</p></div>
       <div id="trackerWrap"></div>
     </div>
 
     <div id="communityView" class="view">
-      <div class="community-hero">
-        <h2>Community</h2>
-        <p>Спілкування по просторах, файли, пости та активний чат без втрати логіки.</p>
-      </div>
+      <div class="community-hero card"><h2>Community</h2><p>Чати по напрямках і general-чат з фото та редагуванням повідомлень.</p></div>
       <div class="community-layout">
         <div class="space-panel">
-          <div style="font-size:12px; text-transform:uppercase; letter-spacing:0.16em; color:var(--muted); font-weight:800; margin:6px 0 14px;">Spaces</div>
-          <div id="spacesWrap" class="spaces-sidebar"></div>
+          <div style="font-size:12px; text-transform:uppercase; letter-spacing:.16em; color:var(--muted); font-weight:800; margin:6px 0 14px;">Spaces</div>
+          <div id="spacesWrap"></div>
         </div>
         <div class="community-panel">
-          <h2 id="communityTitle" style="font-size:32px; font-weight:800; margin:0 0 18px; letter-spacing:-0.04em;">Community</h2>
+          <h2 id="communityTitle" style="font-size:32px; font-weight:800; letter-spacing:-.04em; margin:0 0 18px;">Community</h2>
           <div id="postsWrap" class="chat-box"></div>
           <div class="composer">
-            <div id="attachWrap">
-              <label class="button dark attach-btn" style="cursor:pointer;">📎<input type="file" id="fileInput" accept="image/*" class="hidden" onchange="updateFileName()"></label>
-            </div>
-            <div style="flex-grow:1; min-width: 240px;">
+            <div id="attachWrap"><label class="button dark attach-btn" style="cursor:pointer;">📎<input type="file" id="fileInput" accept="image/*" class="hidden" onchange="updateFileName()"></label></div>
+            <div style="flex-grow:1; min-width:240px;">
               <div id="attachmentActions" class="hidden" style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
-                <div id="fileNameDisplay" style="font-size: 11px; color: var(--accent-lime);"></div>
+                <div id="fileNameDisplay" style="font-size:11px; color:var(--accent-lime);"></div>
                 <button type="button" class="button dark" style="padding:8px 12px; font-size:12px;" onclick="clearSelectedFile()">Remove</button>
               </div>
-              <textarea id="postInput" class="textarea" style="min-height:60px;" placeholder="Що нового?"></textarea>
+              <textarea id="postInput" class="textarea" style="min-height:60px; resize:vertical;" placeholder="Що нового?"></textarea>
             </div>
-            <button id="sendBtn" class="button blue" style="height:54px; min-width:110px;">Send</button>
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+              <button id="sendBtn" class="button blue" style="height:54px; min-width:110px;" onclick="createPost()">Send</button>
+              <button id="cancelEditBtn" class="button dark hidden" style="height:54px; min-width:110px;" onclick="cancelEditPost()">Cancel</button>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
     <div id="settingsView" class="view">
-      <div class="settings-hero">
-        <h2>Settings</h2>
-        <p>Керування сповіщеннями.</p>
-      </div>
+      <div class="settings-hero card"><h2>Settings</h2><p>Керування сповіщеннями.</p></div>
       <div class="card" style="margin-bottom:0;">
         <div class="settings-grid">
-          <div class="settings-row">
+          <div class="settings-row" style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
             <div>
-              <div style="font-size:12px; text-transform:uppercase; letter-spacing:0.16em; color:var(--muted); font-weight:800; margin-bottom:8px;">Notifications</div>
+              <div style="font-size:12px; text-transform:uppercase; letter-spacing:.16em; color:var(--muted); font-weight:800; margin-bottom:8px;">Notifications</div>
               <p style="color:var(--muted); margin:0; font-size:17px;">Керуйте сповіщеннями для свого акаунта.</p>
             </div>
             <button id="notificationsToggleBtn" class="button primary" style="width:auto;" onclick="toggleNotifications()">🔔 Увімкнути сповіщення</button>
           </div>
-
-          <div id="adminSection" class="hidden" style="margin-top:10px; border-top:1px solid rgba(255,255,255,0.08); padding-top:24px;">
-            <h3 class="owner-panel-title">👑 Owner Panel</h3>
-            <div id="adminStats"></div>
+          <div id="adminSection" class="hidden" style="margin-top:24px; border-top:1px solid rgba(255,255,255,.08); padding-top:24px;">
+            <h3 style="color:var(--card-blue); margin:0 0 18px; font-size:22px;">👑 Owner Panel</h3>
+            <div id="adminStats" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:14px;"></div>
           </div>
         </div>
       </div>
@@ -941,91 +279,58 @@
     const SUPABASE_URL = "https://vnbcelodaueayobcvkjy.supabase.co";
     const SUPABASE_KEY = "sb_publishable_yfG2qoR_Cx8QKwEbNpzeUA_4VNjItCT";
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
     const OWNER_EMAIL = "yaninastonkus@gmail.com";
 
-    let currentUser = null, categories = [], habits = [], checkIns = [], posts = [], selectedSpace = "GENERAL", editingPostId = null, selectedFocuses = [];
+    let currentUser = null, categories = [], habits = [], checkIns = [], posts = [], selectedSpace = 'GENERAL', editingPostId = null, selectedFocuses = [];
     const TODAY_DAY = new Date().getDate();
-
-    const META = {
-      MOVE: { color: "#1325e8", emoji: "🏃" },
-      MIND: { color: "#1325e8", emoji: "🧠" },
-      CREATE: { color: "#1325e8", emoji: "🎨" },
-      SLOW: { color: "#1325e8", emoji: "🌿" },
-      GENERAL: { color: "#333", emoji: "💬" }
-    };
-    const DEFAULT_HABITS = {
-      MOVE: ["10–20 min walk", "Stretching"],
-      MIND: ["Journaling", "Reading"],
-      CREATE: ["Sketching"],
-      SLOW: ["No phone tea"]
-    };
+    const META = { MOVE:{emoji:'🏃'}, MIND:{emoji:'🧠'}, CREATE:{emoji:'🎨'}, SLOW:{emoji:'🌿'}, GENERAL:{emoji:'💬'} };
+    const DEFAULT_HABITS = { MOVE:['10–20 min walk','Stretching'], MIND:['Journaling','Reading'], CREATE:['Sketching'], SLOW:['No phone tea'] };
     const DEFAULT_HABIT_TITLES = Object.values(DEFAULT_HABITS).flat();
-
     const getEl = id => document.getElementById(id);
-    function getMeta(slug) { return META[slug?.toUpperCase()] || { emoji: "📌", color: "#333" }; }
+    function getMeta(slug){ return META[(slug||'').toUpperCase()] || {emoji:'📌'}; }
 
-    function sanitizeFileName(name) {
-      return (name || 'file')
-        .normalize('NFKD')
-        .replace(/[^a-zA-Z0-9._-]+/g, '_')
-        .replace(/_+/g, '_')
-        .replace(/^_+|_+$/g, '') || 'file';
+    function sanitizeFileName(name){ return (name||'file').normalize('NFKD').replace(/[^a-zA-Z0-9._-]+/g,'_').replace(/_+/g,'_').replace(/^_+|_+$/g,'') || 'file'; }
+    function togglePassword(){ const input = getEl('passwordInput'); input.type = input.type === 'password' ? 'text' : 'password'; }
+    function switchView(viewId, clickedTab = null){
+      document.querySelectorAll('.tab[data-view]').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      const targetTab = clickedTab || document.querySelector(`.tab[data-view="${viewId}"]`);
+      const targetView = getEl(viewId);
+      if(targetTab) targetTab.classList.add('active');
+      if(targetView) targetView.classList.add('active');
     }
+    function bindTabs(){ switchView((document.querySelector('.tab.active[data-view]') || document.querySelector('.tab[data-view="dashboardView"]')).dataset.view); }
 
-    function updateCommunityTabBadge() {
-      if(!currentUser) return;
-      const spaces = ['GENERAL', ...categories.filter(cat => (cat.slug || '').toUpperCase() !== 'GENERAL').map(cat => cat.slug)];
-      const totalUnread = spaces.reduce((sum, space) => sum + getUnreadCountForSpace(space), 0);
-      const badge = getEl('communityTabBadge');
-      if(!badge) return;
-      badge.innerText = totalUnread;
-      if(totalUnread > 0) badge.classList.remove('hidden');
-      else badge.classList.add('hidden');
-    }
-
-    function updateFileName() {
+    function updateFileName(){
       const file = getEl('fileInput').files[0];
       const actions = getEl('attachmentActions');
       getEl('fileNameDisplay').innerText = file ? `Прикріплено: ${file.name}` : '';
-      if(actions) {
-        if(file) actions.classList.remove('hidden');
-        else actions.classList.add('hidden');
-      }
+      if(file) actions.classList.remove('hidden'); else actions.classList.add('hidden');
     }
-
-    function clearSelectedFile() {
-      getEl('fileInput').value = '';
-      getEl('fileNameDisplay').innerText = '';
-      const actions = getEl('attachmentActions');
-      if(actions) actions.classList.add('hidden');
-    }
-
-    function togglePassword() {
-      const input = getEl('passwordInput');
-      input.type = input.type === 'password' ? 'text' : 'password';
-    }
+    function clearSelectedFile(){ getEl('fileInput').value=''; getEl('fileNameDisplay').innerText=''; getEl('attachmentActions').classList.add('hidden'); }
 
     async function signUp(){
-      const email = getEl('emailInput').value.trim();
-      const password = getEl('passwordInput').value;
-      if(!email || password.length < 6) return alert("Мінімум 6 символів");
+      const email = getEl('emailInput').value.trim(), password = getEl('passwordInput').value;
+      if(!email || password.length < 6) return alert('Мінімум 6 символів');
       const { error } = await sb.auth.signUp({ email, password });
-      if(error) alert(error.message); else alert("Готово! Тепер увійдіть.");
+      if(error) alert(error.message); else alert('Готово! Тепер увійдіть.');
     }
-
     async function signIn(){
-      getEl('loginBtn').innerText = "Wait...";
-      const { error } = await sb.auth.signInWithPassword({ email: getEl('emailInput').value, password: getEl('passwordInput').value });
-      if(error) {
-        alert(error.message);
-        getEl('loginBtn').innerText = "Увійти";
-      } else bootstrap();
+      getEl('loginBtn').innerText = 'Wait...';
+      const { error } = await sb.auth.signInWithPassword({ email:getEl('emailInput').value, password:getEl('passwordInput').value });
+      if(error){ alert(error.message); getEl('loginBtn').innerText='Увійти'; return; }
+      await bootstrap();
     }
+    async function logout(){ await sb.auth.signOut(); location.reload(); }
 
-    async function logout(){
-      await sb.auth.signOut();
-      location.reload();
+    async function ensureProfile(){
+      if(!currentUser) return false;
+      const { data: existingProfile, error: fetchError } = await sb.from('profiles').select('id').eq('id', currentUser.id).maybeSingle();
+      if(fetchError){ alert(fetchError.message); return false; }
+      if(existingProfile?.id) return true;
+      const { error: insertError } = await sb.from('profiles').insert({ id: currentUser.id });
+      if(insertError){ alert(insertError.message); return false; }
+      return true;
     }
 
     async function bootstrap(){
@@ -1034,14 +339,9 @@
       if(!currentUser) return;
       getEl('authView').classList.add('hidden');
       getEl('appView').classList.remove('hidden');
-      getEl('userEmailLabel').innerText = currentUser.email;
-      const isOwner = currentUser.email === OWNER_EMAIL;
-      if(isOwner) {
-        getEl('adminSection').classList.remove('hidden');
-      }
-
       const profileReady = await ensureProfile();
       if(!profileReady) return;
+      if(currentUser.email === OWNER_EMAIL) getEl('adminSection').classList.remove('hidden');
       await loadCategories();
       await syncHabits();
       await loadCheckIns();
@@ -1049,135 +349,59 @@
       await loadProfile();
       renderAll();
       bindTabs();
-      const activeTab = document.querySelector('.tab.active[data-view]') || document.querySelector('.tab[data-view="dashboardView"]');
-      if(activeTab){
-        document.querySelectorAll('.tab[data-view]').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        activeTab.classList.add('active');
-        const targetView = getEl(activeTab.dataset.view);
-        if(targetView) targetView.classList.add('active');
-      }
-      getEl('sendBtn').onclick = createPost;
-    }
-
-    async function ensureProfile(){
-      if(!currentUser) return false;
-
-      const { data: existingProfile, error: fetchError } = await sb
-        .from('profiles')
-        .select('id')
-        .eq('id', currentUser.id)
-        .maybeSingle();
-
-      if(fetchError) {
-        alert(fetchError.message);
-        return false;
-      }
-
-      if(existingProfile?.id) return true;
-
-      const { error: insertError } = await sb
-        .from('profiles')
-        .insert({ id: currentUser.id });
-
-      if(insertError) {
-        alert(insertError.message);
-        return false;
-      }
-
-      return true;
-    }
-
-    async function loadProfile() {
-      const { data } = await sb.from('profiles').select('focus_text').eq('id', currentUser.id).maybeSingle();
-      if(data?.focus_text) {
-        selectedFocuses = data.focus_text.split(',').filter(Boolean);
-        updateFocusUI();
-      }
-    }
-
-    function toggleFocusChip(val) {
-      const idx = selectedFocuses.indexOf(val);
-      if (idx > -1) selectedFocuses.splice(idx, 1); else selectedFocuses.push(val);
-      updateFocusUI();
-      saveFocus();
-    }
-
-    function updateFocusUI() {
-      document.querySelectorAll('.focus-chip').forEach(c => selectedFocuses.includes(c.dataset.val) ? c.classList.add('active') : c.classList.remove('active'));
-      renderDashboard();
-    }
-
-    async function saveFocus() {
-      const profileReady = await ensureProfile();
-      if(!profileReady) return;
-      await sb.from('profiles').upsert({ id: currentUser.id, focus_text: selectedFocuses.join(',') }, { onConflict: 'id' });
     }
 
     async function loadCategories(){
-      const { data } = await sb.from('categories').select('*').order('sort_order');
+      let { data, error } = await sb.from('categories').select('*').order('sort_order');
+      if(error){ alert(error.message); categories=[]; return; }
       categories = data || [];
     }
+    async function loadProfile(){
+      const { data } = await sb.from('profiles').select('focus_text').eq('id', currentUser.id).maybeSingle();
+      if(data?.focus_text){ selectedFocuses = data.focus_text.split(',').filter(Boolean); updateFocusUI(); }
+    }
+    async function saveFocus(){
+      const ready = await ensureProfile(); if(!ready) return;
+      await sb.from('profiles').upsert({ id: currentUser.id, focus_text: selectedFocuses.join(',') }, { onConflict:'id' });
+    }
+    function toggleFocusChip(val){
+      const idx = selectedFocuses.indexOf(val); if(idx > -1) selectedFocuses.splice(idx,1); else selectedFocuses.push(val);
+      updateFocusUI(); saveFocus();
+    }
+    function updateFocusUI(){ document.querySelectorAll('.focus-chip').forEach(c => selectedFocuses.includes(c.dataset.val) ? c.classList.add('active') : c.classList.remove('active')); renderDashboard(); }
 
     async function syncHabits(){
-      const profileReady = await ensureProfile();
-      if(!profileReady) {
-        habits = [];
-        return;
-      }
+      const ready = await ensureProfile(); if(!ready){ habits=[]; return; }
       const { data } = await sb.from('habits').select('*').eq('user_id', currentUser.id);
       if(!data || data.length === 0){
         let ins = [];
-        categories.forEach(c => (DEFAULT_HABITS[c.slug?.toUpperCase()] || []).forEach(t => ins.push({ user_id:currentUser.id, category_id:c.id, title:t, is_custom: false })));
-                if(ins.length) {
-          const { error: insertHabitsError } = await sb.from('habits').insert(ins);
-          if(insertHabitsError) {
-            alert(insertHabitsError.message);
-            return;
-          }
-        }
+        categories.filter(c => (c.slug||'').toUpperCase() !== 'GENERAL').forEach(c => (DEFAULT_HABITS[(c.slug||'').toUpperCase()] || []).forEach(t => ins.push({ user_id:currentUser.id, category_id:c.id, title:t, is_custom:false })));
+        if(ins.length){ const { error } = await sb.from('habits').insert(ins); if(error){ alert(error.message); return; } }
       } else {
         const missingCustomFlag = data.filter(h => typeof h.is_custom === 'undefined' || h.is_custom === null);
         if(missingCustomFlag.length){
-          for (const h of missingCustomFlag) {
+          for(const h of missingCustomFlag){
             const inferredCustom = !DEFAULT_HABIT_TITLES.includes(h.title);
             await sb.from('habits').update({ is_custom: inferredCustom }).eq('id', h.id).eq('user_id', currentUser.id);
           }
         }
-
         const testHabit = data.find(h => (h.title || '').trim().toUpperCase() === 'ВРИ');
         if(testHabit){
           await sb.from('check_ins').delete().eq('habit_id', testHabit.id);
           await sb.from('habits').delete().eq('id', testHabit.id).eq('user_id', currentUser.id);
         }
       }
-      const { data: fresh } = await sb.from('habits').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: true });
+      const { data: fresh } = await sb.from('habits').select('*').eq('user_id', currentUser.id).order('created_at', { ascending:true });
       habits = fresh || [];
     }
-
-    async function addNewHabit(catId) {
-      const profileReady = await ensureProfile();
-      if(!profileReady) return;
-      const title = prompt("Введіть назву своєї звички:");
+    async function addNewHabit(catId){
+      const ready = await ensureProfile(); if(!ready) return;
+      const title = prompt('Введіть назву своєї звички:');
       if(!title) return;
-      const { error } = await sb.from('habits').insert({ user_id: currentUser.id, category_id: catId, title: title, is_custom: true });
-      if(error) alert(error.message); else {
-        await syncHabits();
-        renderTracker();
-      }
-    }
-
-    async function deleteHabit(habitId){
-      const ok = confirm('Видалити цю звичку?');
-      if(!ok) return;
-      await sb.from('check_ins').delete().eq('habit_id', habitId);
-      const { error } = await sb.from('habits').delete().eq('id', habitId).eq('user_id', currentUser.id);
+      const { error } = await sb.from('habits').insert({ user_id: currentUser.id, category_id: catId, title: title.trim(), is_custom:true });
       if(error) return alert(error.message);
-      await syncHabits();
-      await loadCheckIns();
-      renderAll();
+      await syncHabits(); renderTracker();
     }
-
     async function editHabit(habitId){
       const habit = habits.find(h => h.id === habitId && h.user_id === currentUser.id);
       if(!habit || habit.is_custom !== true) return;
@@ -1187,472 +411,142 @@
       if(!cleanTitle) return alert('Назва звички не може бути порожньою');
       const { error } = await sb.from('habits').update({ title: cleanTitle }).eq('id', habitId).eq('user_id', currentUser.id);
       if(error) return alert(error.message);
-      await syncHabits();
-      renderTracker();
+      await syncHabits(); renderTracker();
+    }
+    async function deleteHabit(habitId){
+      if(!confirm('Видалити цю звичку?')) return;
+      await sb.from('check_ins').delete().eq('habit_id', habitId);
+      const { error } = await sb.from('habits').delete().eq('id', habitId).eq('user_id', currentUser.id);
+      if(error) return alert(error.message);
+      await syncHabits(); await loadCheckIns(); renderAll();
     }
 
-    async function loadCheckIns(){
-      const { data } = await sb.from('check_ins').select('*').eq('user_id', currentUser.id);
-      checkIns = data || [];
-    }
-
-    async function loadPosts(){
-      const { data, error } = await sb
-        .from('community_posts')
-        .select('*')
-        .order('created_at', { ascending: true });
-
-      if (error) {
-        alert(error.message);
-        posts = [];
-        renderCommunity();
-        return;
-      }
-
-      posts = data || [];
-      renderCommunity();
-    }
-
+    async function loadCheckIns(){ const { data } = await sb.from('check_ins').select('*').eq('user_id', currentUser.id); checkIns = data || []; }
     async function toggleCheck(habitId, day){
       const dateStr = new Date(new Date().getFullYear(), new Date().getMonth(), day+1).toISOString().split('T')[0];
       const exist = checkIns.find(c => c.habit_id === habitId && c.check_in_date === dateStr);
-      if(exist) await sb.from('check_ins').delete().eq('id', exist.id);
-      else await sb.from('check_ins').insert({ user_id:currentUser.id, habit_id:habitId, check_in_date:dateStr });
-      await loadCheckIns();
-      renderAll();
+      if(exist) await sb.from('check_ins').delete().eq('id', exist.id); else await sb.from('check_ins').insert({ user_id:currentUser.id, habit_id:habitId, check_in_date:dateStr });
+      await loadCheckIns(); renderAll();
     }
 
+    async function loadPosts(){ const { data, error } = await sb.from('community_posts').select('*').order('created_at', { ascending:true }); if(error){ alert(error.message); posts=[]; renderCommunity(); return; } posts = data || []; renderCommunity(); }
+    function getSpaceStorageKey(space){ return `ek_read_${currentUser?.id || 'guest'}_${space}`; }
+    function getPostsForSpace(space){
+      const generalCategoryId = categories.find(c => (c.slug || '').toUpperCase() === 'GENERAL')?.id;
+      return posts.filter(p => { if(space === 'GENERAL') return p.category_id === generalCategoryId; return categories.find(c => c.id === p.category_id)?.slug === space; });
+    }
+    function getUnreadCountForSpace(space){ const readAt = Number(localStorage.getItem(getSpaceStorageKey(space)) || 0); return getPostsForSpace(space).filter(p => p.user_id !== currentUser?.id && new Date(p.created_at || 0).getTime() > readAt).length; }
+    function markSpaceAsRead(space){ const latestTs = getPostsForSpace(space).map(p => new Date(p.created_at || 0).getTime()).filter(Boolean).reduce((max, ts) => Math.max(max, ts), Date.now()); localStorage.setItem(getSpaceStorageKey(space), String(latestTs || Date.now())); }
+    function updateCommunityTabBadge(){
+      if(!currentUser) return;
+      const spaces = ['GENERAL', ...categories.filter(cat => (cat.slug || '').toUpperCase() !== 'GENERAL').map(cat => cat.slug)];
+      const totalUnread = spaces.reduce((sum, space) => sum + getUnreadCountForSpace(space), 0);
+      const badge = getEl('communityTabBadge'); if(!badge) return;
+      badge.innerText = totalUnread;
+      if(totalUnread > 0) badge.classList.remove('hidden'); else badge.classList.add('hidden');
+    }
     async function createPost(){
-      const profileReady = await ensureProfile();
-      if(!profileReady) return;
+      const ready = await ensureProfile(); if(!ready) return;
       const body = getEl('postInput').value.trim();
       const file = getEl('fileInput').files[0];
       if(!body && !file) return;
-
       try {
         let url = null;
-
         if(file){
           const safeName = sanitizeFileName(file.name);
           const ext = safeName.includes('.') ? safeName.split('.').pop().toLowerCase() : 'jpg';
           const fName = `${currentUser.id}/${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
-          const { error: upErr } = await sb.storage.from('community').upload(fName, file, {
-            cacheControl: '3600',
-            upsert: false,
-            contentType: file.type || 'image/jpeg'
-          });
-          if(upErr) {
-            alert(upErr.message);
-            return;
-          }
-          const publicUrlData = sb.storage.from('community').getPublicUrl(fName).data;
-          url = publicUrlData?.publicUrl || null;
-          if(!url) {
-            alert('Не вдалося отримати URL зображення');
-            return;
-          }
+          const { error: upErr } = await sb.storage.from('community').upload(fName, file, { cacheControl:'3600', upsert:false, contentType:file.type || 'image/jpeg' });
+          if(upErr) return alert(upErr.message);
+          url = sb.storage.from('community').getPublicUrl(fName).data?.publicUrl || null;
+          if(!url) return alert('Не вдалося отримати URL зображення');
         }
-
         const generalCategory = categories.find(c => (c.slug || '').toUpperCase() === 'GENERAL');
-        const catId = selectedSpace === 'GENERAL'
-          ? generalCategory?.id
-          : (categories.find(c => c.slug === selectedSpace)?.id ?? null);
-
-        if(!catId) {
-          alert('Не знайдена категорія для цього чату. Перевір categories у Supabase.');
-          return;
-        }
-
+        const catId = selectedSpace === 'GENERAL' ? generalCategory?.id : (categories.find(c => c.slug === selectedSpace)?.id ?? null);
+        if(!catId) return alert('Не знайдена категорія для цього чату. Перевір categories у Supabase.');
         if(editingPostId){
-          const payload = { body, category_id: catId };
-          if(url) payload.media_url = url;
-
-          const { error } = await sb
-            .from('community_posts')
-            .update(payload)
-            .eq('id', editingPostId)
-            .eq('user_id', currentUser.id);
-
-          if(error){
-            alert(error.message);
-            return;
-          }
-
-          editingPostId = null;
-          getEl('sendBtn').innerText = 'Send';
+          const payload = { body, category_id: catId }; if(url) payload.media_url = url;
+          const { error } = await sb.from('community_posts').update(payload).eq('id', editingPostId).eq('user_id', currentUser.id);
+          if(error) return alert(error.message);
+          editingPostId = null; getEl('sendBtn').innerText = 'Send'; getEl('cancelEditBtn').classList.add('hidden');
         } else {
-          const { error } = await sb.from('community_posts').insert({
-            user_id: currentUser.id,
-            category_id: catId,
-            body,
-            media_url: url,
-            user_email: currentUser.email
-          });
-
-          if(error){
-            alert(error.message);
-            return;
-          }
+          const { error } = await sb.from('community_posts').insert({ user_id: currentUser.id, category_id: catId, body, media_url: url, user_email: currentUser.email });
+          if(error) return alert(error.message);
         }
-
-        getEl('postInput').value = '';
-        clearSelectedFile();
-        await loadPosts();
-        updateCommunityTabBadge();
-      } catch(e) {
-        alert(e.message);
-      }
+        getEl('postInput').value = ''; clearSelectedFile(); await loadPosts(); updateCommunityTabBadge();
+      } catch(e){ alert(e.message); }
     }
-
-    function startEditPost(postId){
-      const post = posts.find(p => p.id === postId && p.user_id === currentUser.id);
-      if(!post) return;
-      editingPostId = postId;
-      getEl('postInput').value = post.body || '';
-      getEl('sendBtn').innerText = 'Update';
-      getEl('postInput').focus();
-    }
-
-    async function deletePost(postId){
-      const ok = confirm('Видалити повідомлення?');
-      if(!ok) return;
-      const { error } = await sb.from('community_posts').delete().eq('id', postId).eq('user_id', currentUser.id);
-      if(error) return alert(error.message);
-      if(editingPostId === postId){
-        cancelEditPost();
-      }
-      await loadPosts();
-    }
-
-    function getSpaceStorageKey(space){
-      return `ek_read_${currentUser?.id || 'guest'}_${space}`;
-    }
-
-    function getPostsForSpace(space){
-      const generalCategoryId = categories.find(c => (c.slug || '').toUpperCase() === 'GENERAL')?.id;
-      return posts.filter(p => {
-        if(space === 'GENERAL') return p.category_id === generalCategoryId;
-        return categories.find(c => c.id === p.category_id)?.slug === space;
-      });
-    }
-
-    function getUnreadCountForSpace(space){
-      const readAt = Number(localStorage.getItem(getSpaceStorageKey(space)) || 0);
-      return getPostsForSpace(space).filter(p => {
-        const createdAt = new Date(p.created_at || 0).getTime();
-        return p.user_id !== currentUser?.id && createdAt > readAt;
-      }).length;
-    }
-
-    function markSpaceAsRead(space){
-      const latestTs = getPostsForSpace(space)
-        .map(p => new Date(p.created_at || 0).getTime())
-        .filter(Boolean)
-        .reduce((max, ts) => Math.max(max, ts), Date.now());
-      localStorage.setItem(getSpaceStorageKey(space), String(latestTs || Date.now()));
-    }
+    function startEditPost(postId){ const post = posts.find(p => p.id === postId && p.user_id === currentUser.id); if(!post) return; editingPostId = postId; getEl('postInput').value = post.body || ''; getEl('sendBtn').innerText = 'Update'; getEl('cancelEditBtn').classList.remove('hidden'); getEl('postInput').focus(); }
+    function cancelEditPost(){ editingPostId = null; getEl('postInput').value = ''; clearSelectedFile(); getEl('sendBtn').innerText = 'Send'; getEl('cancelEditBtn').classList.add('hidden'); }
+    async function deletePost(postId){ if(!confirm('Видалити повідомлення?')) return; const { error } = await sb.from('community_posts').delete().eq('id', postId).eq('user_id', currentUser.id); if(error) return alert(error.message); if(editingPostId === postId) cancelEditPost(); await loadPosts(); }
 
     function getStreak(){
       const dates = [...new Set(checkIns.map(c => c.check_in_date))].sort().reverse();
       let s = 0, check = new Date().toISOString().split('T')[0];
-      for(let d of dates){
-        if(d === check || d === new Date(Date.now()-86400000).toISOString().split('T')[0]){
-          s++;
-          check = new Date(new Date(d).getTime()-86400000).toISOString().split('T')[0];
-        } else break;
-      }
+      for(let d of dates){ if(d === check || d === new Date(Date.now()-86400000).toISOString().split('T')[0]){ s++; check = new Date(new Date(d).getTime()-86400000).toISOString().split('T')[0]; } else break; }
       return s;
     }
-
     function getLevelMeta(totalDone){
-      const levels = [
-        { min: 0, name: 'SEED', label: 'your start is already progress' },
-        { min: 8, name: 'NOVICE', label: 'you are building consistency' },
-        { min: 18, name: 'ROOKIE', label: 'small wins are stacking up' },
-        { min: 30, name: 'EXPLORER', label: 'you are finding your rhythm' },
-        { min: 45, name: 'BUILDER', label: 'your system is getting stronger' },
-        { min: 65, name: 'STRIVER', label: 'momentum is clearly visible' },
-        { min: 90, name: 'WARRIOR', label: 'you are showing real discipline' },
-        { min: 120, name: 'ELITE', label: 'high consistency unlocked' },
-        { min: 160, name: 'MASTER', label: 'this is next-level commitment' }
-      ];
-
-      let current = levels[0];
-      let next = null;
-      for (let i = 0; i < levels.length; i++) {
-        if (totalDone >= levels[i].min) {
-          current = levels[i];
-          next = levels[i + 1] || null;
-        }
-      }
-
-      return {
-        ...current,
-        next,
-        leftToNext: next ? Math.max(0, next.min - totalDone) : 0
-      };
+      const levels = [{min:0,name:'SEED',label:'your start is already progress'},{min:8,name:'NOVICE',label:'you are building consistency'},{min:18,name:'ROOKIE',label:'small wins are stacking up'},{min:30,name:'EXPLORER',label:'you are finding your rhythm'},{min:45,name:'BUILDER',label:'your system is getting stronger'},{min:65,name:'STRIVER',label:'momentum is clearly visible'},{min:90,name:'WARRIOR',label:'you are showing real discipline'},{min:120,name:'ELITE',label:'high consistency unlocked'},{min:160,name:'MASTER',label:'this is next-level commitment'}];
+      let current = levels[0], next = null; for(let i=0;i<levels.length;i++){ if(totalDone >= levels[i].min){ current = levels[i]; next = levels[i+1] || null; } }
+      return { ...current, next, leftToNext: next ? Math.max(0, next.min - totalDone) : 0 };
     }
-
-    function makeRing(percent, variant = 'category', size = 112) {
-      const safePercent = Math.max(0, Math.min(100, Number(percent) || 0));
-      const stroke = 10;
-      const center = size / 2;
-      const radius = center - stroke / 2 - 1;
-      const circumference = 2 * Math.PI * radius;
-      const dashoffset = circumference * (1 - safePercent / 100);
-      const progressClass = variant === 'total' ? 'ring-progress total' : 'ring-progress';
-
-      return `
-        <div class="ring" style="width:${size}px; height:${size}px;">
-          <svg viewBox="0 0 ${size} ${size}" aria-hidden="true">
-            <circle class="ring-track" cx="${center}" cy="${center}" r="${radius}"></circle>
-            <circle class="${progressClass}" cx="${center}" cy="${center}" r="${radius}" stroke-dasharray="${circumference}" stroke-dashoffset="${dashoffset}"></circle>
-            <circle class="ring-hole" cx="${center}" cy="${center}" r="${radius - stroke + 2}"></circle>
-          </svg>
-          <div class="ring-value">${safePercent}%</div>
-        </div>`;
-    }
-
-    function getNotificationStorageKey(){
-      return `ek_notifications_${currentUser?.id || 'guest'}`;
-    }
-
-    function syncNotificationsUI(){
-      const btn = getEl('notificationsToggleBtn');
-      if(!btn) return;
-      const enabled = localStorage.getItem(getNotificationStorageKey()) === '1';
-      btn.innerText = enabled ? '🔕 Вимкнути сповіщення' : '🔔 Увімкнути сповіщення';
-    }
-
-    function renderAll(){
-      renderDashboard();
-      renderTracker();
-      renderCommunity();
-      renderAdmin();
-      bindTabs();
-      updateCommunityTabBadge();
-      syncNotificationsUI();
+    function makeRing(percent, variant='category', size=112){
+      const safePercent = Math.max(0, Math.min(100, Number(percent)||0));
+      const stroke=10, center=size/2, radius=center - stroke/2 - 1, circumference = 2*Math.PI*radius, dashoffset = circumference*(1-safePercent/100), progressClass = variant === 'total' ? 'ring-progress total' : 'ring-progress';
+      return `<div class="ring" style="width:${size}px; height:${size}px;"><svg viewBox="0 0 ${size} ${size}"><circle class="ring-track" cx="${center}" cy="${center}" r="${radius}"></circle><circle class="${progressClass}" cx="${center}" cy="${center}" r="${radius}" stroke-dasharray="${circumference}" stroke-dashoffset="${dashoffset}"></circle><circle class="ring-hole" cx="${center}" cy="${center}" r="${radius-stroke+2}"></circle></svg><div class="ring-value">${safePercent}%</div></div>`;
     }
 
     function renderDashboard(){
       const streak = getStreak();
-      getEl('streakPanel').innerHTML = `
-        <div class="metric-kicker">Current Streak</div>
-        <div class="metric-value">${streak}</div>
-        <div class="metric-label">${streak === 1 ? 'day in a row' : 'days in a row'}</div>`;
-
+      getEl('streakPanel').innerHTML = `<div class="metric-kicker">Current Streak</div><div class="metric-value">${streak}</div><div class="metric-label">${streak === 1 ? 'day in a row' : 'days in a row'}</div>`;
       getEl('activeVal').innerText = [...new Set(checkIns.map(c => c.check_in_date))].length;
-
       const levelMeta = getLevelMeta(checkIns.length);
-      getEl('levelPanel').innerHTML = `
-        <div class="metric-kicker">Level</div>
-        <div class="metric-value">${levelMeta.name}</div>
-        <div class="metric-label">${levelMeta.next ? `${levelMeta.label} · ${levelMeta.leftToNext} to ${levelMeta.next.name}` : levelMeta.label}</div>`;
-
-      const totalChecks = habits.length ? habits.length * 31 : 0;
-      const totalDone = checkIns.length;
-      const totalPerc = totalChecks ? Math.round((totalDone / totalChecks) * 100) : 0;
-      getEl('totalProgressWrap').innerHTML = `
-        <div class="ring-card" style="min-height:260px; border-color: rgba(184,242,58,0.4);">
-          ${makeRing(totalPerc, 'total', 140)}
-          <div class="ring-meta">
-            <div>
-              <div class="ring-title">TOTAL</div>
-              <div class="ring-copy">${totalDone} / ${totalChecks || 0} completed</div>
-            </div>
-            <div style="font-size:28px;">⚡</div>
-          </div>
-        </div>`;
-
-      const rewardReached = totalPerc >= 70;
-      const rewardLeft = Math.max(0, 70 - totalPerc);
-      getEl('rewardBannerWrap').innerHTML = `
-        <div class="card" style="margin-bottom:0; border-radius:28px; background:${rewardReached ? 'linear-gradient(135deg, #b8f23a, #d9ff7a)' : 'linear-gradient(135deg, #14141a, #0b0b10)'}; color:${rewardReached ? '#000' : '#fff'}; border:${rewardReached ? '1px solid rgba(184,242,58,0.7)' : '1px solid rgba(255,255,255,0.08)'};">
-          <div style="display:flex; justify-content:space-between; gap:16px; align-items:center; flex-wrap:wrap;">
-            <div>
-              <div style="font-size:12px; text-transform:uppercase; letter-spacing:0.16em; font-weight:800; opacity:0.8; margin-bottom:8px;">Reward Challenge</div>
-              <div style="font-size:28px; font-weight:800; letter-spacing:-0.04em; line-height:1.05; margin-bottom:8px;">Зроби 70% загального трекінгу — і отримай у подарунок мерч</div>
-              <div style="font-size:15px; color:${rewardReached ? 'rgba(0,0,0,0.72)' : 'rgba(255,255,255,0.72)'};">${rewardReached ? 'Ціль досягнута. Час забирати свій подарунок.' : `Залишилось ще ${rewardLeft}% до reward milestone.`}</div>
-            </div>
-            <div style="font-size:42px;">${rewardReached ? '🎁' : '🏁'}</div>
-          </div>
-        </div>`;
-
-      let html = '';
-      categories.forEach(cat => {
-        const hbits = habits.filter(h => h.category_id === cat.id);
-        const done = checkIns.filter(c => hbits.some(h => h.id === c.habit_id)).length;
-        const perc = hbits.length ? Math.round((done / (hbits.length * 31)) * 100) : 0;
-        const isFoc = selectedFocuses.includes(cat.slug);
-        html += `
-          <div class="ring-card" style="${isFoc ? 'border-color: rgba(184,242,58,0.7); box-shadow: inset 0 0 0 1px rgba(184,242,58,0.22);' : ''}">
-            ${makeRing(perc, 'category', 112)}
-            <div class="ring-meta">
-              <div>
-                <div class="ring-title">${cat.slug}</div>
-                <div class="ring-copy">${isFoc ? 'focus enabled' : 'tracking progress'}</div>
-              </div>
-              <div style="font-size:28px;">${getMeta(cat.slug).emoji}</div>
-            </div>
-          </div>`;
-      });
-      getEl('ringsWrap').innerHTML = html;
+      getEl('levelPanel').innerHTML = `<div class="metric-kicker">Level</div><div class="metric-value">${levelMeta.name}</div><div class="metric-label">${levelMeta.next ? `${levelMeta.label} · ${levelMeta.leftToNext} to ${levelMeta.next.name}` : levelMeta.label}</div>`;
+      const trackingCats = categories.filter(c => (c.slug || '').toUpperCase() !== 'GENERAL');
+      const totalChecks = habits.length ? habits.length * 31 : 0; const totalDone = checkIns.length; const totalPerc = totalChecks ? Math.round((totalDone/totalChecks)*100) : 0;
+      getEl('totalProgressWrap').innerHTML = `<div class="ring-card" style="min-height:260px; border-color: rgba(184,242,58,.4);">${makeRing(totalPerc,'total',140)}<div class="ring-meta"><div><div class="ring-title">TOTAL</div><div class="ring-copy">${totalDone} / ${totalChecks || 0} completed</div></div><div style="font-size:28px;">⚡</div></div></div>`;
+      const rewardReached = totalPerc >= 70, rewardLeft = Math.max(0, 70 - totalPerc);
+      getEl('rewardBannerWrap').innerHTML = `<div class="card" style="margin-bottom:0; border-radius:28px; background:${rewardReached ? 'linear-gradient(135deg, #b8f23a, #d9ff7a)' : 'linear-gradient(135deg, #14141a, #0b0b10)'}; color:${rewardReached ? '#000' : '#fff'}; border:${rewardReached ? '1px solid rgba(184,242,58,.7)' : '1px solid rgba(255,255,255,.08)'};"><div style="display:flex; justify-content:space-between; gap:16px; align-items:center; flex-wrap:wrap;"><div><div style="font-size:12px; text-transform:uppercase; letter-spacing:.16em; font-weight:800; opacity:.8; margin-bottom:8px;">Reward Challenge</div><div style="font-size:28px; font-weight:800; letter-spacing:-.04em; line-height:1.05; margin-bottom:8px;">Зроби 70% загального трекінгу — і отримай у подарунок мерч</div><div style="font-size:15px; color:${rewardReached ? 'rgba(0,0,0,.72)' : 'rgba(255,255,255,.72)'};">${rewardReached ? 'Ціль досягнута. Час забирати свій подарунок.' : `Залишилось ще ${rewardLeft}% до reward milestone.`}</div></div><div style="font-size:42px;">${rewardReached ? '🎁' : '🏁'}</div></div></div>`;
+      getEl('ringsWrap').innerHTML = trackingCats.map(cat => { const hbits = habits.filter(h => h.category_id === cat.id); const done = checkIns.filter(c => hbits.some(h => h.id === c.habit_id)).length; const perc = hbits.length ? Math.round((done/(hbits.length*31))*100) : 0; const isFoc = selectedFocuses.includes(cat.slug); return `<div class="ring-card" style="${isFoc ? 'border-color: rgba(184,242,58,.7); box-shadow: inset 0 0 0 1px rgba(184,242,58,.22);' : ''}">${makeRing(perc, 'category', 112)}<div class="ring-meta"><div><div class="ring-title">${cat.slug}</div><div class="ring-copy">${isFoc ? 'focus enabled' : 'tracking progress'}</div></div><div style="font-size:28px;">${getMeta(cat.slug).emoji}</div></div></div>`; }).join('');
     }
 
     function renderTracker(){
       const trackerWrap = getEl('trackerWrap');
       const previousScroll = trackerWrap.dataset.scrollLeft ? parseInt(trackerWrap.dataset.scrollLeft, 10) : 0;
-
-      trackerWrap.innerHTML = categories
-        .filter(cat => (cat.slug || '').toUpperCase() !== 'GENERAL')
-        .map(cat => {
-          const hbits = habits.filter(h => h.category_id === cat.id);
-          return `
-            <div class="category-row-header">
-              <div class="category-title">${cat.slug}</div>
-              <div class="add-habit-btn" onclick="addNewHabit('${cat.id}')">+</div>
-            </div>
-            <div class="tracker-section" data-tracker-section="1">
-              <div class="tracker-head">
-                <div class="habit-title-cell">Habit</div>
-                ${Array.from({length:31}, (_,i)=>`<div class="${i+1===TODAY_DAY?'today-cell':''}">${i+1}</div>`).join('')}
-                <div>%</div>
-              </div>
-              ${hbits.map(h => {
-                const hChecks = checkIns.filter(c => c.habit_id === h.id);
-                const isCustom = h.is_custom === true;
-                return `<div class="tracker-row">
-                  <div class="habit-title-cell" style="display:flex; align-items:center; gap:12px; padding-right:16px;">
-                    <span>${h.title}</span>
-                    ${isCustom ? `<span class="habit-actions"><button class="habit-action-btn edit" onclick="editHabit('${h.id}')">✎</button><button class="habit-action-btn delete" onclick="deleteHabit('${h.id}')">×</button></span>` : ''}
-                  </div>
-                  ${Array.from({length:31}, (_,i)=>{
-                    const dStr = new Date(new Date().getFullYear(), new Date().getMonth(), i+2).toISOString().split('T')[0];
-                    return `<div class="${i+1===TODAY_DAY?'today-cell':''}">
-                      <div class="checkbox ${hChecks.some(c=>c.check_in_date===dStr)?'active':''}" onclick="toggleCheck('${h.id}', ${i+1})"></div>
-                    </div>`;
-                  }).join('')}
-                  <div style="font-weight:800; color:var(--accent-lime)">${Math.round((hChecks.length/31)*100)}%</div>
-                </div>`;
-              }).join('')}
-            </div>`;
-        }).join('');
-
+      trackerWrap.innerHTML = categories.filter(cat => (cat.slug || '').toUpperCase() !== 'GENERAL').map(cat => {
+        const hbits = habits.filter(h => h.category_id === cat.id);
+        return `<div class="category-row-header"><div class="category-title">${cat.slug}</div><div class="add-habit-btn" onclick="addNewHabit('${cat.id}')">+</div></div><div class="tracker-section" data-tracker-section="1"><div class="tracker-head"><div class="habit-title-cell">Habit</div>${Array.from({length:31},(_,i)=>`<div class="${i+1===TODAY_DAY?'today-cell':''}">${i+1}</div>`).join('')}<div>%</div></div>${hbits.map(h => { const hChecks = checkIns.filter(c => c.habit_id === h.id); const isCustom = h.is_custom === true; return `<div class="tracker-row"><div class="habit-title-cell" style="display:flex; align-items:center; gap:12px; padding-right:16px;"><span>${h.title}</span>${isCustom ? `<span class="habit-actions"><button class="habit-action-btn edit" onclick="editHabit('${h.id}')">✎</button><button class="habit-action-btn delete" onclick="deleteHabit('${h.id}')">×</button></span>` : ''}</div>${Array.from({length:31},(_,i)=>{ const dStr = new Date(new Date().getFullYear(), new Date().getMonth(), i+2).toISOString().split('T')[0]; return `<div class="${i+1===TODAY_DAY?'today-cell':''}"><div class="checkbox ${hChecks.some(c => c.check_in_date === dStr) ? 'active' : ''}" onclick="toggleCheck('${h.id}', ${i+1})"></div></div>`; }).join('')}<div style="font-weight:800; color:var(--accent-lime)">${Math.round((hChecks.length/31)*100)}%</div></div>`; }).join('')}</div>`;
+      }).join('');
       trackerWrap.querySelectorAll('[data-tracker-section="1"]').forEach(el => {
         el.scrollLeft = previousScroll;
         el.addEventListener('scroll', () => {
           trackerWrap.dataset.scrollLeft = el.scrollLeft;
-          trackerWrap.querySelectorAll('[data-tracker-section="1"]').forEach(other => {
-            if(other !== el) other.scrollLeft = el.scrollLeft;
-          });
-        }, { passive: true });
+          trackerWrap.querySelectorAll('[data-tracker-section="1"]').forEach(other => { if(other !== el) other.scrollLeft = el.scrollLeft; });
+        }, { passive:true });
       });
     }
 
     function renderCommunity(){
       const allSpaces = ['GENERAL', ...categories.filter(cat => (cat.slug || '').toUpperCase() !== 'GENERAL').map(cat => cat.slug)];
-
-      let spacesHtml = allSpaces.map(space => {
-        const isGeneral = space === 'GENERAL';
-        const meta = isGeneral ? { emoji: '💬' } : getMeta(space);
-        const unread = getUnreadCountForSpace(space);
-        return `<button class="space-btn ${selectedSpace===space?'active':''}" onclick="selectedSpace='${space}'; renderCommunity();">
-          <span style="display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%;">
-            <span>${meta.emoji} ${space}</span>
-            ${unread > 0 ? `<span style="min-width:22px; height:22px; border-radius:999px; background:var(--accent-lime); color:#000; display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; padding:0 6px;">${unread}</span>` : ''}
-          </span>
-        </button>`;
-      }).join('');
-      getEl('spacesWrap').innerHTML = spacesHtml;
-
+      getEl('spacesWrap').innerHTML = allSpaces.map(space => { const meta = space === 'GENERAL' ? {emoji:'💬'} : getMeta(space); const unread = getUnreadCountForSpace(space); return `<button class="space-btn ${selectedSpace===space?'active':''}" onclick="selectedSpace='${space}'; renderCommunity();"><span style="display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%;"><span>${meta.emoji} ${space}</span>${unread > 0 ? `<span style="min-width:22px; height:22px; border-radius:999px; background:var(--accent-lime); color:#000; display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; padding:0 6px;">${unread}</span>` : ''}</span></button>`; }).join('');
       const generalCategoryId = categories.find(c => (c.slug || '').toUpperCase() === 'GENERAL')?.id;
-      const filtered = posts.filter(p => {
-        if(selectedSpace === 'GENERAL') {
-          return p.category_id === generalCategoryId;
-        }
-        return categories.find(c => c.id === p.category_id)?.slug === selectedSpace;
-      });
-
-      getEl('postsWrap').innerHTML = filtered.map(p => `
-        <div class="msg ${p.user_id===currentUser.id?'own':''}">
-          <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start; margin-bottom:6px;">
-            <div style="font-size:10px; font-weight:800; opacity:0.72; text-transform:uppercase; letter-spacing:0.12em;">${p.user_email}</div>
-            ${p.user_id===currentUser.id ? `<div style="display:flex; gap:8px; flex-shrink:0;">
-              <button onclick="startEditPost('${p.id}')" style="border:0; background:rgba(255,255,255,0.12); color:#fff; border-radius:999px; padding:6px 10px; cursor:pointer; font-weight:700; font-size:12px;">Edit</button>
-              <button onclick="deletePost('${p.id}')" style="border:0; background:rgba(255,91,91,0.18); color:#ff8d8d; border-radius:999px; padding:6px 10px; cursor:pointer; font-weight:700; font-size:12px;">Delete</button>
-            </div>` : ''}
-          </div>
-          <div style="font-size:15px; line-height:1.45;">${p.body || ''}</div>
-          ${p.media_url ? `<img src="${p.media_url}" class="post-img" style="width:100%; border-radius:16px; margin-top:12px;">` : ''}
-        </div>`).join('');
-
-      getEl('communityTitle').innerText = selectedSpace + " CHAT";
-
-      requestAnimationFrame(() => {
-        const postsEl = getEl('postsWrap');
-        postsEl.scrollTop = postsEl.scrollHeight;
-        markSpaceAsRead(selectedSpace);
-        updateCommunityTabBadge();
-
-        let refreshedSpacesHtml = allSpaces.map(space => {
-          const isGeneral = space === 'GENERAL';
-          const meta = isGeneral ? { emoji: '💬' } : getMeta(space);
-          const unread = getUnreadCountForSpace(space);
-          return `<button class="space-btn ${selectedSpace===space?'active':''}" onclick="selectedSpace='${space}'; renderCommunity();">
-            <span style="display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%;">
-              <span>${meta.emoji} ${space}</span>
-              ${unread > 0 ? `<span style="min-width:22px; height:22px; border-radius:999px; background:var(--accent-lime); color:#000; display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; padding:0 6px;">${unread}</span>` : ''}
-            </span>
-          </button>`;
-        }).join('');
-        getEl('spacesWrap').innerHTML = refreshedSpacesHtml;
-      });
+      const filtered = posts.filter(p => selectedSpace === 'GENERAL' ? p.category_id === generalCategoryId : categories.find(c => c.id === p.category_id)?.slug === selectedSpace);
+      getEl('postsWrap').innerHTML = filtered.map(p => `<div class="msg ${p.user_id===currentUser.id?'own':''}"><div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start; margin-bottom:6px;"><div style="font-size:10px; font-weight:800; opacity:.72; text-transform:uppercase; letter-spacing:.12em;">${p.user_email}</div>${p.user_id===currentUser.id ? `<div style="display:flex; gap:8px; flex-shrink:0;"><button onclick="startEditPost('${p.id}')" style="border:0; background:rgba(255,255,255,.12); color:#fff; border-radius:999px; padding:6px 10px; cursor:pointer; font-weight:700; font-size:12px;">Edit</button><button onclick="deletePost('${p.id}')" style="border:0; background:rgba(255,91,91,.18); color:#ff8d8d; border-radius:999px; padding:6px 10px; cursor:pointer; font-weight:700; font-size:12px;">Delete</button></div>` : ''}</div><div style="font-size:15px; line-height:1.45;">${p.body || ''}</div>${p.media_url ? `<img src="${p.media_url}" style="width:100%; border-radius:16px; margin-top:12px;">` : ''}</div>`).join('');
+      getEl('communityTitle').innerText = selectedSpace + ' CHAT';
+      requestAnimationFrame(() => { const postsEl = getEl('postsWrap'); postsEl.scrollTop = postsEl.scrollHeight; markSpaceAsRead(selectedSpace); updateCommunityTabBadge(); renderCommunitySpacesOnly(); });
     }
-
-    async function renderAdmin() {
-      if(currentUser?.email !== OWNER_EMAIL) return;
-      const { data } = await sb.from('community_posts').select('category_id');
-      const s = {};
-      data?.forEach(p => {
-        const c = categories.find(x => x.id === p.category_id);
-        const slug = c ? c.slug : 'General';
-        s[slug] = (s[slug] || 0) + 1;
-      });
-      getEl('adminStats').innerHTML = Object.entries(s).map(([slug, count]) => `
-        <div class="card" style="padding:18px; margin-bottom:0; text-align:left;">
-          <div style="font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.16em; font-weight:800; margin-bottom:8px;">${slug}</div>
-          <div style="font-size:40px; font-weight:800; letter-spacing:-0.05em; line-height:1;">${count}</div>
-        </div>`).join('');
+    function renderCommunitySpacesOnly(){
+      const allSpaces = ['GENERAL', ...categories.filter(cat => (cat.slug || '').toUpperCase() !== 'GENERAL').map(cat => cat.slug)];
+      getEl('spacesWrap').innerHTML = allSpaces.map(space => { const meta = space === 'GENERAL' ? {emoji:'💬'} : getMeta(space); const unread = getUnreadCountForSpace(space); return `<button class="space-btn ${selectedSpace===space?'active':''}" onclick="selectedSpace='${space}'; renderCommunity();"><span style="display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%;"><span>${meta.emoji} ${space}</span>${unread > 0 ? `<span style="min-width:22px; height:22px; border-radius:999px; background:var(--accent-lime); color:#000; display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; padding:0 6px;">${unread}</span>` : ''}</span></button>`; }).join('');
     }
+    async function renderAdmin(){ if(currentUser?.email !== OWNER_EMAIL) return; const { data } = await sb.from('community_posts').select('category_id'); const s = {}; data?.forEach(p => { const c = categories.find(x => x.id === p.category_id); const slug = c ? c.slug : 'General'; s[slug] = (s[slug] || 0) + 1; }); getEl('adminStats').innerHTML = Object.entries(s).map(([slug,count]) => `<div class="card" style="padding:18px; margin-bottom:0;"><div style="font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.16em; font-weight:800; margin-bottom:8px;">${slug}</div><div style="font-size:40px; font-weight:800; letter-spacing:-.05em; line-height:1;">${count}</div></div>`).join(''); }
 
-    async function toggleNotifications(){
-      const key = getNotificationStorageKey();
-      const enabled = localStorage.getItem(key) === '1';
-      localStorage.setItem(key, enabled ? '0' : '1');
-      syncNotificationsUI();
-      alert(enabled ? 'Сповіщення вимкнено!' : 'Сповіщення активовано!');
-    }
+    function getNotificationStorageKey(){ return `ek_notifications_${currentUser?.id || 'guest'}`; }
+    function syncNotificationsUI(){ const btn = getEl('notificationsToggleBtn'); if(!btn) return; const enabled = localStorage.getItem(getNotificationStorageKey()) === '1'; btn.innerText = enabled ? '🔕 Вимкнути сповіщення' : '🔔 Увімкнути сповіщення'; }
+    async function toggleNotifications(){ const key = getNotificationStorageKey(); const enabled = localStorage.getItem(key) === '1'; localStorage.setItem(key, enabled ? '0' : '1'); syncNotificationsUI(); alert(enabled ? 'Сповіщення вимкнено!' : 'Сповіщення активовано!'); }
 
-    function switchView(viewId, clickedTab = null) {
-      const tabs = Array.from(document.querySelectorAll('.tab[data-view]'));
-      const views = Array.from(document.querySelectorAll('.view'));
-
-      tabs.forEach(tab => tab.classList.remove('active'));
-      views.forEach(view => view.classList.remove('active'));
-
-      const targetTab = clickedTab || tabs.find(tab => tab.dataset.view === viewId);
-      const targetView = getEl(viewId);
-
-      if(targetTab) targetTab.classList.add('active');
-      if(targetView) targetView.classList.add('active');
-    }
-
-    function bindTabs(){
-      const activeTab = document.querySelector('.tab.active[data-view]') || document.querySelector('.tab[data-view="dashboardView"]');
-      if(activeTab?.dataset?.view) {
-        switchView(activeTab.dataset.view, activeTab);
-      }
-    }
+    function renderAll(){ renderDashboard(); renderTracker(); renderCommunity(); renderAdmin(); updateCommunityTabBadge(); syncNotificationsUI(); }
 
     bootstrap();
   </script>
