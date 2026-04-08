@@ -277,7 +277,7 @@
                 <div id="fileNameDisplay" style="font-size:11px; color:var(--accent-lime);"></div>
                 <button type="button" class="button dark" style="padding:8px 12px; font-size:12px;" onclick="clearSelectedFile()">Remove</button>
               </div>
-              <textarea id="postInput" class="textarea" style="min-height:60px; resize:vertical;" placeholder="Що нового?"></textarea>
+              <textarea id="postInput" class="textarea" style="min-height:60px; resize:vertical;" placeholder="Що нового?" onkeydown="handlePostInputKeydown(event)"></textarea>
             </div>
             <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
               <button id="sendBtn" class="button blue" style="height:54px; min-width:110px;" onclick="createPost()">Send</button>
@@ -347,6 +347,12 @@
       if(file) actions.classList.remove('hidden'); else actions.classList.add('hidden');
     }
     function clearSelectedFile(){ getEl('fileInput').value=''; getEl('fileNameDisplay').innerText=''; getEl('attachmentActions').classList.add('hidden'); }
+    function handlePostInputKeydown(event){
+      if(event.key === 'Enter' && !event.shiftKey){
+        event.preventDefault();
+        createPost();
+      }
+    }
 
     async function signUp(){
       const email = getEl('emailInput').value.trim().toLowerCase();
