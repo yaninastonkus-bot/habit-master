@@ -373,6 +373,7 @@
 
     let currentUser = null, categories = [], habits = [], checkIns = [], posts = [], selectedSpace = 'GENERAL', editingPostId = null, selectedFocuses = [];
     let notificationsPoller = null;
+    let reactions = [];
     let mobileTopbarExpanded = true;
     let lastScrollY = 0;
     const TODAY_DAY = new Date().getDate();
@@ -653,7 +654,45 @@
       const { data, error } = await sb.from('community_posts').select('*').order('created_at', { ascending:true });
       if(error){ alert(error.message); posts=[]; renderCommunity(); return; }
       posts = data || [];
+      await loadReactions();
       if(triggerNotifications) maybeNotifyAboutNewPosts(previousPosts, posts);
+      renderCommunity();
+    }
+
+    async function loadReactions(){
+      const { data, error } = await sb.from('community_reactions').select('*');
+      if(error){
+        reactions = [];
+        return;
+      }
+      reactions = data || [];
+    }
+
+    function getPostReactions(postId){
+      const rows = reactions.filter(r => r.post_id === postId);
+      const grouped = {};
+      rows.forEach(r => {
+        if(!grouped[r.emoji]) grouped[r.emoji] = [];
+        grouped[r.emoji].push(r.user_id);
+      });
+      return Object.entries(grouped).map(([emoji, userIds]) => ({
+        emoji,
+        count: userIds.length,
+        mine: userIds.includes(currentUser?.id)
+      }));
+    }
+
+    async function toggleReaction(postId, emoji){
+      if(!currentUser) return;
+      const mine = reactions.find(r => r.post_id === postId && r.user_id === currentUser.id && r.emoji === emoji);
+      if(mine){
+        const { error } = await sb.from('community_reactions').delete().eq('id', mine.id);
+        if(error) return alert(error.message);
+      } else {
+        const { error } = await sb.from('community_reactions').insert({ post_id: postId, user_id: currentUser.id, emoji });
+        if(error) return alert(error.message);
+      }
+      await loadReactions();
       renderCommunity();
     }
     function getSpaceStorageKey(space){ return `ek_read_${currentUser?.id || 'guest'}_${space}`; }
@@ -773,7 +812,23 @@
       getEl('spacesWrap').innerHTML = allSpaces.map(space => { const meta = space === 'GENERAL' ? {emoji:'💬'} : getMeta(space); const unread = getUnreadCountForSpace(space); return `<button class="space-btn ${selectedSpace===space?'active':''}" onclick="selectedSpace='${space}'; renderCommunity();"><span style="display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%;"><span>${meta.emoji} ${space}</span>${unread > 0 ? `<span style="min-width:22px; height:22px; border-radius:999px; background:var(--accent-lime); color:#000; display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; padding:0 6px;">${unread}</span>` : ''}</span></button>`; }).join('');
       const generalCategoryId = categories.find(c => (c.slug || '').toUpperCase() === 'GENERAL')?.id;
       const filtered = posts.filter(p => selectedSpace === 'GENERAL' ? p.category_id === generalCategoryId : categories.find(c => c.id === p.category_id)?.slug === selectedSpace);
-      getEl('postsWrap').innerHTML = filtered.map(p => `<div class="msg ${p.user_id===currentUser.id?'own':''}"><div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start; margin-bottom:6px;"><div style="font-size:10px; font-weight:800; opacity:.72; text-transform:uppercase; letter-spacing:.12em;">${p.user_email}</div>${p.user_id===currentUser.id ? `<div style="display:flex; gap:8px; flex-shrink:0;"><button onclick="startEditPost('${p.id}')" style="border:0; background:rgba(255,255,255,.12); color:#fff; border-radius:999px; padding:6px 10px; cursor:pointer; font-weight:700; font-size:12px;">Edit</button><button onclick="deletePost('${p.id}')" style="border:0; background:rgba(255,91,91,.18); color:#ff8d8d; border-radius:999px; padding:6px 10px; cursor:pointer; font-weight:700; font-size:12px;">Delete</button></div>` : ''}</div><div style="font-size:15px; line-height:1.45;">${p.body || ''}</div>${p.media_url ? `<img src="${p.media_url}" style="width:100%; border-radius:16px; margin-top:12px;">` : ''}</div>`).join('');
+      getEl('postsWrap').innerHTML = filtered.map(p => {
+        const reactionItems = getPostReactions(p.id);
+        const reactionHtml = `
+          <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;">
+            ${reactionItems.map(r => `<button onclick="toggleReaction('${p.id}','${r.emoji}')" style="border:1px solid ${r.mine ? 'rgba(184,242,58,.55)' : 'rgba(255,255,255,.12)'}; background:${r.mine ? 'rgba(184,242,58,.14)' : 'rgba(255,255,255,.04)'}; color:#fff; border-radius:999px; padding:6px 10px; font-size:13px; cursor:pointer;">${r.emoji} ${r.count}</button>`).join('')}
+            <button onclick="toggleReaction('${p.id}','👍')" style="border:1px dashed rgba(255,255,255,.16); background:transparent; color:#fff; border-radius:999px; padding:6px 10px; font-size:13px; cursor:pointer;">👍</button>
+            <button onclick="toggleReaction('${p.id}','🔥')" style="border:1px dashed rgba(255,255,255,.16); background:transparent; color:#fff; border-radius:999px; padding:6px 10px; font-size:13px; cursor:pointer;">🔥</button>
+            <button onclick="toggleReaction('${p.id}','❤️')" style="border:1px dashed rgba(255,255,255,.16); background:transparent; color:#fff; border-radius:999px; padding:6px 10px; font-size:13px; cursor:pointer;">❤️</button>
+          </div>`;
+        return `
+        <div class="msg ${p.user_id===currentUser.id?'own':''}">
+          <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start; margin-bottom:6px;"><div style="font-size:10px; font-weight:800; opacity:.72; text-transform:uppercase; letter-spacing:.12em;">${p.user_email}</div>${p.user_id===currentUser.id ? `<div style="display:flex; gap:8px; flex-shrink:0;"><button onclick="startEditPost('${p.id}')" style="border:0; background:rgba(255,255,255,.12); color:#fff; border-radius:999px; padding:6px 10px; cursor:pointer; font-weight:700; font-size:12px;">Edit</button><button onclick="deletePost('${p.id}')" style="border:0; background:rgba(255,91,91,.18); color:#ff8d8d; border-radius:999px; padding:6px 10px; cursor:pointer; font-weight:700; font-size:12px;">Delete</button></div>` : ''}</div>
+          <div style="font-size:15px; line-height:1.45;">${p.body || ''}</div>
+          ${p.media_url ? `<img src="${p.media_url}" style="width:100%; border-radius:16px; margin-top:12px;">` : ''}
+          ${reactionHtml}
+        </div>`;
+      }).join('');
       getEl('communityTitle').innerText = selectedSpace + ' CHAT';
       requestAnimationFrame(() => { const postsEl = getEl('postsWrap'); postsEl.scrollTop = postsEl.scrollHeight; markSpaceAsRead(selectedSpace); updateCommunityTabBadge(); renderCommunitySpacesOnly(); });
     }
