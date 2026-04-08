@@ -948,7 +948,8 @@
       getEl('userEmailLabel').innerText = currentUser.email;
       if(currentUser.email === OWNER_EMAIL) getEl('adminSection').classList.remove('hidden');
 
-      await ensureProfile();
+      const profileReady = await ensureProfile();
+      if(!profileReady) return;
       await loadCategories();
       await syncHabits();
       await loadCheckIns();
@@ -959,16 +960,31 @@
     }
 
     async function ensureProfile(){
-      if(!currentUser) return;
-      const profilePayload = {
-        id: currentUser.id,
-        email: currentUser.email || null,
-        user_email: currentUser.email || null
-      };
-      const { error } = await sb.from('profiles').upsert(profilePayload, { onConflict: 'id' });
-      if(error) {
-        console.error('ensureProfile error:', error.message);
+      if(!currentUser) return false;
+
+      const { data: existingProfile, error: fetchError } = await sb
+        .from('profiles')
+        .select('id')
+        .eq('id', currentUser.id)
+        .maybeSingle();
+
+      if(fetchError) {
+        alert(fetchError.message);
+        return false;
       }
+
+      if(existingProfile?.id) return true;
+
+      const { error: insertError } = await sb
+        .from('profiles')
+        .insert({ id: currentUser.id });
+
+      if(insertError) {
+        alert(insertError.message);
+        return false;
+      }
+
+      return true;
     }
 
     async function loadProfile() {
@@ -992,7 +1008,9 @@
     }
 
     async function saveFocus() {
-      await sb.from('profiles').upsert({ id: currentUser.id, email: currentUser.email || null, user_email: currentUser.email || null, focus_text: selectedFocuses.join(',') }, { onConflict: 'id' });
+      const profileReady = await ensureProfile();
+      if(!profileReady) return;
+      await sb.from('profiles').upsert({ id: currentUser.id, focus_text: selectedFocuses.join(',') }, { onConflict: 'id' });
     }
 
     async function loadCategories(){
@@ -1001,7 +1019,11 @@
     }
 
     async function syncHabits(){
-      await ensureProfile();
+      const profileReady = await ensureProfile();
+      if(!profileReady) {
+        habits = [];
+        return;
+      }
       const { data } = await sb.from('habits').select('*').eq('user_id', currentUser.id);
       if(!data || data.length === 0){
         let ins = [];
@@ -1033,7 +1055,8 @@
     }
 
     async function addNewHabit(catId) {
-      await ensureProfile();
+      const profileReady = await ensureProfile();
+      if(!profileReady) return;
       const title = prompt("Введіть назву своєї звички:");
       if(!title) return;
       const { error } = await sb.from('habits').insert({ user_id: currentUser.id, category_id: catId, title: title, is_custom: true });
@@ -1086,7 +1109,8 @@
     }
 
     async function createPost(){
-      await ensureProfile();
+      const profileReady = await ensureProfile();
+      if(!profileReady) return;
       const body = getEl('postInput').value.trim();
       const file = getEl('fileInput').files[0];
       if(!body && !file) return;
