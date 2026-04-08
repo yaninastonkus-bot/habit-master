@@ -500,9 +500,10 @@
     .category-row-header {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-start;
+      gap: 12px;
       margin-bottom: 12px;
-      padding: 0 8px;
+      padding: 0 4px;
     }
     .category-title {
       font-size: 26px;
@@ -524,8 +525,35 @@
       box-shadow: 0 8px 20px rgba(184,242,58,0.12);
       transition: 0.2s ease;
       font-size: 22px;
+      flex: 0 0 auto;
     }
     .add-habit-btn:hover { transform: scale(1.04); }
+    .habit-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-left: auto;
+      flex: 0 0 auto;
+    }
+    .habit-action-btn {
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      font-weight: 800;
+      line-height: 1;
+      padding: 0;
+      transition: 0.18s ease;
+    }
+    .habit-action-btn:hover { transform: scale(1.08); }
+    .habit-action-btn.edit {
+      color: #ffffff;
+      font-size: 16px;
+      opacity: 0.9;
+    }
+    .habit-action-btn.delete {
+      color: #ff5b5b;
+      font-size: 22px;
+    }
 
     .tracker-section {
       overflow-x: auto;
@@ -571,6 +599,11 @@
       padding-left: 24px;
       font-weight: 700;
       letter-spacing: -0.02em;
+      position: sticky;
+      left: 0;
+      z-index: 3;
+      background: linear-gradient(180deg, rgba(10,10,14,0.98), rgba(5,5,7,0.98));
+      box-shadow: 10px 0 16px rgba(0,0,0,0.18);
     }
     .checkbox {
       width: 24px;
@@ -1079,6 +1112,19 @@
       renderAll();
     }
 
+    async function editHabit(habitId){
+      const habit = habits.find(h => h.id === habitId && h.user_id === currentUser.id);
+      if(!habit || habit.is_custom !== true) return;
+      const nextTitle = prompt('Відредагуй назву звички:', habit.title || '');
+      if(nextTitle === null) return;
+      const cleanTitle = nextTitle.trim();
+      if(!cleanTitle) return alert('Назва звички не може бути порожньою');
+      const { error } = await sb.from('habits').update({ title: cleanTitle }).eq('id', habitId).eq('user_id', currentUser.id);
+      if(error) return alert(error.message);
+      await syncHabits();
+      renderTracker();
+    }
+
     async function loadCheckIns(){
       const { data } = await sb.from('check_ins').select('*').eq('user_id', currentUser.id);
       checkIns = data || [];
@@ -1346,38 +1392,40 @@
       const trackerWrap = getEl('trackerWrap');
       const previousScroll = trackerWrap.dataset.scrollLeft ? parseInt(trackerWrap.dataset.scrollLeft, 10) : 0;
 
-      trackerWrap.innerHTML = categories.map(cat => {
-        const hbits = habits.filter(h => h.category_id === cat.id);
-        return `
-          <div class="category-row-header">
-            <div class="category-title">${cat.slug}</div>
-            <div class="add-habit-btn" onclick="addNewHabit('${cat.id}')">+</div>
-          </div>
-          <div class="tracker-section" data-tracker-section="1">
-            <div class="tracker-head">
-              <div class="habit-title-cell">Habit</div>
-              ${Array.from({length:31}, (_,i)=>`<div class="${i+1===TODAY_DAY?'today-cell':''}">${i+1}</div>`).join('')}
-              <div>%</div>
+      trackerWrap.innerHTML = categories
+        .filter(cat => (cat.slug || '').toUpperCase() !== 'GENERAL')
+        .map(cat => {
+          const hbits = habits.filter(h => h.category_id === cat.id);
+          return `
+            <div class="category-row-header">
+              <div class="category-title">${cat.slug}</div>
+              <div class="add-habit-btn" onclick="addNewHabit('${cat.id}')">+</div>
             </div>
-            ${hbits.map(h => {
-              const hChecks = checkIns.filter(c => c.habit_id === h.id);
-              const isCustom = h.is_custom === true;
-              return `<div class="tracker-row">
-                <div class="habit-title-cell" style="display:flex; align-items:center; justify-content:space-between !important; gap:12px; padding-right:16px;">
-                  <span>${h.title}</span>
-                  ${isCustom ? `<button onclick="deleteHabit('${h.id}')" style="border:0; background:transparent; color:#ff5b5b; font-size:22px; line-height:1; cursor:pointer; font-weight:800;">×</button>` : ''}
-                </div>
-                ${Array.from({length:31}, (_,i)=>{
-                  const dStr = new Date(new Date().getFullYear(), new Date().getMonth(), i+2).toISOString().split('T')[0];
-                  return `<div class="${i+1===TODAY_DAY?'today-cell':''}">
-                    <div class="checkbox ${hChecks.some(c=>c.check_in_date===dStr)?'active':''}" onclick="toggleCheck('${h.id}', ${i+1})"></div>
-                  </div>`;
-                }).join('')}
-                <div style="font-weight:800; color:var(--accent-lime)">${Math.round((hChecks.length/31)*100)}%</div>
-              </div>`;
-            }).join('')}
-          </div>`;
-      }).join('');
+            <div class="tracker-section" data-tracker-section="1">
+              <div class="tracker-head">
+                <div class="habit-title-cell">Habit</div>
+                ${Array.from({length:31}, (_,i)=>`<div class="${i+1===TODAY_DAY?'today-cell':''}">${i+1}</div>`).join('')}
+                <div>%</div>
+              </div>
+              ${hbits.map(h => {
+                const hChecks = checkIns.filter(c => c.habit_id === h.id);
+                const isCustom = h.is_custom === true;
+                return `<div class="tracker-row">
+                  <div class="habit-title-cell" style="display:flex; align-items:center; gap:12px; padding-right:16px;">
+                    <span>${h.title}</span>
+                    ${isCustom ? `<span class="habit-actions"><button class="habit-action-btn edit" onclick="editHabit('${h.id}')">✎</button><button class="habit-action-btn delete" onclick="deleteHabit('${h.id}')">×</button></span>` : ''}
+                  </div>
+                  ${Array.from({length:31}, (_,i)=>{
+                    const dStr = new Date(new Date().getFullYear(), new Date().getMonth(), i+2).toISOString().split('T')[0];
+                    return `<div class="${i+1===TODAY_DAY?'today-cell':''}">
+                      <div class="checkbox ${hChecks.some(c=>c.check_in_date===dStr)?'active':''}" onclick="toggleCheck('${h.id}', ${i+1})"></div>
+                    </div>`;
+                  }).join('')}
+                  <div style="font-weight:800; color:var(--accent-lime)">${Math.round((hChecks.length/31)*100)}%</div>
+                </div>`;
+              }).join('')}
+            </div>`;
+        }).join('');
 
       trackerWrap.querySelectorAll('[data-tracker-section="1"]').forEach(el => {
         el.scrollLeft = previousScroll;
