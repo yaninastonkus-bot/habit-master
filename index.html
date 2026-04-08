@@ -916,14 +916,14 @@
     <div id="settingsView" class="view">
       <div class="settings-hero">
         <h2>Settings</h2>
-        <p>Керування акаунтом, сповіщеннями та owner-статистикою.</p>
+        <p>Керування сповіщеннями.</p>
       </div>
       <div class="card" style="margin-bottom:0;">
         <div class="settings-grid">
-          <div id="accountSettingsRow" class="settings-row hidden">
+          <div class="settings-row">
             <div>
-              <div style="font-size:12px; text-transform:uppercase; letter-spacing:0.16em; color:var(--muted); font-weight:800; margin-bottom:8px;">Account</div>
-              <p style="color:var(--muted); margin:0; font-size:17px;">Email: <strong style="color:#fff" id="userEmailLabel"></strong></p>
+              <div style="font-size:12px; text-transform:uppercase; letter-spacing:0.16em; color:var(--muted); font-weight:800; margin-bottom:8px;">Notifications</div>
+              <p style="color:var(--muted); margin:0; font-size:17px;">Керуйте сповіщеннями для свого акаунта.</p>
             </div>
             <button id="notificationsToggleBtn" class="button primary" style="width:auto;" onclick="toggleNotifications()">🔔 Увімкнути сповіщення</button>
           </div>
@@ -1038,7 +1038,6 @@
       const isOwner = currentUser.email === OWNER_EMAIL;
       if(isOwner) {
         getEl('adminSection').classList.remove('hidden');
-        getEl('accountSettingsRow').classList.remove('hidden');
       }
 
       const profileReady = await ensureProfile();
