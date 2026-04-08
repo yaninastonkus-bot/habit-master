@@ -920,12 +920,12 @@
       </div>
       <div class="card" style="margin-bottom:0;">
         <div class="settings-grid">
-          <div class="settings-row">
+          <div id="accountSettingsRow" class="settings-row hidden">
             <div>
               <div style="font-size:12px; text-transform:uppercase; letter-spacing:0.16em; color:var(--muted); font-weight:800; margin-bottom:8px;">Account</div>
               <p style="color:var(--muted); margin:0; font-size:17px;">Email: <strong style="color:#fff" id="userEmailLabel"></strong></p>
             </div>
-            <button class="button primary" style="width:auto;" onclick="enableNotifications()">🔔 Увімкнути сповіщення</button>
+            <button id="notificationsToggleBtn" class="button primary" style="width:auto;" onclick="toggleNotifications()">🔔 Увімкнути сповіщення</button>
           </div>
 
           <div id="adminSection" class="hidden" style="margin-top:10px; border-top:1px solid rgba(255,255,255,0.08); padding-top:24px;">
@@ -1035,7 +1035,11 @@
       getEl('authView').classList.add('hidden');
       getEl('appView').classList.remove('hidden');
       getEl('userEmailLabel').innerText = currentUser.email;
-      if(currentUser.email === OWNER_EMAIL) getEl('adminSection').classList.remove('hidden');
+      const isOwner = currentUser.email === OWNER_EMAIL;
+      if(isOwner) {
+        getEl('adminSection').classList.remove('hidden');
+        getEl('accountSettingsRow').classList.remove('hidden');
+      }
 
       const profileReady = await ensureProfile();
       if(!profileReady) return;
@@ -1401,6 +1405,17 @@
         </div>`;
     }
 
+    function getNotificationStorageKey(){
+      return `ek_notifications_${currentUser?.id || 'guest'}`;
+    }
+
+    function syncNotificationsUI(){
+      const btn = getEl('notificationsToggleBtn');
+      if(!btn) return;
+      const enabled = localStorage.getItem(getNotificationStorageKey()) === '1';
+      btn.innerText = enabled ? '🔕 Вимкнути сповіщення' : '🔔 Увімкнути сповіщення';
+    }
+
     function renderAll(){
       renderDashboard();
       renderTracker();
@@ -1408,6 +1423,7 @@
       renderAdmin();
       bindTabs();
       updateCommunityTabBadge();
+      syncNotificationsUI();
     }
 
     function renderDashboard(){
@@ -1601,7 +1617,13 @@
         </div>`).join('');
     }
 
-    async function enableNotifications(){ alert("Сповіщення активовано!"); }
+    async function toggleNotifications(){
+      const key = getNotificationStorageKey();
+      const enabled = localStorage.getItem(key) === '1';
+      localStorage.setItem(key, enabled ? '0' : '1');
+      syncNotificationsUI();
+      alert(enabled ? 'Сповіщення вимкнено!' : 'Сповіщення активовано!');
+    }
 
     function bindTabs(){
       document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
