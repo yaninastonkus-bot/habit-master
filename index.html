@@ -1247,11 +1247,37 @@
       const { error } = await sb.from('community_posts').delete().eq('id', postId).eq('user_id', currentUser.id);
       if(error) return alert(error.message);
       if(editingPostId === postId){
-        editingPostId = null;
-        getEl('postInput').value = '';
-        getEl('sendBtn').innerText = 'Send';
+        cancelEditPost();
       }
       await loadPosts();
+    }
+
+    function getSpaceStorageKey(space){
+      return `ek_read_${currentUser?.id || 'guest'}_${space}`;
+    }
+
+    function getPostsForSpace(space){
+      const generalCategoryId = categories.find(c => (c.slug || '').toUpperCase() === 'GENERAL')?.id;
+      return posts.filter(p => {
+        if(space === 'GENERAL') return p.category_id === generalCategoryId;
+        return categories.find(c => c.id === p.category_id)?.slug === space;
+      });
+    }
+
+    function getUnreadCountForSpace(space){
+      const readAt = Number(localStorage.getItem(getSpaceStorageKey(space)) || 0);
+      return getPostsForSpace(space).filter(p => {
+        const createdAt = new Date(p.created_at || 0).getTime();
+        return p.user_id !== currentUser?.id && createdAt > readAt;
+      }).length;
+    }
+
+    function markSpaceAsRead(space){
+      const latestTs = getPostsForSpace(space)
+        .map(p => new Date(p.created_at || 0).getTime())
+        .filter(Boolean)
+        .reduce((max, ts) => Math.max(max, ts), Date.now());
+      localStorage.setItem(getSpaceStorageKey(space), String(latestTs || Date.now()));
     }
 
     function getStreak(){
@@ -1439,11 +1465,19 @@
     }
 
     function renderCommunity(){
-      let spacesHtml = `<button class="space-btn ${selectedSpace==='GENERAL'?'active':''}" onclick="selectedSpace='GENERAL'; renderCommunity();">💬 GENERAL</button>`;
-      spacesHtml += categories
-        .filter(cat => (cat.slug || '').toUpperCase() !== 'GENERAL')
-        .map(cat => `<button class="space-btn ${selectedSpace===cat.slug?'active':''}" onclick="selectedSpace='${cat.slug}'; renderCommunity();">${getMeta(cat.slug).emoji} ${cat.slug}</button>`)
-        .join('');
+      const allSpaces = ['GENERAL', ...categories.filter(cat => (cat.slug || '').toUpperCase() !== 'GENERAL').map(cat => cat.slug)];
+
+      let spacesHtml = allSpaces.map(space => {
+        const isGeneral = space === 'GENERAL';
+        const meta = isGeneral ? { emoji: '💬' } : getMeta(space);
+        const unread = getUnreadCountForSpace(space);
+        return `<button class="space-btn ${selectedSpace===space?'active':''}" onclick="selectedSpace='${space}'; renderCommunity();">
+          <span style="display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%;">
+            <span>${meta.emoji} ${space}</span>
+            ${unread > 0 ? `<span style="min-width:22px; height:22px; border-radius:999px; background:var(--accent-lime); color:#000; display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; padding:0 6px;">${unread}</span>` : ''}
+          </span>
+        </button>`;
+      }).join('');
       getEl('spacesWrap').innerHTML = spacesHtml;
 
       const generalCategoryId = categories.find(c => (c.slug || '').toUpperCase() === 'GENERAL')?.id;
@@ -1466,8 +1500,27 @@
           <div style="font-size:15px; line-height:1.45;">${p.body || ''}</div>
           ${p.media_url ? `<img src="${p.media_url}" class="post-img" style="width:100%; border-radius:16px; margin-top:12px;">` : ''}
         </div>`).join('');
-      getEl('postsWrap').scrollTop = getEl('postsWrap').scrollHeight;
+
       getEl('communityTitle').innerText = selectedSpace + " CHAT";
+
+      requestAnimationFrame(() => {
+        const postsEl = getEl('postsWrap');
+        postsEl.scrollTop = postsEl.scrollHeight;
+        markSpaceAsRead(selectedSpace);
+
+        let refreshedSpacesHtml = allSpaces.map(space => {
+          const isGeneral = space === 'GENERAL';
+          const meta = isGeneral ? { emoji: '💬' } : getMeta(space);
+          const unread = getUnreadCountForSpace(space);
+          return `<button class="space-btn ${selectedSpace===space?'active':''}" onclick="selectedSpace='${space}'; renderCommunity();">
+            <span style="display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%;">
+              <span>${meta.emoji} ${space}</span>
+              ${unread > 0 ? `<span style="min-width:22px; height:22px; border-radius:999px; background:var(--accent-lime); color:#000; display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; padding:0 6px;">${unread}</span>` : ''}
+            </span>
+          </button>`;
+        }).join('');
+        getEl('spacesWrap').innerHTML = refreshedSpacesHtml;
+      });
     }
 
     async function renderAdmin() {
