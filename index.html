@@ -161,13 +161,22 @@
       font-weight:800; cursor:pointer; font-size:22px; flex:0 0 auto;
     }
     .tracker-section { overflow-x:auto; background: linear-gradient(180deg, rgba(12,12,17,.98), rgba(6,6,8,.98)); border-radius:28px; border:1px solid rgba(255,255,255,.06); margin-bottom:28px; }
-    .tracker-head, .tracker-row { display:grid; grid-template-columns: 260px repeat(31, 45px) 84px; align-items:center; min-width: 1740px; }
+    .tracker-head, .tracker-row { display:grid; grid-template-columns: 210px repeat(31, 45px) 84px; align-items:center; min-width: 1690px; }
     .tracker-head { height:56px; background: rgba(255,255,255,.03); font-size:11px; text-transform:uppercase; letter-spacing:.16em; font-weight:800; color: rgba(255,255,255,.48); }
     .tracker-row { height:56px; border-bottom:1px solid rgba(255,255,255,.04); }
     .tracker-head > div, .tracker-row > div { height:100%; display:flex; align-items:center; justify-content:center; border-right:1px solid rgba(255,255,255,.03); }
     .habit-title-cell {
-      justify-content:flex-start !important; padding-left:24px; font-weight:700; letter-spacing:-.02em; position:sticky; left:0; z-index:3;
+      justify-content:flex-start !important; padding-left:18px; font-weight:700; letter-spacing:-.02em; position:sticky; left:0; z-index:3;
       background: linear-gradient(180deg, rgba(10,10,14,.98), rgba(5,5,7,.98)); box-shadow:10px 0 16px rgba(0,0,0,.18);
+      max-width: 210px;
+      overflow: hidden;
+    }
+    .habit-title-text {
+      display:block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 128px;
     }
     .habit-actions { display:inline-flex; align-items:center; gap:10px; margin-left:auto; flex:0 0 auto; }
     .habit-action-btn { border:0; background:transparent; cursor:pointer; font-weight:800; padding:0; }
@@ -210,6 +219,17 @@
       }
       .topbar.mobile-collapsed .mobile-topbar-toggle {
         display: inline-flex;
+      }
+      .tracker-head, .tracker-row {
+        grid-template-columns: 160px repeat(31, 42px) 72px;
+        min-width: 1534px;
+      }
+      .habit-title-cell {
+        max-width: 160px;
+        padding-left: 14px;
+      }
+      .habit-title-text {
+        max-width: 96px;
       }
     }
   </style>
@@ -528,21 +548,33 @@
       });
 
       const missingDefaults = [];
+      const unexpectedDefaults = [];
+
       trackingCategories.forEach(cat => {
         const slug = (cat.slug || '').toUpperCase();
         const defaultsForCategory = DEFAULT_HABITS[slug] || [];
+        const categoryHabits = existingHabits.filter(h => h.category_id === cat.id);
+
         defaultsForCategory.forEach(title => {
-          const exists = existingHabits.some(h => h.category_id === cat.id && (h.title || '').trim() === title);
+          const exists = categoryHabits.some(h => (h.title || '').trim() === title);
           if(!exists){
-            missingDefaults.push({
-              user_id: currentUser.id,
-              category_id: cat.id,
-              title,
-              is_custom: false
-            });
+            missingDefaults.push({ user_id: currentUser.id, category_id: cat.id, title, is_custom: false });
+          }
+        });
+
+        categoryHabits.forEach(h => {
+          const isDefaultTitle = defaultsForCategory.includes((h.title || '').trim());
+          if(h.is_custom !== true && !isDefaultTitle){
+            unexpectedDefaults.push(h);
           }
         });
       });
+
+      if(unexpectedDefaults.length){
+        for(const h of unexpectedDefaults){
+          await sb.from('habits').update({ is_custom: true }).eq('id', h.id).eq('user_id', currentUser.id);
+        }
+      }
 
       if(missingDefaults.length){
         const { error: insertDefaultsError } = await sb.from('habits').insert(missingDefaults);
@@ -552,11 +584,13 @@
         }
       }
 
-      const refreshedSource = [...existingHabits, ...missingDefaults];
+      const refreshedSource = [...existingHabits, ...missingDefaults].map(h => ({ ...h }));
       const missingCustomFlag = refreshedSource.filter(h => typeof h.is_custom === 'undefined' || h.is_custom === null);
       if(missingCustomFlag.length){
         for(const h of missingCustomFlag){
-          const inferredCustom = !DEFAULT_HABIT_TITLES.includes(h.title);
+          const cat = categories.find(c => c.id === h.category_id);
+          const defaultsForCategory = DEFAULT_HABITS[(cat?.slug || '').toUpperCase()] || [];
+          const inferredCustom = !defaultsForCategory.includes((h.title || '').trim());
           await sb.from('habits').update({ is_custom: inferredCustom }).eq('id', h.id).eq('user_id', currentUser.id);
         }
       }
@@ -714,7 +748,16 @@
       const previousScroll = trackerWrap.dataset.scrollLeft ? parseInt(trackerWrap.dataset.scrollLeft, 10) : 0;
       trackerWrap.innerHTML = categories.filter(cat => ['MOVE','MIND','CREATE','SLOW'].includes((cat.slug || '').toUpperCase())).map(cat => {
         const hbits = habits.filter(h => h.category_id === cat.id);
-        return `<div class="category-row-header"><div class="category-title">${cat.slug}</div><div class="add-habit-btn" onclick="addNewHabit('${cat.id}')">+</div></div><div class="tracker-section" data-tracker-section="1"><div class="tracker-head"><div class="habit-title-cell">Habit</div>${Array.from({length:31},(_,i)=>`<div class="${i+1===TODAY_DAY?'today-cell':''}">${i+1}</div>`).join('')}<div>%</div></div>${hbits.map(h => { const hChecks = checkIns.filter(c => c.habit_id === h.id); const isCustom = h.is_custom === true; return `<div class="tracker-row"><div class="habit-title-cell" style="display:flex; align-items:center; gap:12px; padding-right:16px;"><span>${h.title}</span>${isCustom ? `<span class="habit-actions"><button class="habit-action-btn edit" onclick="editHabit('${h.id}')">✎</button><button class="habit-action-btn delete" onclick="deleteHabit('${h.id}')">×</button></span>` : ''}</div>${Array.from({length:31},(_,i)=>{ const dStr = new Date(new Date().getFullYear(), new Date().getMonth(), i+2).toISOString().split('T')[0]; return `<div class="${i+1===TODAY_DAY?'today-cell':''}"><div class="checkbox ${hChecks.some(c => c.check_in_date === dStr) ? 'active' : ''}" onclick="toggleCheck('${h.id}', ${i+1})"></div></div>`; }).join('')}<div style="font-weight:800; color:var(--accent-lime)">${Math.round((hChecks.length/31)*100)}%</div></div>`; }).join('')}</div>`;
+        const defaultTitles = DEFAULT_HABITS[(cat.slug || '').toUpperCase()] || [];
+        const defaultHabits = [];
+        defaultTitles.forEach(title => {
+          const match = hbits.find(h => (h.title || '').trim() === title);
+          if(match) defaultHabits.push(match);
+        });
+        const customHabits = hbits.filter(h => h.is_custom === true);
+        const visibleHabits = [...defaultHabits, ...customHabits];
+
+        return `<div class="category-row-header"><div class="category-title">${cat.slug}</div><div class="add-habit-btn" onclick="addNewHabit('${cat.id}')">+</div></div><div class="tracker-section" data-tracker-section="1"><div class="tracker-head"><div class="habit-title-cell">Habit</div>${Array.from({length:31},(_,i)=>`<div class="${i+1===TODAY_DAY?'today-cell':''}">${i+1}</div>`).join('')}<div>%</div></div>${visibleHabits.map(h => { const hChecks = checkIns.filter(c => c.habit_id === h.id); const isCustom = h.is_custom === true; return `<div class="tracker-row"><div class="habit-title-cell" style="display:flex; align-items:center; gap:10px; padding-right:12px;"><span class="habit-title-text">${h.title}</span>${isCustom ? `<span class="habit-actions"><button class="habit-action-btn edit" onclick="editHabit('${h.id}')">✎</button><button class="habit-action-btn delete" onclick="deleteHabit('${h.id}')">×</button></span>` : ''}</div>${Array.from({length:31},(_,i)=>{ const dStr = new Date(new Date().getFullYear(), new Date().getMonth(), i+2).toISOString().split('T')[0]; return `<div class="${i+1===TODAY_DAY?'today-cell':''}"><div class="checkbox ${hChecks.some(c => c.check_in_date === dStr) ? 'active' : ''}" onclick="toggleCheck('${h.id}', ${i+1})"></div></div>`; }).join('')}<div style="font-weight:800; color:var(--accent-lime)">${Math.round((hChecks.length/31)*100)}%</div></div>`; }).join('')}</div>`;
       }).join('');
       trackerWrap.querySelectorAll('[data-tracker-section="1"]').forEach(el => {
         el.scrollLeft = previousScroll;
