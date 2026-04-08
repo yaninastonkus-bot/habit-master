@@ -824,10 +824,10 @@
         <div class="nav-logo">ekreative</div>
       </div>
       <div class="topbar-right">
-        <div class="tab active" data-view="dashboardView">Dashboard</div>
-        <div class="tab" data-view="trackerView">Tracker</div>
-        <div class="tab" data-view="communityView">Community <span id="communityTabBadge" class="tab-badge hidden">0</span></div>
-        <div class="tab" data-view="settingsView">Settings</div>
+        <div class="tab active" data-view="dashboardView" onclick="switchView('dashboardView', this)">Dashboard</div>
+        <div class="tab" data-view="trackerView" onclick="switchView('trackerView', this)">Tracker</div>
+        <div class="tab" data-view="communityView" onclick="switchView('communityView', this)">Community <span id="communityTabBadge" class="tab-badge hidden">0</span></div>
+        <div class="tab" data-view="settingsView" onclick="switchView('settingsView', this)">Settings</div>
         <button class="button dark logout-btn" style="padding: 12px 18px; font-size: 14px;" onclick="logout()">Вихід</button>
       </div>
     </div>
@@ -1633,29 +1633,24 @@
       alert(enabled ? 'Сповіщення вимкнено!' : 'Сповіщення активовано!');
     }
 
-    function bindTabs(){
+    function switchView(viewId, clickedTab = null) {
       const tabs = Array.from(document.querySelectorAll('.tab[data-view]'));
       const views = Array.from(document.querySelectorAll('.view'));
 
-      tabs.forEach(tab => {
-        tab.onclick = () => {
-          tabs.forEach(t => t.classList.remove('active'));
-          views.forEach(v => v.classList.remove('active'));
-          tab.classList.add('active');
-          const targetView = getEl(tab.dataset.view);
-          if(targetView) targetView.classList.add('active');
-        };
-      });
+      tabs.forEach(tab => tab.classList.remove('active'));
+      views.forEach(view => view.classList.remove('active'));
 
-      const activeTab = tabs.find(t => t.classList.contains('active')) || tabs[0];
-      const activeViewId = activeTab?.dataset.view;
-      if(activeTab && activeViewId){
-        tabs.forEach(t => {
-          if(t !== activeTab) t.classList.remove('active');
-        });
-        views.forEach(v => v.classList.remove('active'));
-        const targetView = getEl(activeViewId);
-        if(targetView) targetView.classList.add('active');
+      const targetTab = clickedTab || tabs.find(tab => tab.dataset.view === viewId);
+      const targetView = getEl(viewId);
+
+      if(targetTab) targetTab.classList.add('active');
+      if(targetView) targetView.classList.add('active');
+    }
+
+    function bindTabs(){
+      const activeTab = document.querySelector('.tab.active[data-view]') || document.querySelector('.tab[data-view="dashboardView"]');
+      if(activeTab?.dataset?.view) {
+        switchView(activeTab.dataset.view, activeTab);
       }
     }
 
