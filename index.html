@@ -212,6 +212,25 @@
       transition: 0.25s ease;
       border: 1px solid transparent;
       font-size: 14px;
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .tab-badge {
+      min-width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      background: var(--accent-lime);
+      color: #000;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 0 5px;
+      line-height: 1;
     }
     .tab:hover { color: #fff; }
     .tab.active {
@@ -807,7 +826,7 @@
       <div class="topbar-right">
         <div class="tab active" data-view="dashboardView">Dashboard</div>
         <div class="tab" data-view="trackerView">Tracker</div>
-        <div class="tab" data-view="communityView">Community</div>
+        <div class="tab" data-view="communityView">Community <span id="communityTabBadge" class="tab-badge hidden">0</span></div>
         <div class="tab" data-view="settingsView">Settings</div>
         <button class="button dark logout-btn" style="padding: 12px 18px; font-size: 14px;" onclick="logout()">Вихід</button>
       </div>
@@ -879,11 +898,14 @@
           <div id="postsWrap" class="chat-box"></div>
           <div class="composer">
             <div id="attachWrap">
-              <label class="button dark attach-btn" style="cursor:pointer;">📎<input type="file" id="fileInput" class="hidden" onchange="updateFileName()"></label>
+              <label class="button dark attach-btn" style="cursor:pointer;">📎<input type="file" id="fileInput" accept="image/*" class="hidden" onchange="updateFileName()"></label>
             </div>
             <div style="flex-grow:1; min-width: 240px;">
+              <div id="attachmentActions" class="hidden" style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                <div id="fileNameDisplay" style="font-size: 11px; color: var(--accent-lime);"></div>
+                <button type="button" class="button dark" style="padding:8px 12px; font-size:12px;" onclick="clearSelectedFile()">Remove</button>
+              </div>
               <textarea id="postInput" class="textarea" style="min-height:60px;" placeholder="Що нового?"></textarea>
-              <div id="fileNameDisplay" style="font-size: 11px; color: var(--accent-lime); margin-top:6px;"></div>
             </div>
             <button id="sendBtn" class="button blue" style="height:54px; min-width:110px;">Send</button>
           </div>
@@ -943,10 +965,42 @@
     const getEl = id => document.getElementById(id);
     function getMeta(slug) { return META[slug?.toUpperCase()] || { emoji: "📌", color: "#333" }; }
 
+    function sanitizeFileName(name) {
+      return (name || 'file')
+        .normalize('NFKD')
+        .replace(/[^a-zA-Z0-9._-]+/g, '_')
+        .replace(/_+/g, '_')
+        .replace(/^_+|_+$/g, '') || 'file';
+    }
+
+    function updateCommunityTabBadge() {
+      if(!currentUser) return;
+      const spaces = ['GENERAL', ...categories.filter(cat => (cat.slug || '').toUpperCase() !== 'GENERAL').map(cat => cat.slug)];
+      const totalUnread = spaces.reduce((sum, space) => sum + getUnreadCountForSpace(space), 0);
+      const badge = getEl('communityTabBadge');
+      if(!badge) return;
+      badge.innerText = totalUnread;
+      if(totalUnread > 0) badge.classList.remove('hidden');
+      else badge.classList.add('hidden');
+    }
+
     function updateFileName() {
       const file = getEl('fileInput').files[0];
-      getEl('fileNameDisplay').innerText = file ? "Прикріплено: " + file.name : '';
+      const actions = getEl('attachmentActions');
+      getEl('fileNameDisplay').innerText = file ? `Прикріплено: ${file.name}` : '';
+      if(actions) {
+        if(file) actions.classList.remove('hidden');
+        else actions.classList.add('hidden');
+      }
     }
+
+    function clearSelectedFile() {
+      getEl('fileInput').value = '';
+      getEl('fileNameDisplay').innerText = '';
+      const actions = getEl('attachmentActions');
+      if(actions) actions.classList.add('hidden');
+    }
+
     function togglePassword() {
       const input = getEl('passwordInput');
       input.type = input.type === 'password' ? 'text' : 'password';
@@ -1167,13 +1221,24 @@
         let url = null;
 
         if(file){
-          const fName = `${currentUser.id}/${Date.now()}_${file.name}`;
-          const { error: upErr } = await sb.storage.from('community').upload(fName, file);
+          const safeName = sanitizeFileName(file.name);
+          const ext = safeName.includes('.') ? safeName.split('.').pop().toLowerCase() : 'jpg';
+          const fName = `${currentUser.id}/${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
+          const { error: upErr } = await sb.storage.from('community').upload(fName, file, {
+            cacheControl: '3600',
+            upsert: false,
+            contentType: file.type || 'image/jpeg'
+          });
           if(upErr) {
             alert(upErr.message);
             return;
           }
-          url = sb.storage.from('community').getPublicUrl(fName).data.publicUrl;
+          const publicUrlData = sb.storage.from('community').getPublicUrl(fName).data;
+          url = publicUrlData?.publicUrl || null;
+          if(!url) {
+            alert('Не вдалося отримати URL зображення');
+            return;
+          }
         }
 
         const generalCategory = categories.find(c => (c.slug || '').toUpperCase() === 'GENERAL');
@@ -1187,11 +1252,7 @@
         }
 
         if(editingPostId){
-          const payload = {
-            body,
-            category_id: catId
-          };
-
+          const payload = { body, category_id: catId };
           if(url) payload.media_url = url;
 
           const { error } = await sb
@@ -1223,10 +1284,9 @@
         }
 
         getEl('postInput').value = '';
-        getEl('fileInput').value = '';
-        getEl('fileNameDisplay').innerText = '';
-
+        clearSelectedFile();
         await loadPosts();
+        updateCommunityTabBadge();
       } catch(e) {
         alert(e.message);
       }
@@ -1347,6 +1407,7 @@
       renderCommunity();
       renderAdmin();
       bindTabs();
+      updateCommunityTabBadge();
     }
 
     function renderDashboard(){
@@ -1507,6 +1568,7 @@
         const postsEl = getEl('postsWrap');
         postsEl.scrollTop = postsEl.scrollHeight;
         markSpaceAsRead(selectedSpace);
+        updateCommunityTabBadge();
 
         let refreshedSpacesHtml = allSpaces.map(space => {
           const isGeneral = space === 'GENERAL';
