@@ -255,7 +255,7 @@
       }
       .tracker-head, .tracker-row {
         grid-template-columns: 148px repeat(31, 42px) 68px;
-        min-width: 1522px;
+        min-width: 1518px;
       }
       .tracker-head {
         font-size: 10px;
@@ -419,10 +419,6 @@
     let currentUser = null, categories = [], habits = [], checkIns = [], posts = [], selectedSpace = 'GENERAL', editingPostId = null, selectedFocuses = [];
     let notificationsPoller = null;
     let audioUnlocked = false;
-    let mobileTopbarExpanded = true;
-    let lastScrollY = 0;
-    let mobileTopbarTicking = false;
-    let mobileTopbarInitialized = false;
     let reactions = [];
     let mentionableUsers = [];
     let mentionSuggestions = [];
@@ -500,70 +496,41 @@
         console.error('playNotificationSound error:', e);
       }
     }
-    function applyMobileTopbarState(force = false){
+    function applyMobileTopbarState(){
       const topbar = document.querySelector('.topbar');
       const toggleBtn = getEl('mobileTopbarToggle');
       if(!topbar || !toggleBtn) return;
-
       const isMobile = window.innerWidth <= 768;
       if(!isMobile){
-        if(force || topbar.classList.contains('mobile-collapsed')){
-          topbar.classList.remove('mobile-collapsed');
-        }
+        topbar.classList.remove('mobile-collapsed');
         mobileTopbarExpanded = true;
         toggleBtn.innerText = '☰';
         return;
       }
-
-      const shouldCollapse = !mobileTopbarExpanded;
-      const isCollapsed = topbar.classList.contains('mobile-collapsed');
-      if(force || shouldCollapse !== isCollapsed){
-        topbar.classList.toggle('mobile-collapsed', shouldCollapse);
-      }
+      topbar.classList.toggle('mobile-collapsed', !mobileTopbarExpanded);
       toggleBtn.innerText = mobileTopbarExpanded ? '−' : '☰';
     }
     function toggleMobileTopbar(forceExpanded = null){
       if(window.innerWidth > 768) return;
-      const nextState = typeof forceExpanded === 'boolean' ? forceExpanded : !mobileTopbarExpanded;
-      if(nextState === mobileTopbarExpanded) return;
-      mobileTopbarExpanded = nextState;
-      applyMobileTopbarState(true);
+      mobileTopbarExpanded = typeof forceExpanded === 'boolean' ? forceExpanded : !mobileTopbarExpanded;
+      applyMobileTopbarState();
     }
     function initMobileTopbarBehavior(){
-      if(mobileTopbarInitialized) return;
-      mobileTopbarInitialized = true;
-
-      applyMobileTopbarState(true);
-
-      window.addEventListener('resize', () => {
-        mobileTopbarExpanded = true;
-        applyMobileTopbarState(true);
-      });
-
+      applyMobileTopbarState();
+      window.addEventListener('resize', applyMobileTopbarState);
       window.addEventListener('scroll', () => {
         if(window.innerWidth > 768) return;
-        if(mobileTopbarTicking) return;
-
-        mobileTopbarTicking = true;
-        window.requestAnimationFrame(() => {
-          const currentY = window.scrollY || 0;
-          const delta = currentY - lastScrollY;
-          const previousState = mobileTopbarExpanded;
-
-          if(currentY <= 24){
-            mobileTopbarExpanded = true;
-          } else if(delta > 18){
-            mobileTopbarExpanded = false;
-          } else if(delta < -18){
-            mobileTopbarExpanded = true;
-          }
-
-          lastScrollY = currentY;
-          if(previousState !== mobileTopbarExpanded){
-            applyMobileTopbarState(true);
-          }
-          mobileTopbarTicking = false;
-        });
+        const currentY = window.scrollY || 0;
+        const delta = currentY - lastScrollY;
+        if(currentY < 40){
+          mobileTopbarExpanded = true;
+        } else if(delta > 12){
+          mobileTopbarExpanded = false;
+        } else if(delta < -12){
+          mobileTopbarExpanded = true;
+        }
+        lastScrollY = currentY;
+        applyMobileTopbarState();
       }, { passive: true });
     }
     function switchView(viewId, clickedTab = null){
@@ -708,11 +675,17 @@
     }
     async function signIn(){
       getEl('loginBtn').innerText = 'Wait...';
-      const { error } = await sb.auth.signInWithPassword({ email:getEl('emailInput').value, password:getEl('passwordInput').value });
-      if(error){ alert(error.message); getEl('loginBtn').innerText='Увійти'; return; }
-      await document.addEventListener('click', unlockAudio, { passive: true });
-    document.addEventListener('touchstart', unlockAudio, { passive: true });
-    bootstrap();
+      const { error } = await sb.auth.signInWithPassword({
+        email: getEl('emailInput').value,
+        password: getEl('passwordInput').value
+      });
+      if(error){
+        alert(error.message);
+        getEl('loginBtn').innerText = 'Увійти';
+        return;
+      }
+      await bootstrap();
+      getEl('loginBtn').innerText = 'Увійти';
     }
     async function logout(){ await sb.auth.signOut(); location.reload(); }
 
@@ -855,382 +828,4 @@
         });
 
         categoryHabits.forEach(h => {
-          const isDefaultTitle = defaultsForCategory.includes((h.title || '').trim());
-          if(h.is_custom !== true && !isDefaultTitle){
-            unexpectedDefaults.push(h);
-          }
-        });
-      });
-
-      if(unexpectedDefaults.length){
-        for(const h of unexpectedDefaults){
-          await sb.from('habits').update({ is_custom: true }).eq('id', h.id).eq('user_id', currentUser.id);
-        }
-      }
-
-      if(missingDefaults.length){
-        const { error: insertDefaultsError } = await sb.from('habits').insert(missingDefaults);
-        if(insertDefaultsError){
-          alert(insertDefaultsError.message);
-          return;
-        }
-      }
-
-      const refreshedSource = [...existingHabits, ...missingDefaults].map(h => ({ ...h }));
-      const missingCustomFlag = refreshedSource.filter(h => typeof h.is_custom === 'undefined' || h.is_custom === null);
-      if(missingCustomFlag.length){
-        for(const h of missingCustomFlag){
-          const cat = categories.find(c => c.id === h.category_id);
-          const defaultsForCategory = DEFAULT_HABITS[(cat?.slug || '').toUpperCase()] || [];
-          const inferredCustom = !defaultsForCategory.includes((h.title || '').trim());
-          await sb.from('habits').update({ is_custom: inferredCustom }).eq('id', h.id).eq('user_id', currentUser.id);
-        }
-      }
-
-      const testHabit = refreshedSource.find(h => (h.title || '').trim().toUpperCase() === 'ВРИ');
-      if(testHabit?.id){
-        await sb.from('check_ins').delete().eq('habit_id', testHabit.id);
-        await sb.from('habits').delete().eq('id', testHabit.id).eq('user_id', currentUser.id);
-      }
-
-      const { data: fresh, error: freshError } = await sb.from('habits').select('*').eq('user_id', currentUser.id).order('created_at', { ascending:true });
-      if(freshError){
-        alert(freshError.message);
-        habits = [];
-        return;
-      }
-      habits = (fresh || []).filter(h => {
-        const cat = categories.find(c => c.id === h.category_id);
-        const slug = (cat?.slug || '').toUpperCase();
-        return ['MOVE','MIND','CREATE','SLOW'].includes(slug);
-      });
-    }
-    async function addNewHabit(catId){
-      const ready = await ensureProfile(); if(!ready) return;
-      const title = prompt('Введіть назву своєї звички:');
-      if(!title) return;
-      const { error } = await sb.from('habits').insert({ user_id: currentUser.id, category_id: catId, title: title.trim(), is_custom:true });
-      if(error) return alert(error.message);
-      await syncHabits(); renderTracker();
-    }
-    async function editHabit(habitId){
-      const habit = habits.find(h => h.id === habitId && h.user_id === currentUser.id);
-      if(!habit || habit.is_custom !== true) return;
-      const nextTitle = prompt('Відредагуй назву звички:', habit.title || '');
-      if(nextTitle === null) return;
-      const cleanTitle = nextTitle.trim();
-      if(!cleanTitle) return alert('Назва звички не може бути порожньою');
-      const { error } = await sb.from('habits').update({ title: cleanTitle }).eq('id', habitId).eq('user_id', currentUser.id);
-      if(error) return alert(error.message);
-      await syncHabits(); renderTracker();
-    }
-    async function deleteHabit(habitId){
-      if(!confirm('Видалити цю звичку?')) return;
-      await sb.from('check_ins').delete().eq('habit_id', habitId);
-      const { error } = await sb.from('habits').delete().eq('id', habitId).eq('user_id', currentUser.id);
-      if(error) return alert(error.message);
-      await syncHabits(); await loadCheckIns(); renderAll();
-    }
-
-    async function loadCheckIns(){ const { data } = await sb.from('check_ins').select('*').eq('user_id', currentUser.id); checkIns = data || []; }
-    async function toggleCheck(habitId, day){
-      const dateStr = new Date(new Date().getFullYear(), new Date().getMonth(), day+1).toISOString().split('T')[0];
-      const exist = checkIns.find(c => c.habit_id === habitId && c.check_in_date === dateStr);
-      if(exist) await sb.from('check_ins').delete().eq('id', exist.id); else await sb.from('check_ins').insert({ user_id:currentUser.id, habit_id:habitId, check_in_date:dateStr });
-      await loadCheckIns(); renderAll();
-    }
-
-    async function loadPosts(triggerNotifications = false){
-      const previousPosts = [...posts];
-      const { data, error } = await sb.from('community_posts').select('*').order('created_at', { ascending:true });
-      if(error){ alert(error.message); posts=[]; renderCommunity(); return; }
-      posts = data || [];
-      await loadReactions();
-      if(triggerNotifications) maybeNotifyAboutNewPosts(previousPosts, posts);
-      renderCommunity();
-    }
-
-    async function loadReactions(){
-      const { data, error } = await sb.from('community_reactions').select('*');
-      if(error){
-        reactions = [];
-        return;
-      }
-      reactions = data || [];
-    }
-
-    function getPostReactions(postId){
-      const rows = reactions.filter(r => r.post_id === postId);
-      const grouped = {};
-      rows.forEach(r => {
-        if(!grouped[r.emoji]) grouped[r.emoji] = [];
-        grouped[r.emoji].push(r.user_id);
-      });
-      return Object.entries(grouped).map(([emoji, userIds]) => ({
-        emoji,
-        count: userIds.length,
-        mine: userIds.includes(currentUser?.id)
-      }));
-    }
-
-    async function toggleReaction(postId, emoji){
-      if(!currentUser) return;
-      const mine = reactions.find(r => r.post_id === postId && r.user_id === currentUser.id && r.emoji === emoji);
-      if(mine){
-        const { error } = await sb.from('community_reactions').delete().eq('id', mine.id);
-        if(error) return alert(error.message);
-      } else {
-        const { error } = await sb.from('community_reactions').insert({ post_id: postId, user_id: currentUser.id, emoji });
-        if(error) return alert(error.message);
-      }
-      await loadReactions();
-      renderCommunity();
-    }
-    function getSpaceStorageKey(space){ return `ek_read_${currentUser?.id || 'guest'}_${space}`; }
-    function getPostsForSpace(space){
-      const generalCategoryId = categories.find(c => (c.slug || '').toUpperCase() === 'GENERAL')?.id;
-      return posts.filter(p => { if(space === 'GENERAL') return p.category_id === generalCategoryId; return categories.find(c => c.id === p.category_id)?.slug === space; });
-    }
-    function getUnreadCountForSpace(space){ const readAt = Number(localStorage.getItem(getSpaceStorageKey(space)) || 0); return getPostsForSpace(space).filter(p => p.user_id !== currentUser?.id && new Date(p.created_at || 0).getTime() > readAt).length; }
-    function markSpaceAsRead(space){ const latestTs = getPostsForSpace(space).map(p => new Date(p.created_at || 0).getTime()).filter(Boolean).reduce((max, ts) => Math.max(max, ts), Date.now()); localStorage.setItem(getSpaceStorageKey(space), String(latestTs || Date.now())); }
-    function updateCommunityTabBadge(){
-      if(!currentUser) return;
-      const spaces = ['GENERAL', ...categories.filter(cat => (cat.slug || '').toUpperCase() !== 'GENERAL').map(cat => cat.slug)];
-      const totalUnread = spaces.reduce((sum, space) => sum + getUnreadCountForSpace(space), 0);
-      const badge = getEl('communityTabBadge');
-      if(!badge) return;
-      badge.innerText = totalUnread;
-      if(totalUnread > 0) badge.classList.remove('hidden');
-      else badge.classList.add('hidden');
-    }
-    async function createPost(){
-      const ready = await ensureProfile(); if(!ready) return;
-      const body = getEl('postInput').value.trim();
-      const file = getEl('fileInput').files[0];
-      if(!body && !file) return;
-      try {
-        let url = null;
-        if(file){
-          const safeName = sanitizeFileName(file.name);
-          const ext = safeName.includes('.') ? safeName.split('.').pop().toLowerCase() : 'jpg';
-          const fName = `${currentUser.id}/${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
-          const { error: upErr } = await sb.storage.from('community').upload(fName, file, { cacheControl:'3600', upsert:false, contentType:file.type || 'image/jpeg' });
-          if(upErr) return alert(upErr.message);
-          url = sb.storage.from('community').getPublicUrl(fName).data?.publicUrl || null;
-          if(!url) return alert('Не вдалося отримати URL зображення');
-        }
-        const generalCategory = categories.find(c => (c.slug || '').toUpperCase() === 'GENERAL');
-        const catId = selectedSpace === 'GENERAL' ? generalCategory?.id : (categories.find(c => c.slug === selectedSpace)?.id ?? null);
-        if(!catId) return alert('Не знайдена категорія для цього чату. Перевір categories у Supabase.');
-        if(editingPostId){
-          const payload = { body, category_id: catId }; if(url) payload.media_url = url;
-          const { error } = await sb.from('community_posts').update(payload).eq('id', editingPostId).eq('user_id', currentUser.id);
-          if(error) return alert(error.message);
-          editingPostId = null; getEl('sendBtn').innerText = 'Send'; getEl('cancelEditBtn').classList.add('hidden');
-        } else {
-          const { error } = await sb.from('community_posts').insert({ user_id: currentUser.id, category_id: catId, body, media_url: url, user_email: currentUser.email });
-          if(error) return alert(error.message);
-        }
-        getEl('postInput').value = ''; closeMentionSuggestions(); clearSelectedFile(); await loadPosts(); updateCommunityTabBadge();
-      } catch(e){ alert(e.message); }
-    }
-    function startEditPost(postId){ const post = posts.find(p => p.id === postId && p.user_id === currentUser.id); if(!post) return; editingPostId = postId; getEl('postInput').value = post.body || ''; getEl('sendBtn').innerText = 'Update'; getEl('cancelEditBtn').classList.remove('hidden'); getEl('postInput').focus(); }
-    function cancelEditPost(){ editingPostId = null; getEl('postInput').value = ''; closeMentionSuggestions(); clearSelectedFile(); getEl('sendBtn').innerText = 'Send'; getEl('cancelEditBtn').classList.add('hidden'); }
-    async function deletePost(postId){ if(!confirm('Видалити повідомлення?')) return; const { error } = await sb.from('community_posts').delete().eq('id', postId).eq('user_id', currentUser.id); if(error) return alert(error.message); if(editingPostId === postId) cancelEditPost(); await loadPosts(); }
-
-    function getStreak(){
-      const dates = [...new Set(checkIns.map(c => c.check_in_date))].sort().reverse();
-      let s = 0, check = new Date().toISOString().split('T')[0];
-      for(let d of dates){ if(d === check || d === new Date(Date.now()-86400000).toISOString().split('T')[0]){ s++; check = new Date(new Date(d).getTime()-86400000).toISOString().split('T')[0]; } else break; }
-      return s;
-    }
-    function getLevelMeta(totalDone){
-      const levels = [{min:0,name:'SEED',label:'your start is already progress'},{min:8,name:'NOVICE',label:'you are building consistency'},{min:18,name:'ROOKIE',label:'small wins are stacking up'},{min:30,name:'EXPLORER',label:'you are finding your rhythm'},{min:45,name:'BUILDER',label:'your system is getting stronger'},{min:65,name:'STRIVER',label:'momentum is clearly visible'},{min:90,name:'WARRIOR',label:'you are showing real discipline'},{min:120,name:'ELITE',label:'high consistency unlocked'},{min:160,name:'MASTER',label:'this is next-level commitment'}];
-      let current = levels[0], next = null; for(let i=0;i<levels.length;i++){ if(totalDone >= levels[i].min){ current = levels[i]; next = levels[i+1] || null; } }
-      return { ...current, next, leftToNext: next ? Math.max(0, next.min - totalDone) : 0 };
-    }
-    function makeRing(percent, variant='category', size=112){
-      const safePercent = Math.max(0, Math.min(100, Number(percent)||0));
-      const stroke=10, center=size/2, radius=center - stroke/2 - 1, circumference = 2*Math.PI*radius, dashoffset = circumference*(1-safePercent/100), progressClass = variant === 'total' ? 'ring-progress total' : 'ring-progress';
-      return `<div class="ring" style="width:${size}px; height:${size}px;"><svg viewBox="0 0 ${size} ${size}"><circle class="ring-track" cx="${center}" cy="${center}" r="${radius}"></circle><circle class="${progressClass}" cx="${center}" cy="${center}" r="${radius}" stroke-dasharray="${circumference}" stroke-dashoffset="${dashoffset}"></circle><circle class="ring-hole" cx="${center}" cy="${center}" r="${radius-stroke+2}"></circle></svg><div class="ring-value">${safePercent}%</div></div>`;
-    }
-
-    function renderDashboard(){
-      const streak = getStreak();
-      getEl('streakPanel').innerHTML = `<div class="metric-kicker">Current Streak</div><div class="metric-value">${streak}</div><div class="metric-label">${streak === 1 ? 'day in a row' : 'days in a row'}</div>`;
-      getEl('activeVal').innerText = [...new Set(checkIns.map(c => c.check_in_date))].length;
-      const levelMeta = getLevelMeta(checkIns.length);
-      getEl('levelPanel').innerHTML = `<div class="metric-kicker">Level</div><div class="metric-value">${levelMeta.name}</div><div class="metric-label">${levelMeta.next ? `${levelMeta.label} · ${levelMeta.leftToNext} to ${levelMeta.next.name}` : levelMeta.label}</div>`;
-      const trackingCats = categories.filter(c => ['MOVE','MIND','CREATE','SLOW'].includes((c.slug || '').toUpperCase()));
-      const totalChecks = habits.length ? habits.length * 31 : 0; const totalDone = checkIns.length; const totalPerc = totalChecks ? Math.round((totalDone/totalChecks)*100) : 0;
-      const totalCardHtml = `<div class="ring-card" style="min-height:260px; border-color: rgba(184,242,58,.4);">${makeRing(totalPerc,'total',140)}<div class="ring-meta"><div><div class="ring-title">TOTAL</div><div class="ring-copy">${totalDone} / ${totalChecks || 0} completed</div></div><div style="font-size:28px;">⚡</div></div></div>`;
-      getEl('totalProgressWrap').innerHTML = totalCardHtml;
-      const mobileTotal = getEl('mobileTotalProgressWrap');
-      if(mobileTotal) mobileTotal.innerHTML = totalCardHtml;
-      const rewardReached = totalPerc >= 70, rewardLeft = Math.max(0, 70 - totalPerc);
-      const rewardHtml = `<div class="card" style="margin-bottom:0; border-radius:28px; background:${rewardReached ? 'linear-gradient(135deg, #b8f23a, #d9ff7a)' : 'linear-gradient(135deg, #14141a, #0b0b10)'}; color:${rewardReached ? '#000' : '#fff'}; border:${rewardReached ? '1px solid rgba(184,242,58,.7)' : '1px solid rgba(255,255,255,.08)'};"><div style="display:flex; justify-content:space-between; gap:16px; align-items:center; flex-wrap:wrap;"><div><div style="font-size:12px; text-transform:uppercase; letter-spacing:.16em; font-weight:800; opacity:.8; margin-bottom:8px;">Reward Challenge</div><div style="font-size:28px; font-weight:800; letter-spacing:-.04em; line-height:1.05; margin-bottom:8px;">Зроби 70% загального трекінгу — і отримай у подарунок мерч</div><div style="font-size:15px; color:${rewardReached ? 'rgba(0,0,0,.72)' : 'rgba(255,255,255,.72)'};">${rewardReached ? 'Ціль досягнута. Час забирати свій подарунок.' : `Залишилось ще ${rewardLeft}% до reward milestone.`}</div></div><div style="font-size:42px;">${rewardReached ? '🎁' : '🏁'}</div></div></div>`;
-      getEl('rewardBannerWrap').innerHTML = rewardHtml;
-      const mobileReward = getEl('mobileRewardBannerWrap');
-      if(mobileReward) mobileReward.innerHTML = rewardHtml;
-      getEl('ringsWrap').innerHTML = trackingCats.map(cat => { const hbits = habits.filter(h => h.category_id === cat.id); const done = checkIns.filter(c => hbits.some(h => h.id === c.habit_id)).length; const perc = hbits.length ? Math.round((done/(hbits.length*31))*100) : 0; const isFoc = selectedFocuses.includes(cat.slug); return `<div class="ring-card" style="${isFoc ? 'border-color: rgba(184,242,58,.7); box-shadow: inset 0 0 0 1px rgba(184,242,58,.22);' : ''}">${makeRing(perc, 'category', 112)}<div class="ring-meta"><div><div class="ring-title">${cat.slug}</div><div class="ring-copy">${isFoc ? 'focus enabled' : 'tracking progress'}</div></div><div style="font-size:28px;">${getMeta(cat.slug).emoji}</div></div></div>`; }).join('');
-    }
-
-    function renderTracker(){
-      const trackerWrap = getEl('trackerWrap');
-      const previousScroll = trackerWrap.dataset.scrollLeft ? parseInt(trackerWrap.dataset.scrollLeft, 10) : 0;
-      trackerWrap.innerHTML = categories.filter(cat => ['MOVE','MIND','CREATE','SLOW'].includes((cat.slug || '').toUpperCase())).map(cat => {
-        const hbits = habits.filter(h => h.category_id === cat.id);
-        const defaultTitles = DEFAULT_HABITS[(cat.slug || '').toUpperCase()] || [];
-        const defaultHabits = [];
-        defaultTitles.forEach(title => {
-          const match = hbits.find(h => (h.title || '').trim() === title);
-          if(match) defaultHabits.push(match);
-        });
-        const customHabits = hbits.filter(h => h.is_custom === true);
-        const visibleHabits = [...defaultHabits, ...customHabits];
-
-        return `<div class="category-row-header"><div class="category-title">${cat.slug}</div><div class="add-habit-btn" onclick="addNewHabit('${cat.id}')">+</div></div><div class="tracker-section" data-tracker-section="1"><div class="tracker-head"><div class="habit-title-cell">Habit</div>${Array.from({length:31},(_,i)=>`<div class="${i+1===TODAY_DAY?'today-cell':''}">${i+1}</div>`).join('')}<div>%</div></div>${visibleHabits.map(h => { const hChecks = checkIns.filter(c => c.habit_id === h.id); const isCustom = h.is_custom === true; return `<div class="tracker-row"><div class="habit-title-cell" style="display:flex; align-items:center; gap:10px; padding-right:12px;"><span class="habit-title-text">${h.title}</span>${isCustom ? `<span class="habit-actions"><button class="habit-action-btn edit" onclick="editHabit('${h.id}')">✎</button><button class="habit-action-btn delete" onclick="deleteHabit('${h.id}')">×</button></span>` : ''}</div>${Array.from({length:31},(_,i)=>{ const dStr = new Date(new Date().getFullYear(), new Date().getMonth(), i+2).toISOString().split('T')[0]; return `<div class="${i+1===TODAY_DAY?'today-cell':''}"><div class="checkbox ${hChecks.some(c => c.check_in_date === dStr) ? 'active' : ''}" onclick="toggleCheck('${h.id}', ${i+1})"></div></div>`; }).join('')}<div style="font-weight:800; color:var(--accent-lime)">${Math.round((hChecks.length/31)*100)}%</div></div>`; }).join('')}</div>`;
-      }).join('');
-      trackerWrap.querySelectorAll('[data-tracker-section="1"]').forEach(el => {
-        el.scrollLeft = previousScroll;
-        el.addEventListener('scroll', () => {
-          trackerWrap.dataset.scrollLeft = el.scrollLeft;
-          trackerWrap.querySelectorAll('[data-tracker-section="1"]').forEach(other => { if(other !== el) other.scrollLeft = el.scrollLeft; });
-        }, { passive:true });
-      });
-    }
-
-    function renderCommunity(){
-      const allSpaces = ['GENERAL', ...categories.filter(cat => (cat.slug || '').toUpperCase() !== 'GENERAL').map(cat => cat.slug)];
-      getEl('spacesWrap').innerHTML = allSpaces.map(space => { const meta = space === 'GENERAL' ? {emoji:'💬'} : getMeta(space); const unread = getUnreadCountForSpace(space); return `<button class="space-btn ${selectedSpace===space?'active':''}" onclick="selectedSpace='${space}'; renderCommunity();"><span style="display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%;"><span>${meta.emoji} ${space}</span>${unread > 0 ? `<span style="min-width:22px; height:22px; border-radius:999px; background:var(--accent-lime); color:#000; display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; padding:0 6px;">${unread}</span>` : ''}</span></button>`; }).join('');
-      const generalCategoryId = categories.find(c => (c.slug || '').toUpperCase() === 'GENERAL')?.id;
-      const filtered = posts.filter(p => selectedSpace === 'GENERAL' ? p.category_id === generalCategoryId : categories.find(c => c.id === p.category_id)?.slug === selectedSpace);
-      getEl('postsWrap').innerHTML = filtered.map(p => {
-        const reactionItems = getPostReactions(p.id);
-        const reactionHtml = `
-          <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;">
-            ${reactionItems.map(r => `<button onclick="toggleReaction('${p.id}','${r.emoji}')" style="border:1px solid ${r.mine ? 'rgba(184,242,58,.55)' : 'rgba(255,255,255,.12)'}; background:${r.mine ? 'rgba(184,242,58,.14)' : 'rgba(255,255,255,.04)'}; color:#fff; border-radius:999px; padding:6px 10px; font-size:13px; cursor:pointer;">${r.emoji} ${r.count}</button>`).join('')}
-            <button onclick="toggleReaction('${p.id}','👍')" style="border:1px dashed rgba(255,255,255,.16); background:transparent; color:#fff; border-radius:999px; padding:6px 10px; font-size:13px; cursor:pointer;">👍</button>
-            <button onclick="toggleReaction('${p.id}','🔥')" style="border:1px dashed rgba(255,255,255,.16); background:transparent; color:#fff; border-radius:999px; padding:6px 10px; font-size:13px; cursor:pointer;">🔥</button>
-            <button onclick="toggleReaction('${p.id}','❤️')" style="border:1px dashed rgba(255,255,255,.16); background:transparent; color:#fff; border-radius:999px; padding:6px 10px; font-size:13px; cursor:pointer;">❤️</button>
-            <button onclick="toggleReaction('${p.id}','😢')" style="border:1px dashed rgba(255,255,255,.16); background:transparent; color:#fff; border-radius:999px; padding:6px 10px; font-size:13px; cursor:pointer;">😢</button>
-            <button onclick="toggleReaction('${p.id}','😞')" style="border:1px dashed rgba(255,255,255,.16); background:transparent; color:#fff; border-radius:999px; padding:6px 10px; font-size:13px; cursor:pointer;">😞</button>
-            <button onclick="toggleReaction('${p.id}','🥺')" style="border:1px dashed rgba(255,255,255,.16); background:transparent; color:#fff; border-radius:999px; padding:6px 10px; font-size:13px; cursor:pointer;">🥺</button>
-          </div>`;
-        return `
-        <div class="msg ${p.user_id===currentUser.id?'own':''}">
-          <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start; margin-bottom:6px;"><div style="font-size:10px; font-weight:800; opacity:.72; text-transform:uppercase; letter-spacing:.12em;">${p.user_email}</div>${p.user_id===currentUser.id ? `<div style="display:flex; gap:8px; flex-shrink:0;"><button onclick="startEditPost('${p.id}')" style="border:0; background:rgba(255,255,255,.12); color:#fff; border-radius:999px; padding:6px 10px; cursor:pointer; font-weight:700; font-size:12px;">Edit</button><button onclick="deletePost('${p.id}')" style="border:0; background:rgba(255,91,91,.18); color:#ff8d8d; border-radius:999px; padding:6px 10px; cursor:pointer; font-weight:700; font-size:12px;">Delete</button></div>` : ''}</div>
-          <div style="font-size:15px; line-height:1.45;">${renderPostBodyWithMentions(p.body || '')}</div>
-          ${p.media_url ? `<img src="${p.media_url}" style="width:100%; border-radius:16px; margin-top:12px;">` : ''}
-          ${reactionHtml}
-        </div>`;
-      }).join('');
-      getEl('communityTitle').innerText = selectedSpace + ' CHAT';
-      requestAnimationFrame(() => {
-        const postsEl = getEl('postsWrap');
-        if(postsEl) postsEl.scrollTop = postsEl.scrollHeight;
-        const isCommunityActive = getEl('communityView')?.classList.contains('active') && !document.hidden;
-        if(isCommunityActive){
-          markSpaceAsRead(selectedSpace);
-        }
-        updateCommunityTabBadge();
-        renderCommunitySpacesOnly();
-      });
-    }
-    function renderCommunitySpacesOnly(){
-      const allSpaces = ['GENERAL', ...categories.filter(cat => (cat.slug || '').toUpperCase() !== 'GENERAL').map(cat => cat.slug)];
-      getEl('spacesWrap').innerHTML = allSpaces.map(space => { const meta = space === 'GENERAL' ? {emoji:'💬'} : getMeta(space); const unread = getUnreadCountForSpace(space); return `<button class="space-btn ${selectedSpace===space?'active':''}" onclick="selectedSpace='${space}'; renderCommunity();"><span style="display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%;"><span>${meta.emoji} ${space}</span>${unread > 0 ? `<span style="min-width:22px; height:22px; border-radius:999px; background:var(--accent-lime); color:#000; display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; padding:0 6px;">${unread}</span>` : ''}</span></button>`; }).join('');
-    }
-    async function renderAdmin(){ if(currentUser?.email !== OWNER_EMAIL) return; const { data } = await sb.from('community_posts').select('category_id'); const s = {}; data?.forEach(p => { const c = categories.find(x => x.id === p.category_id); const slug = c ? c.slug : 'General'; s[slug] = (s[slug] || 0) + 1; }); getEl('adminStats').innerHTML = Object.entries(s).map(([slug,count]) => `<div class="card" style="padding:18px; margin-bottom:0;"><div style="font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.16em; font-weight:800; margin-bottom:8px;">${slug}</div><div style="font-size:40px; font-weight:800; letter-spacing:-.05em; line-height:1;">${count}</div></div>`).join(''); }
-
-    function getNotificationStorageKey(){ return `ek_notifications_${currentUser?.id || 'guest'}`; }
-    function getLastNotificationSeenKey(){ return `ek_notifications_seen_${currentUser?.id || 'guest'}`; }
-    function syncNotificationsUI(){
-      const btn = getEl('notificationsToggleBtn');
-      if(!btn) return;
-      const enabled = localStorage.getItem(getNotificationStorageKey()) === '1';
-      const permission = typeof Notification !== 'undefined' ? Notification.permission : 'unsupported';
-      btn.innerText = enabled && permission === 'granted' ? '🔕 Вимкнути сповіщення' : '🔔 Увімкнути сповіщення';
-    }
-    async function toggleNotifications(){
-      const key = getNotificationStorageKey();
-      const enabled = localStorage.getItem(key) === '1';
-
-      if(enabled){
-        localStorage.setItem(key, '0');
-        syncNotificationsUI();
-        alert('Сповіщення вимкнено!');
-        return;
-      }
-
-      if(typeof Notification === 'undefined'){
-        alert('Цей браузер не підтримує сповіщення.');
-        return;
-      }
-
-      let permission = Notification.permission;
-      if(permission !== 'granted') permission = await Notification.requestPermission();
-
-      if(permission !== 'granted'){
-        localStorage.setItem(key, '0');
-        syncNotificationsUI();
-        alert('Щоб отримувати сповіщення, дозволь їх у браузері.');
-        return;
-      }
-
-      await unlockAudio();
-      localStorage.setItem(key, '1');
-      const latestTs = posts.map(p => new Date(p.created_at || 0).getTime()).filter(Boolean).reduce((max, ts) => Math.max(max, ts), Date.now());
-      localStorage.setItem(getLastNotificationSeenKey(), String(latestTs || Date.now()));
-      syncNotificationsUI();
-      alert('Сповіщення активовано!');
-    }
-
-    function maybeNotifyAboutNewPosts(previousPosts, nextPosts){
-      const enabled = localStorage.getItem(getNotificationStorageKey()) === '1';
-      if(!enabled || typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
-
-      const previousIds = new Set(previousPosts.map(p => p.id));
-      const newIncoming = nextPosts.filter(p => !previousIds.has(p.id) && p.user_id !== currentUser?.id);
-      if(!newIncoming.length) return;
-
-      const lastSeen = Number(localStorage.getItem(getLastNotificationSeenKey()) || 0);
-      const freshIncoming = newIncoming.filter(p => new Date(p.created_at || 0).getTime() > lastSeen);
-      if(!freshIncoming.length) return;
-
-      const latest = freshIncoming[freshIncoming.length - 1];
-      const category = categories.find(c => c.id === latest.category_id);
-      const spaceName = category?.slug || 'GENERAL';
-      const messageText = (latest.body || '').trim() || 'Нове зображення';
-
-      playNotificationSound();
-      new Notification(`Нове повідомлення в ${spaceName}`, {
-        body: `${latest.user_email || 'User'}: ${messageText.slice(0, 120)}`,
-        tag: `community-${spaceName}`
-      });
-
-      const latestTs = freshIncoming.map(p => new Date(p.created_at || 0).getTime()).reduce((max, ts) => Math.max(max, ts), lastSeen);
-      localStorage.setItem(getLastNotificationSeenKey(), String(latestTs));
-    }
-
-    function startNotificationsPolling(){
-      if(notificationsPoller) clearInterval(notificationsPoller);
-      notificationsPoller = setInterval(() => {
-        loadPosts(true);
-      }, 15000);
-    }
-
-    function renderAll(){ renderDashboard(); renderTracker(); renderCommunity(); renderAdmin(); updateCommunityTabBadge(); syncNotificationsUI(); }
-
-    function toggleDashboardHero(){
-      const hero = getEl('dashboardHero');
-      const btn = getEl('dashboardHeroToggle');
-      if(!hero || !btn) return;
-      const collapsed = hero.classList.toggle('collapsed');
-      btn.innerText = collapsed ? '+' : '−';
-    }
-
-    bootstrap();
-  </script>
-</body>
-</html>
+          const isDefaultTi
