@@ -598,11 +598,42 @@
 
     async function ensureProfile(){
       if(!currentUser) return false;
-      const { data: existingProfile, error: fetchError } = await sb.from('profiles').select('id').eq('id', currentUser.id).maybeSingle();
-      if(fetchError){ alert(fetchError.message); return false; }
-      if(existingProfile?.id) return true;
-      const { error: insertError } = await sb.from('profiles').insert({ id: currentUser.id });
-      if(insertError){ alert(insertError.message); return false; }
+
+      const email = (currentUser.email || '').trim().toLowerCase() || null;
+      const basePayload = {
+        id: currentUser.id,
+        email: email,
+        user_email: email
+      };
+
+      const { data: existingProfile, error: fetchError } = await sb
+        .from('profiles')
+        .select('id,email,user_email')
+        .eq('id', currentUser.id)
+        .maybeSingle();
+
+      if(fetchError){
+        alert(fetchError.message);
+        return false;
+      }
+
+      if(existingProfile?.id){
+        const needsEmailUpdate = (!existingProfile.email && !existingProfile.user_email && email);
+        if(needsEmailUpdate){
+          const { error: updateError } = await sb.from('profiles').update({ email, user_email: email }).eq('id', currentUser.id);
+          if(updateError){
+            console.error('ensureProfile email update error:', updateError.message);
+          }
+        }
+        return true;
+      }
+
+      const { error: insertError } = await sb.from('profiles').insert(basePayload);
+      if(insertError){
+        alert(insertError.message);
+        return false;
+      }
+
       return true;
     }
 
@@ -620,6 +651,7 @@
       await loadCheckIns();
       await loadPosts(false);
       await loadProfile();
+      await ensureProfile();
       await loadMentionableUsers();
       renderAll();
       bindTabs();
@@ -638,12 +670,24 @@
     }
     async function loadMentionableUsers(){
       const { data, error } = await sb.from('profiles').select('id,email,user_email');
-      if(error){ mentionableUsers = []; return; }
-      mentionableUsers = (data || []).map(row => {
+      const profileUsers = error ? [] : (data || []).map(row => {
         const email = (row.user_email || row.email || '').trim().toLowerCase();
         const handle = email.includes('@') ? email.split('@')[0] : email;
         return { id: row.id, email, handle };
       }).filter(u => u.email && u.handle);
+
+      const { data: postUsers } = await sb.from('community_posts').select('user_id,user_email');
+      const fallbackUsers = (postUsers || []).map(row => {
+        const email = (row.user_email || '').trim().toLowerCase();
+        const handle = email.includes('@') ? email.split('@')[0] : email;
+        return { id: row.user_id, email, handle };
+      }).filter(u => u.id && u.email && u.handle);
+
+      const merged = new Map();
+      [...profileUsers, ...fallbackUsers].forEach(user => {
+        if(!merged.has(user.id)) merged.set(user.id, user);
+      });
+      mentionableUsers = Array.from(merged.values());
     }
     async function saveFocus(){
       const ready = await ensureProfile(); if(!ready) return;
