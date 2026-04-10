@@ -399,6 +399,7 @@
 
     let currentUser = null, categories = [], habits = [], checkIns = [], posts = [], selectedSpace = 'GENERAL', editingPostId = null, selectedFocuses = [];
     let notificationsPoller = null;
+    let audioUnlocked = false;
     let reactions = [];
     let mentionableUsers = [];
     let mentionSuggestions = [];
@@ -419,6 +420,63 @@
 
     function sanitizeFileName(name){ return (name||'file').normalize('NFKD').replace(/[^a-zA-Z0-9._-]+/g,'_').replace(/_+/g,'_').replace(/^_+|_+$/g,'') || 'file'; }
     function togglePassword(){ const input = getEl('passwordInput'); input.type = input.type === 'password' ? 'text' : 'password'; }
+    async function unlockAudio(){
+      if(audioUnlocked) return;
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if(!AudioCtx) return;
+        const ctx = new AudioCtx();
+        if(ctx.state === 'suspended') await ctx.resume();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = 440;
+        gain.gain.value = 0.0001;
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.01);
+        audioUnlocked = true;
+        setTimeout(() => ctx.close(), 40);
+      } catch(e) {
+        console.error('unlockAudio error:', e);
+      }
+    }
+    async function playNotificationSound(){
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if(!AudioCtx) return;
+        const ctx = new AudioCtx();
+        if(ctx.state === 'suspended') await ctx.resume();
+
+        const now = ctx.currentTime;
+        const master = ctx.createGain();
+        master.gain.setValueAtTime(0.0001, now);
+        master.gain.exponentialRampToValueAtTime(0.08, now + 0.02);
+        master.gain.exponentialRampToValueAtTime(0.0001, now + 0.42);
+        master.connect(ctx.destination);
+
+        const osc1 = ctx.createOscillator();
+        const osc2 = ctx.createOscillator();
+        osc1.type = 'sine';
+        osc2.type = 'triangle';
+        osc1.frequency.setValueAtTime(880, now);
+        osc1.frequency.exponentialRampToValueAtTime(1174, now + 0.18);
+        osc2.frequency.setValueAtTime(660, now);
+        osc2.frequency.exponentialRampToValueAtTime(880, now + 0.18);
+
+        osc1.connect(master);
+        osc2.connect(master);
+        osc1.start(now);
+        osc2.start(now + 0.03);
+        osc1.stop(now + 0.24);
+        osc2.stop(now + 0.28);
+
+        setTimeout(() => ctx.close(), 700);
+      } catch(e) {
+        console.error('playNotificationSound error:', e);
+      }
+    }
     function applyMobileTopbarState(){
       const topbar = document.querySelector('.topbar');
       const toggleBtn = getEl('mobileTopbarToggle');
@@ -600,7 +658,9 @@
       getEl('loginBtn').innerText = 'Wait...';
       const { error } = await sb.auth.signInWithPassword({ email:getEl('emailInput').value, password:getEl('passwordInput').value });
       if(error){ alert(error.message); getEl('loginBtn').innerText='Увійти'; return; }
-      await bootstrap();
+      await document.addEventListener('click', unlockAudio, { passive: true });
+    document.addEventListener('touchstart', unlockAudio, { passive: true });
+    bootstrap();
     }
     async function logout(){ await sb.auth.signOut(); location.reload(); }
 
@@ -1066,6 +1126,7 @@
         return;
       }
 
+      await unlockAudio();
       localStorage.setItem(key, '1');
       const latestTs = posts.map(p => new Date(p.created_at || 0).getTime()).filter(Boolean).reduce((max, ts) => Math.max(max, ts), Date.now());
       localStorage.setItem(getLastNotificationSeenKey(), String(latestTs || Date.now()));
@@ -1090,6 +1151,7 @@
       const spaceName = category?.slug || 'GENERAL';
       const messageText = (latest.body || '').trim() || 'Нове зображення';
 
+      playNotificationSound();
       new Notification(`Нове повідомлення в ${spaceName}`, {
         body: `${latest.user_email || 'User'}: ${messageText.slice(0, 120)}`,
         tag: `community-${spaceName}`
