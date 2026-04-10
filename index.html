@@ -400,6 +400,10 @@
     let currentUser = null, categories = [], habits = [], checkIns = [], posts = [], selectedSpace = 'GENERAL', editingPostId = null, selectedFocuses = [];
     let notificationsPoller = null;
     let audioUnlocked = false;
+    let mobileTopbarExpanded = true;
+    let lastScrollY = 0;
+    let mobileTopbarTicking = false;
+    let mobileTopbarInitialized = false;
     let reactions = [];
     let mentionableUsers = [];
     let mentionSuggestions = [];
@@ -477,41 +481,70 @@
         console.error('playNotificationSound error:', e);
       }
     }
-    function applyMobileTopbarState(){
+    function applyMobileTopbarState(force = false){
       const topbar = document.querySelector('.topbar');
       const toggleBtn = getEl('mobileTopbarToggle');
       if(!topbar || !toggleBtn) return;
+
       const isMobile = window.innerWidth <= 768;
       if(!isMobile){
-        topbar.classList.remove('mobile-collapsed');
+        if(force || topbar.classList.contains('mobile-collapsed')){
+          topbar.classList.remove('mobile-collapsed');
+        }
         mobileTopbarExpanded = true;
         toggleBtn.innerText = '☰';
         return;
       }
-      topbar.classList.toggle('mobile-collapsed', !mobileTopbarExpanded);
+
+      const shouldCollapse = !mobileTopbarExpanded;
+      const isCollapsed = topbar.classList.contains('mobile-collapsed');
+      if(force || shouldCollapse !== isCollapsed){
+        topbar.classList.toggle('mobile-collapsed', shouldCollapse);
+      }
       toggleBtn.innerText = mobileTopbarExpanded ? '−' : '☰';
     }
     function toggleMobileTopbar(forceExpanded = null){
       if(window.innerWidth > 768) return;
-      mobileTopbarExpanded = typeof forceExpanded === 'boolean' ? forceExpanded : !mobileTopbarExpanded;
-      applyMobileTopbarState();
+      const nextState = typeof forceExpanded === 'boolean' ? forceExpanded : !mobileTopbarExpanded;
+      if(nextState === mobileTopbarExpanded) return;
+      mobileTopbarExpanded = nextState;
+      applyMobileTopbarState(true);
     }
     function initMobileTopbarBehavior(){
-      applyMobileTopbarState();
-      window.addEventListener('resize', applyMobileTopbarState);
+      if(mobileTopbarInitialized) return;
+      mobileTopbarInitialized = true;
+
+      applyMobileTopbarState(true);
+
+      window.addEventListener('resize', () => {
+        mobileTopbarExpanded = true;
+        applyMobileTopbarState(true);
+      });
+
       window.addEventListener('scroll', () => {
         if(window.innerWidth > 768) return;
-        const currentY = window.scrollY || 0;
-        const delta = currentY - lastScrollY;
-        if(currentY < 40){
-          mobileTopbarExpanded = true;
-        } else if(delta > 12){
-          mobileTopbarExpanded = false;
-        } else if(delta < -12){
-          mobileTopbarExpanded = true;
-        }
-        lastScrollY = currentY;
-        applyMobileTopbarState();
+        if(mobileTopbarTicking) return;
+
+        mobileTopbarTicking = true;
+        window.requestAnimationFrame(() => {
+          const currentY = window.scrollY || 0;
+          const delta = currentY - lastScrollY;
+          const previousState = mobileTopbarExpanded;
+
+          if(currentY <= 24){
+            mobileTopbarExpanded = true;
+          } else if(delta > 18){
+            mobileTopbarExpanded = false;
+          } else if(delta < -18){
+            mobileTopbarExpanded = true;
+          }
+
+          lastScrollY = currentY;
+          if(previousState !== mobileTopbarExpanded){
+            applyMobileTopbarState(true);
+          }
+          mobileTopbarTicking = false;
+        });
       }, { passive: true });
     }
     function switchView(viewId, clickedTab = null){
