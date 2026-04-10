@@ -463,6 +463,14 @@
       const targetView = getEl(viewId);
       if(targetTab) targetTab.classList.add('active');
       if(targetView) targetView.classList.add('active');
+
+      if(viewId === 'communityView'){
+        markSpaceAsRead(selectedSpace);
+        renderCommunitySpacesOnly();
+        updateCommunityTabBadge();
+        const postsEl = getEl('postsWrap');
+        if(postsEl) postsEl.scrollTop = postsEl.scrollHeight;
+      }
     }
     function bindTabs(){ switchView((document.querySelector('.tab.active[data-view]') || document.querySelector('.tab[data-view="dashboardView"]')).dataset.view); }
 
@@ -877,9 +885,11 @@
       if(!currentUser) return;
       const spaces = ['GENERAL', ...categories.filter(cat => (cat.slug || '').toUpperCase() !== 'GENERAL').map(cat => cat.slug)];
       const totalUnread = spaces.reduce((sum, space) => sum + getUnreadCountForSpace(space), 0);
-      const badge = getEl('communityTabBadge'); if(!badge) return;
+      const badge = getEl('communityTabBadge');
+      if(!badge) return;
       badge.innerText = totalUnread;
-      if(totalUnread > 0) badge.classList.remove('hidden'); else badge.classList.add('hidden');
+      if(totalUnread > 0) badge.classList.remove('hidden');
+      else badge.classList.add('hidden');
     }
     async function createPost(){
       const ready = await ensureProfile(); if(!ready) return;
@@ -1004,7 +1014,16 @@
         </div>`;
       }).join('');
       getEl('communityTitle').innerText = selectedSpace + ' CHAT';
-      requestAnimationFrame(() => { const postsEl = getEl('postsWrap'); postsEl.scrollTop = postsEl.scrollHeight; markSpaceAsRead(selectedSpace); updateCommunityTabBadge(); renderCommunitySpacesOnly(); });
+      requestAnimationFrame(() => {
+        const postsEl = getEl('postsWrap');
+        if(postsEl) postsEl.scrollTop = postsEl.scrollHeight;
+        const isCommunityActive = getEl('communityView')?.classList.contains('active') && !document.hidden;
+        if(isCommunityActive){
+          markSpaceAsRead(selectedSpace);
+        }
+        updateCommunityTabBadge();
+        renderCommunitySpacesOnly();
+      });
     }
     function renderCommunitySpacesOnly(){
       const allSpaces = ['GENERAL', ...categories.filter(cat => (cat.slug || '').toUpperCase() !== 'GENERAL').map(cat => cat.slug)];
