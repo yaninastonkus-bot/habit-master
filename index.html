@@ -1163,26 +1163,36 @@
     function scrollTrackersToToday(force = false, attempt = 0){
       const trackerWrap = getEl('trackerWrap');
       if(!trackerWrap) return;
-      const isMobile = window.innerWidth <= 768;
-      const shouldAutoAlign = isMobile || force;
+      const shouldAutoAlign = window.innerWidth <= 768 || force;
       if(!shouldAutoAlign) return;
 
+      const sections = [...trackerWrap.querySelectorAll('[data-tracker-section="1"]')];
+      if(!sections.length) return;
+
       let applied = false;
-      trackerWrap.querySelectorAll('[data-tracker-section="1"]').forEach(section => {
-        const todayCell = section.querySelector('.tracker-head .today-cell');
-        if(!todayCell) return;
-        const titleCell = section.querySelector('.tracker-head .habit-title-cell');
-        const stickyWidth = titleCell ? titleCell.offsetWidth : 156;
-        const percentCellWidth = 68;
-        const viewportWidth = section.clientWidth || 0;
+      sections.forEach(section => {
+        const headCells = [...section.querySelectorAll('.tracker-head > div')];
+        const todayCell = headCells.find(cell => cell.classList.contains('today-cell'));
+        const stickyCell = section.querySelector('.tracker-head .habit-title-cell');
+        if(!todayCell || !stickyCell) return;
+
+        const stickyWidth = stickyCell.offsetWidth || 156;
+        const todayLeft = todayCell.offsetLeft || 0;
         const todayWidth = todayCell.offsetWidth || 42;
-        const targetLeft = Math.max(0, todayCell.offsetLeft - stickyWidth - Math.max(12, (viewportWidth - percentCellWidth - todayWidth) / 2));
+
+        const targetLeft = Math.max(0, todayLeft - stickyWidth - 8);
         section.scrollLeft = targetLeft;
         applied = true;
+
+        const stillHiddenOnRight = todayLeft + todayWidth > section.scrollLeft + section.clientWidth;
+        const hiddenOnLeft = todayLeft < section.scrollLeft + stickyWidth;
+        if(stillHiddenOnRight || hiddenOnLeft){
+          section.scrollLeft = Math.max(0, todayLeft - stickyWidth - 8);
+        }
       });
 
-      if((!applied || attempt < 2) && isMobile){
-        setTimeout(() => scrollTrackersToToday(force, attempt + 1), attempt === 0 ? 60 : 120);
+      if((!applied || attempt < 3) && window.innerWidth <= 768){
+        setTimeout(() => scrollTrackersToToday(force, attempt + 1), attempt === 0 ? 80 : 140);
       }
     }
 
