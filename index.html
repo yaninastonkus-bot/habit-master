@@ -602,58 +602,19 @@
     function initMobileTopbarBehavior(){
       if(mobileTopbarInitialized) return;
       mobileTopbarInitialized = true;
-      mobileTopbarLastY = window.scrollY || 0;
+      if(window.innerWidth <= 768){
+        mobileTopbarExpanded = false;
+      }
       applyMobileTopbarState(true);
 
       window.addEventListener('resize', () => {
         if(window.innerWidth > 768){
           mobileTopbarExpanded = true;
+        } else {
+          mobileTopbarExpanded = false;
         }
-        mobileTopbarAccumulated = 0;
-        mobileTopbarLastY = window.scrollY || 0;
         applyMobileTopbarState(true);
       });
-
-      window.addEventListener('scroll', () => {
-        if(window.innerWidth > 768) return;
-        if(getEl('communityView')?.classList.contains('active')) return;
-        if(mobileTopbarFrame) return;
-
-        mobileTopbarFrame = window.requestAnimationFrame(() => {
-          mobileTopbarFrame = null;
-          const now = Date.now();
-          const y = window.scrollY || 0;
-          const delta = y - mobileTopbarLastY;
-          mobileTopbarLastY = y;
-
-          if(now < mobileTopbarLockUntil) return;
-          if(Math.abs(delta) < 3) return;
-
-          if(y <= 24){
-            mobileTopbarExpanded = true;
-            mobileTopbarAccumulated = 0;
-            applyMobileTopbarState(true);
-            return;
-          }
-
-          const directionChanged = (mobileTopbarAccumulated > 0 && delta < 0) || (mobileTopbarAccumulated < 0 && delta > 0);
-          if(directionChanged) mobileTopbarAccumulated = 0;
-          mobileTopbarAccumulated += delta;
-
-          if(mobileTopbarExpanded && mobileTopbarAccumulated > 36){
-            mobileTopbarExpanded = false;
-            mobileTopbarAccumulated = 0;
-            applyMobileTopbarState(true);
-            return;
-          }
-
-          if(!mobileTopbarExpanded && mobileTopbarAccumulated < -24){
-            mobileTopbarExpanded = true;
-            mobileTopbarAccumulated = 0;
-            applyMobileTopbarState(true);
-          }
-        });
-      }, { passive: true });
     }
     function switchView(viewId, clickedTab = null){
       document.querySelectorAll('.tab[data-view]').forEach(t => t.classList.remove('active'));
@@ -663,19 +624,17 @@
       if(targetTab) targetTab.classList.add('active');
       if(targetView) targetView.classList.add('active');
 
+      if(window.innerWidth <= 768){
+        mobileTopbarExpanded = false;
+        applyMobileTopbarState(true);
+      }
+
       if(viewId === 'communityView'){
-        if(window.innerWidth <= 768){
-          mobileTopbarExpanded = false;
-          applyMobileTopbarState(true);
-        }
         markSpaceAsRead(selectedSpace);
         renderCommunitySpacesOnly();
         updateCommunityTabBadge();
         const postsEl = getEl('postsWrap');
         if(postsEl) postsEl.scrollTop = postsEl.scrollHeight;
-      } else if(window.innerWidth <= 768){
-        mobileTopbarExpanded = true;
-        applyMobileTopbarState(true);
       }
     }
     function bindTabs(){ switchView((document.querySelector('.tab.active[data-view]') || document.querySelector('.tab[data-view="dashboardView"]')).dataset.view); }
@@ -686,7 +645,7 @@
       getEl('fileNameDisplay').innerText = file ? `Прикріплено: ${file.name}` : '';
       if(file) {
         actions.classList.remove('hidden');
-        if(window.innerWidth <= 768 && getEl('communityView')?.classList.contains('active')){
+        if(window.innerWidth <= 768){
           mobileTopbarExpanded = false;
           applyMobileTopbarState(true);
         }
@@ -759,7 +718,7 @@
       closeMentionSuggestions();
     }
     function handlePostInputKeydown(event){
-      if(window.innerWidth <= 768 && getEl('communityView')?.classList.contains('active')){
+      if(window.innerWidth <= 768){
         mobileTopbarExpanded = false;
         applyMobileTopbarState(true);
       }
