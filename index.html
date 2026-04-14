@@ -57,18 +57,16 @@
 
     .app { max-width: var(--maxw); margin:0 auto; padding: 18px 16px 42px; }
     .topbar {
-      position: sticky; top: 0; z-index: 50; display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+      position: sticky; top: 0; z-index: 50; display:flex; align-items:flex-start; gap:10px; flex-wrap:wrap;
       margin-bottom: 22px; padding: 14px 16px; border-radius: 28px;
       background: rgba(15,15,21,.98);
       border: 1px solid var(--border); box-shadow: var(--shadow-soft);
-      transition: padding .2s ease, border-radius .2s ease, opacity .2s ease;
+      transition: opacity .18s ease;
       will-change: auto;
       backface-visibility: hidden;
     }
     .topbar.mobile-collapsed {
-      padding: 10px 14px;
-      border-radius: 22px;
-      opacity: .98;
+      opacity: .995;
     }
     .topbar.mobile-collapsed .topbar-right {
       max-height: 0;
@@ -77,23 +75,7 @@
       margin-top: 0;
       pointer-events: none;
     }
-    .mobile-topbar-toggle {
-      display: none;
-      width: 40px;
-      height: 40px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.04);
-      color: #fff;
-      font-size: 18px;
-      font-weight: 800;
-      cursor: pointer;
-      align-items: center;
-      justify-content: center;
-      flex: 0 0 auto;
-    }
-    .brand-lockup { display:flex; align-items:center; gap:12px; margin-right:auto; }
-    .topbar-right {
+    .topbar.mobile-collapsed .topbar-right {
       display:flex; align-items:center; gap:8px; flex-wrap:wrap;
       transition: max-height .22s ease, opacity .18s ease, transform .22s ease, margin-top .22s ease;
       max-height: 140px;
@@ -101,6 +83,7 @@
       transform: translateY(0);
       overflow: hidden;
       width: auto;
+      margin-top: 0;
     }
     .tab {
       background: transparent; color: var(--muted); border-radius: 999px; padding: 11px 16px; cursor:pointer;
@@ -245,7 +228,7 @@
     @media (max-width: 768px) {
       .app { padding:14px 12px 32px; }
       .brand-lockup, .topbar-right { width:100%; }
-      .topbar-right { gap:8px; max-height: 220px; }
+      .topbar-right { gap:8px; max-height: 220px; margin-top: 8px; }
       .tab { flex:1 1 calc(50% - 8px); text-align:center; justify-content:center; }
       .composer { flex-wrap:wrap; }
       .composer > * { width:100%; }
@@ -254,7 +237,8 @@
       .stats-section { display:none; }
       .mobile-topbar-toggle { display:inline-flex; }
       .topbar {
-        align-items: center;
+        align-items: flex-start;
+        min-height: 72px;
       }
       .topbar.mobile-collapsed .brand-lockup {
         width: auto;
@@ -526,11 +510,14 @@
     function applyMobileTopbarState(force = false){
       const topbar = document.querySelector('.topbar');
       const toggleBtn = getEl('mobileTopbarToggle');
-      if(!topbar || !toggleBtn) return;
+      const topbarRight = document.querySelector('.topbar-right');
+      if(!topbar || !toggleBtn || !topbarRight) return;
 
       const isMobile = window.innerWidth <= 768;
       if(!isMobile){
         topbar.classList.remove('mobile-collapsed');
+        topbar.style.minHeight = '';
+        topbarRight.style.maxHeight = '';
         mobileTopbarExpanded = true;
         toggleBtn.innerText = '☰';
         return;
@@ -540,6 +527,10 @@
       if(force || topbar.classList.contains('mobile-collapsed') !== shouldCollapse){
         topbar.classList.toggle('mobile-collapsed', shouldCollapse);
       }
+
+      const expandedHeight = topbarRight.scrollHeight || 0;
+      topbarRight.style.maxHeight = shouldCollapse ? '0px' : expandedHeight + 'px';
+      topbar.style.minHeight = shouldCollapse ? '72px' : (72 + expandedHeight) + 'px';
       toggleBtn.innerText = mobileTopbarExpanded ? '−' : '☰';
     }
     function toggleMobileTopbar(forceExpanded = null){
