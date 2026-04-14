@@ -58,35 +58,27 @@
     .app { max-width: var(--maxw); margin:0 auto; padding: 18px 16px 42px; }
     .topbar {
       position: sticky; top: 0; z-index: 50; display:flex; align-items:flex-start; gap:10px; flex-wrap:wrap;
-      margin-bottom: 22px; padding: 14px 16px; border-radius: 28px;
+      margin-bottom: 10px; padding: 14px 16px; border-radius: 28px;
       background: rgba(15,15,21,.98);
       border: 1px solid var(--border); box-shadow: var(--shadow-soft);
       transition: opacity .18s ease;
       will-change: auto;
       backface-visibility: hidden;
+      overflow: visible;
+    }
+    .mobile-topbar-spacer {
+      display: none;
+      height: 0;
+      transition: height .22s ease;
     }
     .topbar.mobile-collapsed {
       opacity: .995;
     }
     .topbar.mobile-collapsed .topbar-right {
-      max-height: 0;
       opacity: 0;
       transform: translateY(-6px);
-      margin-top: 0;
       pointer-events: none;
-    }
-    .topbar.mobile-collapsed .topbar-right {
-      display:flex; align-items:center; gap:8px; flex-wrap:wrap;
-      transition: max-height .22s ease, opacity .18s ease, transform .22s ease, margin-top .22s ease;
-      max-height: 140px;
-      opacity: 1;
-      transform: translateY(0);
-      overflow: hidden;
-      width: auto;
-      margin-top: 0;
-    }
-    .tab {
-      background: transparent; color: var(--muted); border-radius: 999px; padding: 11px 16px; cursor:pointer;
+    }: 11px 16px; cursor:pointer;
       font-weight:700; border: 1px solid transparent; font-size:14px; position:relative; display:inline-flex; align-items:center; gap:8px;
     }
     .tab.active { background:#fff; color:#000; }
@@ -228,7 +220,14 @@
     @media (max-width: 768px) {
       .app { padding:14px 12px 32px; }
       .brand-lockup, .topbar-right { width:100%; }
-      .topbar-right { gap:8px; max-height: 220px; margin-top: 8px; }
+      .topbar-right {
+        gap:8px;
+        margin-top: 8px;
+        background: rgba(15,15,21,.98);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 8px;
+      }
       .tab { flex:1 1 calc(50% - 8px); text-align:center; justify-content:center; }
       .composer { flex-wrap:wrap; }
       .composer > * { width:100%; }
@@ -239,6 +238,9 @@
       .topbar {
         align-items: flex-start;
         min-height: 72px;
+      }
+      .mobile-topbar-spacer {
+        display: block;
       }
       .topbar.mobile-collapsed .brand-lockup {
         width: auto;
@@ -318,6 +320,7 @@
         <button class="button dark" style="padding: 12px 18px; font-size:14px;" onclick="logout()">Вихід</button>
       </div>
     </div>
+    <div id="mobileTopbarSpacer" class="mobile-topbar-spacer"></div>
 
     <div id="dashboardView" class="view active">
       <div id="dashboardHero" class="dashboard-hero collapsed">
@@ -511,26 +514,37 @@
       const topbar = document.querySelector('.topbar');
       const toggleBtn = getEl('mobileTopbarToggle');
       const topbarRight = document.querySelector('.topbar-right');
-      if(!topbar || !toggleBtn || !topbarRight) return;
+      const spacer = getEl('mobileTopbarSpacer');
+      if(!topbar || !toggleBtn || !topbarRight || !spacer) return;
 
       const isMobile = window.innerWidth <= 768;
       if(!isMobile){
         topbar.classList.remove('mobile-collapsed');
-        topbar.style.minHeight = '';
-        topbarRight.style.maxHeight = '';
+        spacer.style.height = '0px';
+        spacer.style.display = 'none';
+        topbarRight.style.position = '';
+        topbarRight.style.left = '';
+        topbarRight.style.right = '';
+        topbarRight.style.top = '';
+        topbarRight.style.width = '';
         mobileTopbarExpanded = true;
         toggleBtn.innerText = '☰';
         return;
       }
+
+      spacer.style.display = 'block';
+      topbarRight.style.position = 'absolute';
+      topbarRight.style.left = '14px';
+      topbarRight.style.right = '14px';
+      topbarRight.style.top = '72px';
+      topbarRight.style.width = 'auto';
 
       const shouldCollapse = !mobileTopbarExpanded;
       if(force || topbar.classList.contains('mobile-collapsed') !== shouldCollapse){
         topbar.classList.toggle('mobile-collapsed', shouldCollapse);
       }
 
-      const expandedHeight = topbarRight.scrollHeight || 0;
-      topbarRight.style.maxHeight = shouldCollapse ? '0px' : expandedHeight + 'px';
-      topbar.style.minHeight = shouldCollapse ? '72px' : (72 + expandedHeight) + 'px';
+      spacer.style.height = shouldCollapse ? '0px' : '118px';
       toggleBtn.innerText = mobileTopbarExpanded ? '−' : '☰';
     }
     function toggleMobileTopbar(forceExpanded = null){
