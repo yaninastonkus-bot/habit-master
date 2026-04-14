@@ -71,6 +71,31 @@
       height: 0;
       transition: height .22s ease;
     }
+    .brand-lockup { display:flex; align-items:center; gap:12px; margin-right:auto; }
+    .topbar-right {
+      display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+      transition: opacity .18s ease, transform .22s ease;
+      opacity: 1;
+      transform: translateY(0);
+      width: auto;
+      margin-top: 0;
+    }
+    .mobile-topbar-toggle {
+      display: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.04);
+      color: #fff;
+      font-size: 18px;
+      font-weight: 800;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      margin-left: auto;
+    }
     .topbar.mobile-collapsed {
       opacity: .995;
     }
@@ -221,14 +246,37 @@
 
     @media (max-width: 768px) {
       .app { padding:14px 12px 32px; }
-      .brand-lockup, .topbar-right { width:100%; }
+      .topbar {
+        align-items: flex-start;
+        min-height: 86px;
+        padding: 16px;
+      }
+      .brand-lockup {
+        width: auto;
+        flex: 1 1 auto;
+        align-items: center;
+        min-width: 0;
+      }
+      .nav-logo {
+        font-size: 22px;
+        line-height: 1;
+        white-space: nowrap;
+      }
+      .mobile-topbar-toggle {
+        display:inline-flex;
+        margin-left: auto;
+      }
       .topbar-right {
+        width: calc(100% - 28px);
         gap:8px;
-        margin-top: 8px;
+        margin-top: 0;
         background: rgba(15,15,21,.98);
         border: 1px solid var(--border);
         border-radius: 20px;
         padding: 8px;
+      }
+      .mobile-topbar-spacer {
+        display: block;
       }
       .tab { flex:1 1 calc(50% - 8px); text-align:center; justify-content:center; }
       .composer { flex-wrap:wrap; }
@@ -236,14 +284,6 @@
       .chat-box { height:460px; }
       .dashboard-hero { display:block; }
       .stats-section { display:none; }
-      .mobile-topbar-toggle { display:inline-flex; }
-      .topbar {
-        align-items: flex-start;
-        min-height: 72px;
-      }
-      .mobile-topbar-spacer {
-        display: block;
-      }
       .topbar.mobile-collapsed .brand-lockup {
         width: auto;
         margin-right: auto;
@@ -539,15 +579,15 @@
       topbarRight.style.position = 'absolute';
       topbarRight.style.left = '14px';
       topbarRight.style.right = '14px';
-      topbarRight.style.top = '72px';
-      topbarRight.style.width = 'auto';
+      topbarRight.style.top = '96px';
+      topbarRight.style.width = 'calc(100% - 28px)';
 
       const shouldCollapse = !mobileTopbarExpanded;
       if(force || topbar.classList.contains('mobile-collapsed') !== shouldCollapse){
         topbar.classList.toggle('mobile-collapsed', shouldCollapse);
       }
 
-      spacer.style.height = shouldCollapse ? '0px' : '118px';
+      spacer.style.height = shouldCollapse ? '0px' : '156px';
       toggleBtn.innerText = mobileTopbarExpanded ? '−' : '☰';
     }
     function toggleMobileTopbar(forceExpanded = null){
