@@ -78,7 +78,9 @@
       opacity: 0;
       transform: translateY(-6px);
       pointer-events: none;
-    }: 11px 16px; cursor:pointer;
+    }
+    .tab {
+      background: transparent; color: var(--muted); border-radius: 999px; padding: 11px 16px; cursor:pointer;
       font-weight:700; border: 1px solid transparent; font-size:14px; position:relative; display:inline-flex; align-items:center; gap:8px;
     }
     .tab.active { background:#fff; color:#000; }
@@ -301,7 +303,8 @@
         <div onclick="togglePassword()" style="position:absolute; right:14px; top:50%; transform:translateY(-50%); cursor:pointer; opacity:.7;">👁️</div>
       </div>
       <button id="loginBtn" class="button primary" style="width:100%;" onclick="signIn()">Увійти</button>
-      <button class="button dark" style="width:100%; margin-top:12px;" onclick="signUp()">Створити акаунт</button>
+      <button class="button dark" style="width:100%; margin-top:12px;" onclick="signInWithWorkspace()">Зареєструватись через Workspace</button>
+      <p style="color:var(--muted); font-size:13px; line-height:1.45; margin:14px 0 0;">Для нових користувачів доступ надається через внутрішній workspace-login.</p>
     </div>
   </div>
 
@@ -731,25 +734,13 @@
       }
     }
 
-    async function signUp(){
-      const email = getEl('emailInput').value.trim().toLowerCase();
-      const password = getEl('passwordInput').value;
-
-      if(!email.endsWith('@ekreative.com')) {
-        return alert('Реєстрація доступна тільки з робочої пошти @ekreative.com');
+    async function signInWithWorkspace(){
+      const workspaceEntryUrl = 'https://YOUR-WORKSPACE-LOGIN-URL';
+      if(workspaceEntryUrl.includes('YOUR-WORKSPACE-LOGIN-URL')){
+        alert('Підстав свій внутрішній workspace / SSO URL у функцію signInWithWorkspace().');
+        return;
       }
-
-      if(!email || password.length < 6) {
-        return alert('Мінімум 6 символів');
-      }
-
-      const { error } = await sb.auth.signUp({ email, password });
-
-      if(error) {
-        alert(error.message);
-      } else {
-        alert('Готово! Тепер увійдіть.');
-      }
+      window.location.href = workspaceEntryUrl;
     }
     async function signIn(){
       getEl('loginBtn').innerText = 'Wait...';
