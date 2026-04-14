@@ -59,21 +59,16 @@
     .topbar {
       position: sticky; top: 0; z-index: 50; display:flex; align-items:center; gap:10px; flex-wrap:wrap;
       margin-bottom: 22px; padding: 14px 16px; border-radius: 28px;
-      background: rgba(15,15,21,.94);
-      -webkit-backdrop-filter: blur(12px);
-      backdrop-filter: blur(12px);
+      background: rgba(15,15,21,.98);
       border: 1px solid var(--border); box-shadow: var(--shadow-soft);
-      transition: transform .22s ease, padding .22s ease, border-radius .22s ease;
-      transform: translateY(0);
-      will-change: transform;
+      transition: padding .2s ease, border-radius .2s ease, opacity .2s ease;
+      will-change: auto;
       backface-visibility: hidden;
-      -webkit-transform: translateZ(0);
-      transform: translateZ(0);
     }
     .topbar.mobile-collapsed {
       padding: 10px 14px;
       border-radius: 22px;
-      transform: translateY(-2px) translateZ(0);
+      opacity: .98;
     }
     .topbar.mobile-collapsed .topbar-right {
       display: none;
@@ -440,8 +435,6 @@
     let mentionSuggestions = [];
     let activeMentionIndex = 0;
     let mobileTopbarExpanded = true;
-    let lastScrollY = 0;
-    let mobileTopbarTicking = false;
     let mobileTopbarInitialized = false;
     const TODAY_DAY = new Date().getDate();
     const META = { MOVE:{emoji:'🏃'}, MIND:{emoji:'🧠'}, CREATE:{emoji:'🎨'}, SLOW:{emoji:'🌿'}, GENERAL:{emoji:'💬'} };
@@ -521,15 +514,14 @@
 
       const isMobile = window.innerWidth <= 768;
       if(!isMobile){
-        if(force || topbar.classList.contains('mobile-collapsed')) topbar.classList.remove('mobile-collapsed');
+        topbar.classList.remove('mobile-collapsed');
         mobileTopbarExpanded = true;
         toggleBtn.innerText = '☰';
         return;
       }
 
       const shouldCollapse = !mobileTopbarExpanded;
-      const isCollapsed = topbar.classList.contains('mobile-collapsed');
-      if(force || shouldCollapse !== isCollapsed){
+      if(force || topbar.classList.contains('mobile-collapsed') !== shouldCollapse){
         topbar.classList.toggle('mobile-collapsed', shouldCollapse);
       }
       toggleBtn.innerText = mobileTopbarExpanded ? '−' : '☰';
@@ -544,39 +536,14 @@
     function initMobileTopbarBehavior(){
       if(mobileTopbarInitialized) return;
       mobileTopbarInitialized = true;
-      lastScrollY = window.scrollY || 0;
       applyMobileTopbarState(true);
 
       window.addEventListener('resize', () => {
-        mobileTopbarExpanded = true;
+        if(window.innerWidth > 768){
+          mobileTopbarExpanded = true;
+        }
         applyMobileTopbarState(true);
       });
-
-      window.addEventListener('scroll', () => {
-        if(window.innerWidth > 768) return;
-        if(mobileTopbarTicking) return;
-
-        mobileTopbarTicking = true;
-        window.requestAnimationFrame(() => {
-          const currentY = window.scrollY || 0;
-          const delta = currentY - lastScrollY;
-          const previousState = mobileTopbarExpanded;
-
-          if(currentY <= 24){
-            mobileTopbarExpanded = true;
-          } else if(delta > 18){
-            mobileTopbarExpanded = false;
-          } else if(delta < -18){
-            mobileTopbarExpanded = true;
-          }
-
-          lastScrollY = currentY;
-          if(previousState !== mobileTopbarExpanded){
-            applyMobileTopbarState(true);
-          }
-          mobileTopbarTicking = false;
-        });
-      }, { passive: true });
     }
     function switchView(viewId, clickedTab = null){
       document.querySelectorAll('.tab[data-view]').forEach(t => t.classList.remove('active'));
