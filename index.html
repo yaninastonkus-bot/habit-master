@@ -616,6 +616,7 @@
 
       window.addEventListener('scroll', () => {
         if(window.innerWidth > 768) return;
+        if(getEl('communityView')?.classList.contains('active')) return;
         if(mobileTopbarFrame) return;
 
         mobileTopbarFrame = window.requestAnimationFrame(() => {
@@ -663,11 +664,18 @@
       if(targetView) targetView.classList.add('active');
 
       if(viewId === 'communityView'){
+        if(window.innerWidth <= 768){
+          mobileTopbarExpanded = false;
+          applyMobileTopbarState(true);
+        }
         markSpaceAsRead(selectedSpace);
         renderCommunitySpacesOnly();
         updateCommunityTabBadge();
         const postsEl = getEl('postsWrap');
         if(postsEl) postsEl.scrollTop = postsEl.scrollHeight;
+      } else if(window.innerWidth <= 768){
+        mobileTopbarExpanded = true;
+        applyMobileTopbarState(true);
       }
     }
     function bindTabs(){ switchView((document.querySelector('.tab.active[data-view]') || document.querySelector('.tab[data-view="dashboardView"]')).dataset.view); }
@@ -676,7 +684,15 @@
       const file = getEl('fileInput').files[0];
       const actions = getEl('attachmentActions');
       getEl('fileNameDisplay').innerText = file ? `Прикріплено: ${file.name}` : '';
-      if(file) actions.classList.remove('hidden'); else actions.classList.add('hidden');
+      if(file) {
+        actions.classList.remove('hidden');
+        if(window.innerWidth <= 768 && getEl('communityView')?.classList.contains('active')){
+          mobileTopbarExpanded = false;
+          applyMobileTopbarState(true);
+        }
+      } else {
+        actions.classList.add('hidden');
+      }
     }
     function clearSelectedFile(){ getEl('fileInput').value=''; getEl('fileNameDisplay').innerText=''; getEl('attachmentActions').classList.add('hidden'); }
     function escapeHtml(value){
@@ -743,6 +759,10 @@
       closeMentionSuggestions();
     }
     function handlePostInputKeydown(event){
+      if(window.innerWidth <= 768 && getEl('communityView')?.classList.contains('active')){
+        mobileTopbarExpanded = false;
+        applyMobileTopbarState(true);
+      }
       if(mentionSuggestions.length){
         if(event.key === 'ArrowDown'){
           event.preventDefault();
