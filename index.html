@@ -71,7 +71,11 @@
       opacity: .98;
     }
     .topbar.mobile-collapsed .topbar-right {
-      display: none;
+      max-height: 0;
+      opacity: 0;
+      transform: translateY(-6px);
+      margin-top: 0;
+      pointer-events: none;
     }
     .mobile-topbar-toggle {
       display: none;
@@ -89,7 +93,15 @@
       flex: 0 0 auto;
     }
     .brand-lockup { display:flex; align-items:center; gap:12px; margin-right:auto; }
-    .topbar-right { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .topbar-right {
+      display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+      transition: max-height .22s ease, opacity .18s ease, transform .22s ease, margin-top .22s ease;
+      max-height: 140px;
+      opacity: 1;
+      transform: translateY(0);
+      overflow: hidden;
+      width: auto;
+    }
     .tab {
       background: transparent; color: var(--muted); border-radius: 999px; padding: 11px 16px; cursor:pointer;
       font-weight:700; border: 1px solid transparent; font-size:14px; position:relative; display:inline-flex; align-items:center; gap:8px;
@@ -233,7 +245,7 @@
     @media (max-width: 768px) {
       .app { padding:14px 12px 32px; }
       .brand-lockup, .topbar-right { width:100%; }
-      .topbar-right { gap:8px; }
+      .topbar-right { gap:8px; max-height: 220px; }
       .tab { flex:1 1 calc(50% - 8px); text-align:center; justify-content:center; }
       .composer { flex-wrap:wrap; }
       .composer > * { width:100%; }
@@ -436,6 +448,10 @@
     let activeMentionIndex = 0;
     let mobileTopbarExpanded = true;
     let mobileTopbarInitialized = false;
+    let mobileTopbarLastY = 0;
+    let mobileTopbarAccumulated = 0;
+    let mobileTopbarFrame = null;
+    let mobileTopbarLockUntil = 0;
     const TODAY_DAY = new Date().getDate();
     const META = { MOVE:{emoji:'🏃'}, MIND:{emoji:'🧠'}, CREATE:{emoji:'🎨'}, SLOW:{emoji:'🌿'}, GENERAL:{emoji:'💬'} };
     const DEFAULT_HABITS = {
@@ -531,19 +547,64 @@
       const nextState = typeof forceExpanded === 'boolean' ? forceExpanded : !mobileTopbarExpanded;
       if(nextState === mobileTopbarExpanded) return;
       mobileTopbarExpanded = nextState;
+      mobileTopbarLockUntil = Date.now() + 280;
+      mobileTopbarAccumulated = 0;
       applyMobileTopbarState(true);
     }
     function initMobileTopbarBehavior(){
       if(mobileTopbarInitialized) return;
       mobileTopbarInitialized = true;
+      mobileTopbarLastY = window.scrollY || 0;
       applyMobileTopbarState(true);
 
       window.addEventListener('resize', () => {
         if(window.innerWidth > 768){
           mobileTopbarExpanded = true;
         }
+        mobileTopbarAccumulated = 0;
+        mobileTopbarLastY = window.scrollY || 0;
         applyMobileTopbarState(true);
       });
+
+      window.addEventListener('scroll', () => {
+        if(window.innerWidth > 768) return;
+        if(mobileTopbarFrame) return;
+
+        mobileTopbarFrame = window.requestAnimationFrame(() => {
+          mobileTopbarFrame = null;
+          const now = Date.now();
+          const y = window.scrollY || 0;
+          const delta = y - mobileTopbarLastY;
+          mobileTopbarLastY = y;
+
+          if(now < mobileTopbarLockUntil) return;
+          if(Math.abs(delta) < 3) return;
+
+          if(y <= 24){
+            mobileTopbarExpanded = true;
+            mobileTopbarAccumulated = 0;
+            applyMobileTopbarState(true);
+            return;
+          }
+
+          const directionChanged = (mobileTopbarAccumulated > 0 && delta < 0) || (mobileTopbarAccumulated < 0 && delta > 0);
+          if(directionChanged) mobileTopbarAccumulated = 0;
+          mobileTopbarAccumulated += delta;
+
+          if(mobileTopbarExpanded && mobileTopbarAccumulated > 36){
+            mobileTopbarExpanded = false;
+            mobileTopbarAccumulated = 0;
+            applyMobileTopbarState(true);
+            return;
+          }
+
+          if(!mobileTopbarExpanded && mobileTopbarAccumulated < -24){
+            mobileTopbarExpanded = true;
+            mobileTopbarAccumulated = 0;
+            applyMobileTopbarState(true);
+          }
+        });
+      }, { passive: true });
     }
     function switchView(viewId, clickedTab = null){
       document.querySelectorAll('.tab[data-view]').forEach(t => t.classList.remove('active'));
