@@ -1186,30 +1186,29 @@
 
       sections.forEach(section => {
         const headCells = [...section.querySelectorAll('.tracker-head > div')];
-        const todayCell = headCells.find(cell => cell.classList.contains('today-cell'));
-        const stickyCell = section.querySelector('.tracker-head .habit-title-cell');
-        const percentCell = headCells[headCells.length - 1];
+        const stickyCell = headCells[0];
+        const dayCells = headCells.slice(1, 32);
+        const percentCell = headCells[32];
+        const todayCell = dayCells[TODAY_DAY - 1];
 
-        if(!todayCell || !stickyCell) return;
+        if(!stickyCell || !todayCell) return;
 
-        const stickyWidth = stickyCell.offsetWidth || 156;
-        const percentWidth = percentCell ? percentCell.offsetWidth || 68 : 68;
-        const todayLeft = todayCell.offsetLeft || 0;
-        const todayWidth = todayCell.offsetWidth || 42;
-        const viewportWidth = section.clientWidth || 0;
-        const usableWidth = Math.max(0, viewportWidth - stickyWidth - percentWidth);
+        const stickyWidth = stickyCell.getBoundingClientRect().width || 156;
+        const percentWidth = percentCell ? (percentCell.getBoundingClientRect().width || 68) : 68;
+        const viewportWidth = section.getBoundingClientRect().width || section.clientWidth || 0;
+        const visibleWidth = Math.max(120, viewportWidth - stickyWidth - percentWidth);
 
-        const targetLeft = Math.max(
-          0,
-          todayLeft - stickyWidth - Math.max(16, (usableWidth / 2) - (todayWidth / 2))
-        );
+        const todayCenter = todayCell.offsetLeft + (todayCell.offsetWidth || 42) / 2;
+        const desiredCenter = stickyWidth + visibleWidth * 0.52;
+        const targetLeft = Math.max(0, Math.round(todayCenter - desiredCenter));
 
         section.scrollLeft = targetLeft;
         applied = true;
       });
 
-      if((!applied || attempt < 4) && window.innerWidth <= 768){
-        setTimeout(() => scrollTrackersToToday(force, attempt + 1), attempt === 0 ? 80 : 160);
+      if(window.innerWidth <= 768 && attempt < 5){
+        const delays = [70, 140, 220, 320, 450];
+        setTimeout(() => scrollTrackersToToday(force, attempt + 1), delays[attempt] || 220);
       }
     }
 
