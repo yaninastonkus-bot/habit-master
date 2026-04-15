@@ -23,131 +23,63 @@
       --shadow-soft: 0 12px 40px rgba(0,0,0,0.28);
       --maxw: 1180px;
     }
-
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html { scroll-behavior: smooth; }
-
     body {
       margin: 0;
       font-family: 'Inter', sans-serif;
       background: radial-gradient(circle at 88% 18%, rgba(23,51,255,0.24), transparent 24%), #000;
       color: var(--text);
     }
-
     .hidden { display: none !important; }
-
     .input, .textarea {
-      width: 100%;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 16px;
-      color: #fff;
-      font-size: 16px;
-      font-family: inherit;
-      outline: none;
+      width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+      border-radius: 16px; padding: 16px; color: #fff; font-size: 16px; font-family: inherit; outline: none;
     }
-
     .button {
-      border: 0;
-      border-radius: 999px;
-      padding: 15px 22px;
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: .2s ease;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      touch-action: manipulation;
+      border: 0; border-radius: 999px; padding: 15px 22px; font-size: 15px; font-weight: 700;
+      cursor: pointer; transition: .2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
     }
-
     .button:hover { transform: translateY(-1px); }
     .button.primary { background: var(--accent-lime); color: #000; }
     .button.dark { background: rgba(255,255,255,0.03); color: #fff; border: 1px solid var(--border); }
     .button.blue { background: linear-gradient(180deg, var(--card-blue), var(--card-blue-2)); color: #fff; }
 
-    .auth-shell {
-      min-height: 100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:20px;
-    }
-
+    .auth-shell { min-height: 100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
     .auth-card {
-      width:100%;
-      max-width:430px;
-      background: linear-gradient(180deg, rgba(17,17,24,.96), rgba(8,8,11,.98));
-      border-radius: 32px;
-      padding: 32px 24px;
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow-soft);
+      width:100%; max-width:430px; background: linear-gradient(180deg, rgba(17,17,24,.96), rgba(8,8,11,.98));
+      border-radius: 32px; padding: 32px 24px; border: 1px solid var(--border); box-shadow: var(--shadow-soft);
     }
-
     .auth-brand { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
-
-    .auth-logo-box,
-    .brand-badge {
-      width:48px;
-      height:48px;
-      border-radius:14px;
-      background:#fff;
-      color:#000;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight:800;
-      font-size:22px;
-      flex: 0 0 auto;
+    .auth-logo-box, .brand-badge {
+      width:48px; height:48px; border-radius:14px; background:#fff; color:#000; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:22px;
     }
+    .auth-brand-word, .nav-logo { font-size:26px; font-weight:800; letter-spacing:-.04em; }
 
-    .auth-brand-word,
-    .nav-logo {
-      font-size:26px;
-      font-weight:800;
-      letter-spacing:-.04em;
-    }
-
-    .app {
-      max-width: var(--maxw);
-      margin:0 auto;
-      padding: 18px 16px 42px;
-    }
-
+    .app { max-width: var(--maxw); margin:0 auto; padding: 18px 16px 42px; }
     .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      display:flex;
-      align-items:flex-start;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-bottom: 18px;
-      padding: 14px 16px;
-      border-radius: 28px;
+      position: sticky; top: 0; z-index: 50; display:flex; align-items:flex-start; gap:10px; flex-wrap:wrap;
+      margin-bottom: 10px; padding: 14px 16px; border-radius: 28px;
       background: rgba(15,15,21,.98);
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow-soft);
+      border: 1px solid var(--border); box-shadow: var(--shadow-soft);
+      transition: opacity .18s ease;
+      will-change: auto;
+      backface-visibility: hidden;
       overflow: visible;
     }
-
-    .brand-lockup {
-      display:flex;
-      align-items:center;
-      gap:12px;
-      margin-right:auto;
-      min-width: 0;
+    .mobile-topbar-spacer {
+      display: none;
+      height: 0;
+      transition: height .22s ease;
     }
-
+    .brand-lockup { display:flex; align-items:center; gap:12px; margin-right:auto; }
     .topbar-right {
-      display:flex;
-      align-items:center;
-      gap:8px;
-      flex-wrap:wrap;
+      display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+      transition: opacity .18s ease, transform .22s ease;
+      opacity: 1;
+      transform: translateY(0);
+      width: auto;
+      margin-top: 0;
     }
-
     .mobile-topbar-toggle {
       display: none;
       width: 40px;
@@ -164,52 +96,29 @@
       flex: 0 0 auto;
       margin-left: auto;
     }
-
+    .topbar.mobile-collapsed {
+      opacity: .995;
+    }
+    .topbar.mobile-collapsed .topbar-right {
+      opacity: 0;
+      transform: translateY(-6px);
+      pointer-events: none;
+    }
     .tab {
-      background: transparent;
-      color: var(--muted);
-      border-radius: 999px;
-      padding: 11px 16px;
-      cursor:pointer;
-      font-weight:700;
-      border: 1px solid transparent;
-      font-size:14px;
-      position:relative;
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      touch-action: manipulation;
+      background: transparent; color: var(--muted); border-radius: 999px; padding: 11px 16px; cursor:pointer;
+      font-weight:700; border: 1px solid transparent; font-size:14px; position:relative; display:inline-flex; align-items:center; gap:8px;
     }
-
     .tab.active { background:#fff; color:#000; }
-
     .tab-badge {
-      min-width:18px;
-      height:18px;
-      border-radius:999px;
-      background:var(--accent-lime);
-      color:#000;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      font-size:11px;
-      font-weight:800;
-      padding:0 5px;
-      box-shadow: 0 4px 14px rgba(184,242,58,.22);
+      min-width:18px; height:18px; border-radius:999px; background:var(--accent-lime); color:#000; display:inline-flex;
+      align-items:center; justify-content:center; font-size:11px; font-weight:800; padding:0 5px; box-shadow: 0 4px 14px rgba(184,242,58,.22);
     }
-
     .view { display:none; }
     .view.active { display:block; }
-
     .card {
-      background: linear-gradient(180deg, rgba(12,12,18,.98), rgba(7,7,10,.98));
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border);
-      padding: 24px;
-      box-shadow: var(--shadow-soft);
-      margin-bottom: 20px;
+      background: linear-gradient(180deg, rgba(12,12,18,.98), rgba(7,7,10,.98)); border-radius: var(--radius-lg);
+      border: 1px solid var(--border); padding: 24px; box-shadow: var(--shadow-soft); margin-bottom: 20px;
     }
-
     .dashboard-hero {
       display: none;
       border-radius: var(--radius-xl);
@@ -219,121 +128,33 @@
       margin-bottom: 18px;
       overflow: hidden;
     }
-
-    .dashboard-hero-top {
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-    }
-
-    .dashboard-hero-title {
-      margin:0;
-      font-size: clamp(26px, 6vw, 44px);
-      line-height:.95;
-      letter-spacing:-.06em;
-      font-weight:800;
-    }
-
-    .dashboard-hero-subtitle {
-      margin:8px 0 0;
-      color: var(--muted);
-      font-size:15px;
-    }
-
+    .dashboard-hero-top { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .dashboard-hero-title { margin:0; font-size: clamp(26px, 6vw, 44px); line-height:.95; letter-spacing:-.06em; font-weight:800; }
+    .dashboard-hero-subtitle { margin:8px 0 0; color: var(--muted); font-size:15px; }
     .hero-toggle-btn {
-      min-width:42px;
-      width:42px;
-      height:42px;
-      border-radius:999px;
-      border:1px solid var(--border);
-      background: rgba(255,255,255,.04);
-      color:#fff;
-      font-size:18px;
-      font-weight:800;
-      cursor:pointer;
-      flex:0 0 auto;
+      min-width:42px; width:42px; height:42px; border-radius:999px; border:1px solid var(--border);
+      background: rgba(255,255,255,.04); color:#fff; font-size:18px; font-weight:800; cursor:pointer; flex:0 0 auto;
     }
-
     .dashboard-hero-body { margin-top:14px; }
     .dashboard-hero.collapsed .dashboard-hero-body { display:none; }
-
-    .settings-hero,
-    .tracker-hero,
-    .community-hero {
-      border-radius: var(--radius-xl);
-      background: radial-gradient(circle at 82% 36%, rgba(23,51,255,.18), transparent 26%), linear-gradient(180deg, #09090d, #040406);
-      border:1px solid var(--border);
-      padding: 26px;
+    .settings-hero, .tracker-hero, .community-hero {
+      border-radius: var(--radius-xl); background: radial-gradient(circle at 82% 36%, rgba(23,51,255,.18), transparent 26%), linear-gradient(180deg, #09090d, #040406);
+      border:1px solid var(--border); padding: 26px;
     }
+    .settings-hero h2, .tracker-hero h2, .community-hero h2, .stats-title { margin:0; font-size: clamp(42px, 6vw, 72px); letter-spacing:-.07em; line-height:.92; }
+    .settings-hero p, .tracker-hero p, .community-hero p, .stats-subtitle { margin:12px 0 0; color: var(--muted); font-size: 18px; }
 
-    .settings-hero h2,
-    .tracker-hero h2,
-    .community-hero h2,
-    .stats-title {
-      margin:0;
-      font-size: clamp(42px, 6vw, 72px);
-      letter-spacing:-.07em;
-      line-height:.92;
-    }
-
-    .settings-hero p,
-    .tracker-hero p,
-    .community-hero p,
-    .stats-subtitle {
-      margin:12px 0 0;
-      color: var(--muted);
-      font-size: 18px;
-    }
-
-    .dashboard-grid {
-      display:grid;
-      grid-template-columns: 280px 1fr;
-      gap: 20px;
-      align-items:start;
-    }
-
+    .dashboard-grid { display:grid; grid-template-columns: 280px 1fr; gap: 20px; align-items:start; }
     .stack-col { display:grid; gap:16px; }
-
-    .metric-card {
-      border-radius:28px;
-      padding:20px;
-      min-height:110px;
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
-    }
-
+    .metric-card { border-radius:28px; padding:20px; min-height:110px; display:flex; flex-direction:column; justify-content:space-between; }
     .metric-card.blue { background: linear-gradient(180deg, var(--card-blue), var(--card-blue-2)); }
     .metric-card.lime { background: var(--accent-lime); color:#000; }
     .metric-kicker { font-size:11px; text-transform:uppercase; letter-spacing:.18em; font-weight:800; opacity:.84; }
     .metric-value { font-size:56px; font-weight:800; letter-spacing:-.07em; line-height:.9; }
     .metric-label { font-size:16px; font-weight:700; }
-
-    .stats-section {
-      border-radius: var(--radius-xl);
-      padding: 28px;
-      background:#020202;
-      border:1px solid rgba(255,255,255,.05);
-    }
-
-    .rings-grid {
-      display:grid;
-      grid-template-columns: repeat(2, minmax(220px, 1fr));
-      gap:18px;
-    }
-
-    .ring-card {
-      padding:24px;
-      border-radius:28px;
-      background: linear-gradient(180deg, rgba(14,14,22,1), rgba(5,5,8,1));
-      border:1px solid rgba(255,255,255,.06);
-      min-height:220px;
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
-    }
-
+    .stats-section { border-radius: var(--radius-xl); padding: 28px; background:#020202; border:1px solid rgba(255,255,255,.05); }
+    .rings-grid { display:grid; grid-template-columns: repeat(2, minmax(220px, 1fr)); gap:18px; }
+    .ring-card { padding:24px; border-radius:28px; background: linear-gradient(180deg, rgba(14,14,22,1), rgba(5,5,8,1)); border:1px solid rgba(255,255,255,.06); min-height:220px; display:flex; flex-direction:column; justify-content:space-between; }
     .ring { width:112px; height:112px; position:relative; flex:0 0 auto; }
     .ring svg { width:100%; height:100%; transform: rotate(-90deg); overflow:visible; }
     .ring-track { fill:none; stroke:#2a2a34; stroke-width:10; }
@@ -344,109 +165,27 @@
     .ring-meta { display:flex; justify-content:space-between; align-items:flex-end; gap:16px; }
     .ring-title { font-size:28px; font-weight:800; letter-spacing:-.04em; }
     .ring-copy { font-size:12px; text-transform:uppercase; letter-spacing:.15em; color:var(--muted); font-weight:700; margin-top:5px; }
-
     .focus-chips { display:flex; flex-wrap:wrap; gap:10px; margin-top:16px; }
-    .focus-chip {
-      background: rgba(255,255,255,.04);
-      border:1px solid var(--border);
-      color:#fff;
-      border-radius:999px;
-      padding:10px 14px;
-      font-size:13px;
-      font-weight:800;
-      cursor:pointer;
-      touch-action: manipulation;
-    }
+    .focus-chip { background: rgba(255,255,255,.04); border:1px solid var(--border); color:#fff; border-radius:999px; padding:10px 14px; font-size:13px; font-weight:800; cursor:pointer; }
     .focus-chip.active { background: var(--accent-lime); color:#000; border-color: var(--accent-lime); }
 
-    .category-row-header {
-      display:flex;
-      align-items:center;
-      justify-content:flex-start;
-      gap:12px;
-      margin-bottom:12px;
-      padding:0 4px;
-    }
-
-    .category-title {
-      font-size:26px;
-      font-weight:800;
-      letter-spacing:-.03em;
-      text-transform:uppercase;
-    }
-
+    .category-row-header { display:flex; align-items:center; justify-content:flex-start; gap:12px; margin-bottom:12px; padding:0 4px; }
+    .category-title { font-size:26px; font-weight:800; letter-spacing:-.03em; text-transform:uppercase; }
     .add-habit-btn {
-      width:42px;
-      height:42px;
-      border-radius:50%;
-      background:var(--accent-lime);
-      color:#000;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight:800;
-      cursor:pointer;
-      font-size:22px;
-      flex:0 0 auto;
-      touch-action: manipulation;
+      width:42px; height:42px; border-radius:50%; background:var(--accent-lime); color:#000; display:flex; align-items:center; justify-content:center;
+      font-weight:800; cursor:pointer; font-size:22px; flex:0 0 auto;
     }
-
-    .tracker-section {
-      overflow-x:auto;
-      background: linear-gradient(180deg, rgba(12,12,17,.98), rgba(6,6,8,.98));
-      border-radius:28px;
-      border:1px solid rgba(255,255,255,.06);
-      margin-bottom:28px;
-      -webkit-overflow-scrolling: touch;
-      scroll-behavior: smooth;
-    }
-
-    .tracker-head,
-    .tracker-row {
-      display:grid;
-      grid-template-columns: 210px repeat(31, 45px) 84px;
-      align-items:center;
-      min-width: 1690px;
-    }
-
-    .tracker-head {
-      height:56px;
-      background: rgba(255,255,255,.03);
-      font-size:11px;
-      text-transform:uppercase;
-      letter-spacing:.16em;
-      font-weight:800;
-      color: rgba(255,255,255,.48);
-    }
-
-    .tracker-row {
-      height:56px;
-      border-bottom:1px solid rgba(255,255,255,.04);
-    }
-
-    .tracker-head > div,
-    .tracker-row > div {
-      height:100%;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      border-right:1px solid rgba(255,255,255,.03);
-    }
-
+    .tracker-section { overflow-x:auto; background: linear-gradient(180deg, rgba(12,12,17,.98), rgba(6,6,8,.98)); border-radius:28px; border:1px solid rgba(255,255,255,.06); margin-bottom:28px; }
+    .tracker-head, .tracker-row { display:grid; grid-template-columns: 210px repeat(31, 45px) 84px; align-items:center; min-width: 1690px; }
+    .tracker-head { height:56px; background: rgba(255,255,255,.03); font-size:11px; text-transform:uppercase; letter-spacing:.16em; font-weight:800; color: rgba(255,255,255,.48); }
+    .tracker-row { height:56px; border-bottom:1px solid rgba(255,255,255,.04); }
+    .tracker-head > div, .tracker-row > div { height:100%; display:flex; align-items:center; justify-content:center; border-right:1px solid rgba(255,255,255,.03); }
     .habit-title-cell {
-      justify-content:flex-start !important;
-      padding-left:18px;
-      font-weight:700;
-      letter-spacing:-.02em;
-      position:sticky;
-      left:0;
-      z-index:3;
-      background: linear-gradient(180deg, rgba(10,10,14,.98), rgba(5,5,7,.98));
-      box-shadow:10px 0 16px rgba(0,0,0,.18);
+      justify-content:flex-start !important; padding-left:18px; font-weight:700; letter-spacing:-.02em; position:sticky; left:0; z-index:3;
+      background: linear-gradient(180deg, rgba(10,10,14,.98), rgba(5,5,7,.98)); box-shadow:10px 0 16px rgba(0,0,0,.18);
       max-width: 210px;
       overflow: hidden;
     }
-
     .habit-title-text {
       display:-webkit-box;
       -webkit-line-clamp:2;
@@ -458,51 +197,23 @@
       max-width:128px;
       word-break:break-word;
     }
-
     .habit-actions { display:inline-flex; align-items:center; gap:10px; margin-left:auto; flex:0 0 auto; }
-    .habit-action-btn { border:0; background:transparent; cursor:pointer; font-weight:800; padding:0; touch-action: manipulation; }
+    .habit-action-btn { border:0; background:transparent; cursor:pointer; font-weight:800; padding:0; }
     .habit-action-btn.edit { color:#fff; font-size:16px; }
     .habit-action-btn.delete { color:#ff5b5b; font-size:22px; }
-    .checkbox { width:22px; height:22px; border:2px solid rgba(255,255,255,.16); border-radius:7px; cursor:pointer; background:rgba(255,255,255,.02); touch-action: manipulation; }
+    .checkbox { width:22px; height:22px; border:2px solid rgba(255,255,255,.16); border-radius:7px; cursor:pointer; background:rgba(255,255,255,.02); }
     .checkbox.active { background: linear-gradient(180deg, var(--card-blue), var(--card-blue-2)); border-color: var(--card-blue); }
     .today-cell { background: rgba(184,242,58,.14) !important; color: var(--accent-lime); font-weight:800; }
 
     .community-layout { display:grid; grid-template-columns: 250px 1fr; gap:20px; }
     .space-panel, .community-panel { background: linear-gradient(180deg, rgba(12,12,17,.96), rgba(7,7,10,.98)); border:1px solid rgba(255,255,255,.06); border-radius:28px; padding:18px; }
-    .space-btn { width:100%; border:1px solid rgba(255,255,255,.08); border-radius:18px; padding:16px 18px; text-align:left; font-size:15px; font-weight:700; cursor:pointer; background:rgba(255,255,255,.03); color:#fff; margin-bottom:10px; touch-action: manipulation; }
+    .space-btn { width:100%; border:1px solid rgba(255,255,255,.08); border-radius:18px; padding:16px 18px; text-align:left; font-size:15px; font-weight:700; cursor:pointer; background:rgba(255,255,255,.03); color:#fff; margin-bottom:10px; }
     .space-btn.active { background: linear-gradient(180deg, var(--card-blue), var(--card-blue-2)); border-color: transparent; }
-    .chat-box {
-      height: 560px;
-      overflow-y:auto;
-      background:#060609;
-      border-radius:24px;
-      padding:18px;
-      border:1px solid rgba(255,255,255,.06);
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-      scroll-behavior: smooth;
-    }
-
-    .msg {
-      max-width:80%;
-      padding:16px 18px;
-      border-radius:22px;
-      background: rgba(255,255,255,.05);
-      border:1px solid rgba(255,255,255,.05);
-    }
+    .chat-box { height: 560px; overflow-y:auto; background:#060609; border-radius:24px; padding:18px; border:1px solid rgba(255,255,255,.06); display:flex; flex-direction:column; gap:12px; }
+    .msg { max-width:80%; padding:16px 18px; border-radius:22px; background: rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.05); }
     .msg.own { align-self:flex-end; background: linear-gradient(180deg, var(--card-blue), var(--card-blue-2)); }
-
-    .composer {
-      margin-top:16px;
-      display:flex;
-      gap:12px;
-      align-items:flex-end;
-      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 4px);
-    }
-
+    .composer { margin-top:16px; display:flex; gap:12px; align-items:flex-end; }
     .attach-btn { min-width:54px; height:54px; border-radius:16px; padding:0; }
-
     .mention-list {
       margin-top: 8px;
       border: 1px solid rgba(255,255,255,.08);
@@ -510,7 +221,6 @@
       border-radius: 16px;
       overflow: hidden;
     }
-
     .mention-item {
       width: 100%;
       border: 0;
@@ -524,12 +234,24 @@
       gap: 2px;
       font-family: inherit;
     }
-
     .mention-item + .mention-item { border-top: 1px solid rgba(255,255,255,.06); }
     .mention-item.active { background: rgba(23,51,255,.22); }
     .mention-handle { font-size: 13px; font-weight: 800; }
     .mention-email { font-size: 12px; color: var(--muted); }
     .mention-pill { color: var(--accent-lime); font-weight: 700; }
+    .tracker-section {
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+    }
+    .chat-box {
+      scroll-behavior: smooth;
+    }
+    .composer {
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 4px);
+    }
+    .space-btn, .tab, .button, .add-habit-btn, .checkbox {
+      touch-action: manipulation;
+    }
 
     @media (max-width: 960px) {
       .dashboard-grid, .community-layout, .rings-grid { grid-template-columns:1fr; }
@@ -537,73 +259,70 @@
 
     @media (max-width: 768px) {
       .app { padding:14px 12px 32px; }
-
       .topbar {
         align-items: flex-start;
-        min-height: 74px;
-        padding: 14px;
+        min-height: 86px;
+        padding: 16px;
       }
-
       .brand-lockup {
         width: auto;
         flex: 1 1 auto;
         align-items: center;
+        min-width: 0;
       }
-
       .nav-logo {
         font-size: 22px;
         line-height: 1;
         white-space: nowrap;
       }
-
       .mobile-topbar-toggle {
         display:inline-flex;
+        margin-left: auto;
       }
-
       .topbar-right {
-        width: 100%;
+        width: calc(100% - 28px);
         gap:8px;
-        margin-top: 10px;
+        margin-top: 0;
         background: rgba(15,15,21,.98);
         border: 1px solid var(--border);
         border-radius: 20px;
         padding: 8px;
-        display: none;
       }
-
-      .topbar.menu-open .topbar-right {
-        display: flex;
+      .mobile-topbar-spacer {
+        display: block;
       }
-
-      .tab {
-        flex:1 1 calc(50% - 8px);
-        text-align:center;
-        justify-content:center;
-      }
-
+      .tab { flex:1 1 calc(50% - 8px); text-align:center; justify-content:center; }
       .composer { flex-wrap:wrap; }
       .composer > * { width:100%; }
       .chat-box { height:460px; }
       .dashboard-hero { display:block; }
       .stats-section { display:none; }
-
-      .category-title { font-size: 21px; }
-
+      .topbar.mobile-collapsed .brand-lockup {
+        width: auto;
+        margin-right: auto;
+      }
+      .topbar.mobile-collapsed .mobile-topbar-toggle {
+        display: inline-flex;
+      }
+      .category-title {
+        font-size: 21px;
+      }
       .add-habit-btn {
         width: 36px;
         height: 36px;
         font-size: 19px;
       }
-
       .tracker-head,
       .tracker-row {
         grid-template-columns: 156px repeat(31, 42px) 68px;
         min-width: 1526px;
       }
-
-      .tracker-head { font-size: 10px; }
-      .tracker-row { height: 72px; }
-
+      .tracker-head {
+        font-size: 10px;
+      }
+      .tracker-row {
+        height: 72px;
+      }
       .habit-title-cell {
         max-width: 156px;
         padding-left: 12px;
@@ -611,13 +330,11 @@
         font-size: 13px;
         align-items: center !important;
       }
-
       .habit-title-text {
         max-width: 126px;
         font-size: 13px;
         line-height: 1.12;
       }
-
       .checkbox {
         width: 20px;
         height: 20px;
@@ -645,13 +362,13 @@
   </div>
 
   <div id="appView" class="app hidden">
-    <div class="topbar" id="topbar">
+    <div class="topbar">
       <div class="brand-lockup">
         <div class="brand-badge">EK</div>
         <div class="nav-logo">ekreative</div>
       </div>
       <button id="mobileTopbarToggle" class="mobile-topbar-toggle" type="button" onclick="toggleMobileTopbar()">☰</button>
-      <div class="topbar-right" id="topbarRight">
+      <div class="topbar-right">
         <div class="tab active" data-view="dashboardView" onclick="switchView('dashboardView', this)">Dashboard</div>
         <div class="tab" data-view="trackerView" onclick="switchView('trackerView', this)">Tracker</div>
         <div class="tab" data-view="communityView" onclick="switchView('communityView', this)">Community <span id="communityTabBadge" class="tab-badge hidden">0</span></div>
@@ -659,6 +376,7 @@
         <button class="button dark" style="padding: 12px 18px; font-size:14px;" onclick="logout()">Вихід</button>
       </div>
     </div>
+    <div id="mobileTopbarSpacer" class="mobile-topbar-spacer"></div>
 
     <div id="dashboardView" class="view active">
       <div id="dashboardHero" class="dashboard-hero collapsed">
@@ -726,7 +444,7 @@
                 <div id="fileNameDisplay" style="font-size:11px; color:var(--accent-lime);"></div>
                 <button type="button" class="button dark" style="padding:8px 12px; font-size:12px;" onclick="clearSelectedFile()">Remove</button>
               </div>
-              <textarea id="postInput" class="textarea" style="min-height:60px; resize:vertical;" placeholder="Що нового?" oninput="updateMentionSuggestions()" onfocus="collapseMobileMenu()" onkeydown="handlePostInputKeydown(event)"></textarea>
+              <textarea id="postInput" class="textarea" style="min-height:60px; resize:vertical;" placeholder="Що нового?" oninput="updateMentionSuggestions()" onkeydown="handlePostInputKeydown(event)"></textarea>
               <div id="mentionList" class="mention-list hidden"></div>
             </div>
             <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
@@ -763,24 +481,20 @@
     const SUPABASE_KEY = "sb_publishable_yfG2qoR_Cx8QKwEbNpzeUA_4VNjItCT";
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     const OWNER_EMAIL = "yaninastonkus@gmail.com";
-    const QUICK_REACTIONS = ['👍','👎','🔥','❤️','🖤','😂','😍','🎉','👏','🙌','🙏','😢','😞','🥺','😭','😮','😡','🤯','✅','⭐'];
 
-    let currentUser = null;
-    let categories = [];
-    let habits = [];
-    let checkIns = [];
-    let posts = [];
-    let reactions = [];
-    let selectedSpace = 'GENERAL';
-    let editingPostId = null;
-    let selectedFocuses = [];
+    let currentUser = null, categories = [], habits = [], checkIns = [], posts = [], selectedSpace = 'GENERAL', editingPostId = null, selectedFocuses = [];
     let notificationsPoller = null;
     let audioUnlocked = false;
+    let reactions = [];
     let mentionableUsers = [];
     let mentionSuggestions = [];
     let activeMentionIndex = 0;
-    let mobileMenuOpen = false;
-
+    let mobileTopbarExpanded = true;
+    let mobileTopbarInitialized = false;
+    let mobileTopbarLastY = 0;
+    let mobileTopbarAccumulated = 0;
+    let mobileTopbarFrame = null;
+    let mobileTopbarLockUntil = 0;
     const TODAY_DAY = new Date().getDate();
     const META = { MOVE:{emoji:'🏃'}, MIND:{emoji:'🧠'}, CREATE:{emoji:'🎨'}, SLOW:{emoji:'🌿'}, GENERAL:{emoji:'💬'} };
     const DEFAULT_HABITS = {
@@ -789,14 +503,12 @@
       CREATE:['Sketching','Writing ideas','Content draft'],
       SLOW:['No phone tea','Breathing break','Evening reset']
     };
-
+    const DEFAULT_HABIT_TITLES = Object.values(DEFAULT_HABITS).flat();
     const getEl = id => document.getElementById(id);
-    const isMobile = () => window.innerWidth <= 768;
-
     function getMeta(slug){ return META[(slug||'').toUpperCase()] || {emoji:'📌'}; }
+
     function sanitizeFileName(name){ return (name||'file').normalize('NFKD').replace(/[^a-zA-Z0-9._-]+/g,'_').replace(/_+/g,'_').replace(/^_+|_+$/g,'') || 'file'; }
     function togglePassword(){ const input = getEl('passwordInput'); input.type = input.type === 'password' ? 'text' : 'password'; }
-
     async function unlockAudio(){
       if(audioUnlocked) return;
       try {
@@ -815,21 +527,24 @@
         osc.stop(ctx.currentTime + 0.01);
         audioUnlocked = true;
         setTimeout(() => ctx.close(), 40);
-      } catch(e) { console.error('unlockAudio error:', e); }
+      } catch(e) {
+        console.error('unlockAudio error:', e);
+      }
     }
-
     async function playNotificationSound(){
       try {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         if(!AudioCtx) return;
         const ctx = new AudioCtx();
         if(ctx.state === 'suspended') await ctx.resume();
+
         const now = ctx.currentTime;
         const master = ctx.createGain();
         master.gain.setValueAtTime(0.0001, now);
         master.gain.exponentialRampToValueAtTime(0.08, now + 0.02);
         master.gain.exponentialRampToValueAtTime(0.0001, now + 0.42);
         master.connect(ctx.destination);
+
         const osc1 = ctx.createOscillator();
         const osc2 = ctx.createOscillator();
         osc1.type = 'sine';
@@ -838,34 +553,82 @@
         osc1.frequency.exponentialRampToValueAtTime(1174, now + 0.18);
         osc2.frequency.setValueAtTime(660, now);
         osc2.frequency.exponentialRampToValueAtTime(880, now + 0.18);
+
         osc1.connect(master);
         osc2.connect(master);
         osc1.start(now);
         osc2.start(now + 0.03);
         osc1.stop(now + 0.24);
         osc2.stop(now + 0.28);
-        setTimeout(() => ctx.close(), 700);
-      } catch(e) { console.error('playNotificationSound error:', e); }
-    }
 
-    function applyMobileMenuState(){
-      const topbar = getEl('topbar');
-      const toggle = getEl('mobileTopbarToggle');
-      if(!topbar || !toggle) return;
-      if(!isMobile()){
-        topbar.classList.remove('menu-open');
-        mobileMenuOpen = false;
-        toggle.innerText = '☰';
+        setTimeout(() => ctx.close(), 700);
+      } catch(e) {
+        console.error('playNotificationSound error:', e);
+      }
+    }
+    function applyMobileTopbarState(force = false){
+      const topbar = document.querySelector('.topbar');
+      const toggleBtn = getEl('mobileTopbarToggle');
+      const topbarRight = document.querySelector('.topbar-right');
+      const spacer = getEl('mobileTopbarSpacer');
+      if(!topbar || !toggleBtn || !topbarRight || !spacer) return;
+
+      const isMobile = window.innerWidth <= 768;
+      if(!isMobile){
+        topbar.classList.remove('mobile-collapsed');
+        spacer.style.height = '0px';
+        spacer.style.display = 'none';
+        topbarRight.style.position = '';
+        topbarRight.style.left = '';
+        topbarRight.style.right = '';
+        topbarRight.style.top = '';
+        topbarRight.style.width = '';
+        mobileTopbarExpanded = true;
+        toggleBtn.innerText = '☰';
         return;
       }
-      topbar.classList.toggle('menu-open', mobileMenuOpen);
-      toggle.innerText = mobileMenuOpen ? '−' : '☰';
+
+      spacer.style.display = 'block';
+      topbarRight.style.position = 'absolute';
+      topbarRight.style.left = '14px';
+      topbarRight.style.right = '14px';
+      topbarRight.style.top = '96px';
+      topbarRight.style.width = 'calc(100% - 28px)';
+
+      const shouldCollapse = !mobileTopbarExpanded;
+      if(force || topbar.classList.contains('mobile-collapsed') !== shouldCollapse){
+        topbar.classList.toggle('mobile-collapsed', shouldCollapse);
+      }
+
+      spacer.style.height = shouldCollapse ? '0px' : '156px';
+      toggleBtn.innerText = mobileTopbarExpanded ? '−' : '☰';
     }
+    function toggleMobileTopbar(forceExpanded = null){
+      if(window.innerWidth > 768) return;
+      const nextState = typeof forceExpanded === 'boolean' ? forceExpanded : !mobileTopbarExpanded;
+      if(nextState === mobileTopbarExpanded) return;
+      mobileTopbarExpanded = nextState;
+      mobileTopbarLockUntil = Date.now() + 280;
+      mobileTopbarAccumulated = 0;
+      applyMobileTopbarState(true);
+    }
+    function initMobileTopbarBehavior(){
+      if(mobileTopbarInitialized) return;
+      mobileTopbarInitialized = true;
+      if(window.innerWidth <= 768){
+        mobileTopbarExpanded = false;
+      }
+      applyMobileTopbarState(true);
 
-    function toggleMobileTopbar(){ if(!isMobile()) return; mobileMenuOpen = !mobileMenuOpen; applyMobileMenuState(); }
-    function collapseMobileMenu(){ if(!isMobile() || !mobileMenuOpen) return; mobileMenuOpen = false; applyMobileMenuState(); }
-    function initMobileMenuBehavior(){ applyMobileMenuState(); window.addEventListener('resize', () => { if(!isMobile()) mobileMenuOpen = false; applyMobileMenuState(); }); }
-
+      window.addEventListener('resize', () => {
+        if(window.innerWidth > 768){
+          mobileTopbarExpanded = true;
+        } else {
+          mobileTopbarExpanded = false;
+        }
+        applyMobileTopbarState(true);
+      });
+    }
     function switchView(viewId, clickedTab = null){
       document.querySelectorAll('.tab[data-view]').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -873,7 +636,12 @@
       const targetView = getEl(viewId);
       if(targetTab) targetTab.classList.add('active');
       if(targetView) targetView.classList.add('active');
-      if(isMobile()) collapseMobileMenu();
+
+      if(window.innerWidth <= 768){
+        mobileTopbarExpanded = false;
+        applyMobileTopbarState(true);
+      }
+
       if(viewId === 'communityView'){
         markSpaceAsRead(selectedSpace);
         renderCommunitySpacesOnly();
@@ -881,18 +649,36 @@
         const postsEl = getEl('postsWrap');
         if(postsEl) postsEl.scrollTop = postsEl.scrollHeight;
       }
+
       if(viewId === 'trackerView'){
         requestAnimationFrame(() => scrollTrackersToToday(true, 0));
         setTimeout(() => scrollTrackersToToday(true, 1), 90);
       }
     }
-
     function bindTabs(){ switchView((document.querySelector('.tab.active[data-view]') || document.querySelector('.tab[data-view="dashboardView"]')).dataset.view); }
-    function updateFileName(){ const file = getEl('fileInput').files[0]; const actions = getEl('attachmentActions'); getEl('fileNameDisplay').innerText = file ? `Прикріплено: ${file.name}` : ''; if(file) actions.classList.remove('hidden'); else actions.classList.add('hidden'); collapseMobileMenu(); }
-    function clearSelectedFile(){ getEl('fileInput').value=''; getEl('fileNameDisplay').innerText=''; getEl('attachmentActions').classList.add('hidden'); }
-    function escapeHtml(value){ return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;').replace(/'/g, '&#39;'); }
-    function renderPostBodyWithMentions(text){ const escaped = escapeHtml(text || ''); return escaped.replace(/(^|\s)@([a-zA-Z0-9._-]+)/g, '$1<span class="mention-pill">@$2</span>'); }
 
+    function updateFileName(){
+      const file = getEl('fileInput').files[0];
+      const actions = getEl('attachmentActions');
+      getEl('fileNameDisplay').innerText = file ? `Прикріплено: ${file.name}` : '';
+      if(file) {
+        actions.classList.remove('hidden');
+        if(window.innerWidth <= 768){
+          mobileTopbarExpanded = false;
+          applyMobileTopbarState(true);
+        }
+      } else {
+        actions.classList.add('hidden');
+      }
+    }
+    function clearSelectedFile(){ getEl('fileInput').value=''; getEl('fileNameDisplay').innerText=''; getEl('attachmentActions').classList.add('hidden'); }
+    function escapeHtml(value){
+      return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+    function renderPostBodyWithMentions(text){
+      const escaped = escapeHtml(text || '');
+      return escaped.replace(/(^|\s)@([a-zA-Z0-9._-]+)/g, '$1<span class="mention-pill">@$2</span>');
+    }
     function getActiveMentionContext(){
       const input = getEl('postInput');
       if(!input) return null;
@@ -905,11 +691,36 @@
       const start = caret - query.length - 1;
       return { query, start, caret };
     }
-
-    function closeMentionSuggestions(){ mentionSuggestions = []; activeMentionIndex = 0; const list = getEl('mentionList'); if(list){ list.innerHTML = ''; list.classList.add('hidden'); } }
-    function renderMentionSuggestions(){ const list = getEl('mentionList'); if(!list) return; if(!mentionSuggestions.length){ list.innerHTML = ''; list.classList.add('hidden'); return; } list.innerHTML = mentionSuggestions.map((user, index) => `<button type="button" class="mention-item ${index === activeMentionIndex ? 'active' : ''}" onclick="insertMention('${user.handle}')"><span class="mention-handle">@${user.handle}</span><span class="mention-email">${user.email}</span></button>`).join(''); list.classList.remove('hidden'); }
-    function updateMentionSuggestions(){ const ctx = getActiveMentionContext(); if(!ctx){ closeMentionSuggestions(); return; } const q = ctx.query.toLowerCase(); mentionSuggestions = mentionableUsers.filter(user => user.id !== currentUser?.id).filter(user => !q || user.handle.toLowerCase().includes(q) || user.email.toLowerCase().includes(q)).slice(0, 6); activeMentionIndex = 0; renderMentionSuggestions(); }
-
+    function closeMentionSuggestions(){
+      mentionSuggestions = [];
+      activeMentionIndex = 0;
+      const list = getEl('mentionList');
+      if(list){ list.innerHTML = ''; list.classList.add('hidden'); }
+    }
+    function renderMentionSuggestions(){
+      const list = getEl('mentionList');
+      if(!list) return;
+      if(!mentionSuggestions.length){
+        list.innerHTML = '';
+        list.classList.add('hidden');
+        return;
+      }
+      list.innerHTML = mentionSuggestions.map(function(user, index){
+        return '<button type="button" class="mention-item ' + (index === activeMentionIndex ? 'active' : '') + '" onclick="insertMention(\'' + user.handle + '\')">' +
+          '<span class="mention-handle">@' + user.handle + '</span>' +
+          '<span class="mention-email">' + user.email + '</span>' +
+        '</button>';
+      }).join('');
+      list.classList.remove('hidden');
+    }
+    function updateMentionSuggestions(){
+      const ctx = getActiveMentionContext();
+      if(!ctx){ closeMentionSuggestions(); return; }
+      const q = ctx.query.toLowerCase();
+      mentionSuggestions = mentionableUsers.filter(function(user){ return user.id !== currentUser?.id; }).filter(function(user){ return !q || user.handle.toLowerCase().includes(q) || user.email.toLowerCase().includes(q); }).slice(0, 6);
+      activeMentionIndex = 0;
+      renderMentionSuggestions();
+    }
     function insertMention(handle){
       const input = getEl('postInput');
       const ctx = getActiveMentionContext();
@@ -924,47 +735,104 @@
       input.setSelectionRange(nextPos, nextPos);
       closeMentionSuggestions();
     }
-
     function handlePostInputKeydown(event){
-      collapseMobileMenu();
-      if(mentionSuggestions.length){
-        if(event.key === 'ArrowDown'){ event.preventDefault(); activeMentionIndex = (activeMentionIndex + 1) % mentionSuggestions.length; renderMentionSuggestions(); return; }
-        if(event.key === 'ArrowUp'){ event.preventDefault(); activeMentionIndex = (activeMentionIndex - 1 + mentionSuggestions.length) % mentionSuggestions.length; renderMentionSuggestions(); return; }
-        if(event.key === 'Enter' && !event.shiftKey){ event.preventDefault(); const selected = mentionSuggestions[activeMentionIndex]; if(selected) insertMention(selected.handle); return; }
-        if(event.key === 'Escape'){ event.preventDefault(); closeMentionSuggestions(); return; }
+      if(window.innerWidth <= 768){
+        mobileTopbarExpanded = false;
+        applyMobileTopbarState(true);
       }
-      if(event.key === 'Enter' && !event.shiftKey){ event.preventDefault(); createPost(); }
+      if(mentionSuggestions.length){
+        if(event.key === 'ArrowDown'){
+          event.preventDefault();
+          activeMentionIndex = (activeMentionIndex + 1) % mentionSuggestions.length;
+          renderMentionSuggestions();
+          return;
+        }
+        if(event.key === 'ArrowUp'){
+          event.preventDefault();
+          activeMentionIndex = (activeMentionIndex - 1 + mentionSuggestions.length) % mentionSuggestions.length;
+          renderMentionSuggestions();
+          return;
+        }
+        if(event.key === 'Enter' && !event.shiftKey){
+          event.preventDefault();
+          const selected = mentionSuggestions[activeMentionIndex];
+          if(selected) insertMention(selected.handle);
+          return;
+        }
+        if(event.key === 'Escape'){
+          event.preventDefault();
+          closeMentionSuggestions();
+          return;
+        }
+      }
+      if(event.key === 'Enter' && !event.shiftKey){
+        event.preventDefault();
+        createPost();
+      }
     }
 
     async function signInWithWorkspace(){
       const workspaceEntryUrl = 'https://YOUR-WORKSPACE-LOGIN-URL';
-      if(workspaceEntryUrl.includes('YOUR-WORKSPACE-LOGIN-URL')){ alert('Підстав свій внутрішній workspace / SSO URL у функцію signInWithWorkspace().'); return; }
+      if(workspaceEntryUrl.includes('YOUR-WORKSPACE-LOGIN-URL')){
+        alert('Підстав свій внутрішній workspace / SSO URL у функцію signInWithWorkspace().');
+        return;
+      }
       window.location.href = workspaceEntryUrl;
     }
-
     async function signIn(){
       getEl('loginBtn').innerText = 'Wait...';
-      const { error } = await sb.auth.signInWithPassword({ email: getEl('emailInput').value, password: getEl('passwordInput').value });
-      if(error){ alert(error.message); getEl('loginBtn').innerText = 'Увійти'; return; }
+      const { error } = await sb.auth.signInWithPassword({
+        email: getEl('emailInput').value,
+        password: getEl('passwordInput').value
+      });
+      if(error){
+        alert(error.message);
+        getEl('loginBtn').innerText = 'Увійти';
+        return;
+      }
       await bootstrap();
       getEl('loginBtn').innerText = 'Увійти';
     }
-
     async function logout(){ await sb.auth.signOut(); location.reload(); }
 
     async function ensureProfile(){
       if(!currentUser) return false;
+
       const email = (currentUser.email || '').trim().toLowerCase() || null;
-      const basePayload = { id: currentUser.id, email, user_email: email };
-      const { data: existingProfile, error: fetchError } = await sb.from('profiles').select('id,email,user_email').eq('id', currentUser.id).maybeSingle();
-      if(fetchError){ alert(fetchError.message); return false; }
+      const basePayload = {
+        id: currentUser.id,
+        email: email,
+        user_email: email
+      };
+
+      const { data: existingProfile, error: fetchError } = await sb
+        .from('profiles')
+        .select('id,email,user_email')
+        .eq('id', currentUser.id)
+        .maybeSingle();
+
+      if(fetchError){
+        alert(fetchError.message);
+        return false;
+      }
+
       if(existingProfile?.id){
         const needsEmailUpdate = (!existingProfile.email && !existingProfile.user_email && email);
-        if(needsEmailUpdate){ const { error: updateError } = await sb.from('profiles').update({ email, user_email: email }).eq('id', currentUser.id); if(updateError) console.error('ensureProfile email update error:', updateError.message); }
+        if(needsEmailUpdate){
+          const { error: updateError } = await sb.from('profiles').update({ email, user_email: email }).eq('id', currentUser.id);
+          if(updateError){
+            console.error('ensureProfile email update error:', updateError.message);
+          }
+        }
         return true;
       }
+
       const { error: insertError } = await sb.from('profiles').insert(basePayload);
-      if(insertError){ alert(insertError.message); return false; }
+      if(insertError){
+        alert(insertError.message);
+        return false;
+      }
+
       return true;
     }
 
@@ -982,16 +850,23 @@
       await loadCheckIns();
       await loadPosts(false);
       await loadProfile();
+      await ensureProfile();
       await loadMentionableUsers();
       renderAll();
       bindTabs();
-      initMobileMenuBehavior();
+      initMobileTopbarBehavior();
       startNotificationsPolling();
     }
 
-    async function loadCategories(){ const { data, error } = await sb.from('categories').select('*').order('sort_order'); if(error){ alert(error.message); categories=[]; return; } categories = data || []; }
-    async function loadProfile(){ const { data } = await sb.from('profiles').select('focus_text').eq('id', currentUser.id).maybeSingle(); if(data?.focus_text){ selectedFocuses = data.focus_text.split(',').filter(Boolean); updateFocusUI(); } }
-
+    async function loadCategories(){
+      let { data, error } = await sb.from('categories').select('*').order('sort_order');
+      if(error){ alert(error.message); categories=[]; return; }
+      categories = data || [];
+    }
+    async function loadProfile(){
+      const { data } = await sb.from('profiles').select('focus_text').eq('id', currentUser.id).maybeSingle();
+      if(data?.focus_text){ selectedFocuses = data.focus_text.split(',').filter(Boolean); updateFocusUI(); }
+    }
     async function loadMentionableUsers(){
       const { data, error } = await sb.from('profiles').select('id,email,user_email');
       const profileUsers = error ? [] : (data || []).map(row => {
@@ -999,59 +874,150 @@
         const handle = email.includes('@') ? email.split('@')[0] : email;
         return { id: row.id, email, handle };
       }).filter(u => u.email && u.handle);
+
       const { data: postUsers } = await sb.from('community_posts').select('user_id,user_email');
       const fallbackUsers = (postUsers || []).map(row => {
         const email = (row.user_email || '').trim().toLowerCase();
         const handle = email.includes('@') ? email.split('@')[0] : email;
         return { id: row.user_id, email, handle };
       }).filter(u => u.id && u.email && u.handle);
+
       const merged = new Map();
-      [...profileUsers, ...fallbackUsers].forEach(user => { if(!merged.has(user.id)) merged.set(user.id, user); });
+      [...profileUsers, ...fallbackUsers].forEach(user => {
+        if(!merged.has(user.id)) merged.set(user.id, user);
+      });
       mentionableUsers = Array.from(merged.values());
     }
-
-    async function saveFocus(){ const ready = await ensureProfile(); if(!ready) return; await sb.from('profiles').upsert({ id: currentUser.id, focus_text: selectedFocuses.join(',') }, { onConflict:'id' }); }
-    function toggleFocusChip(val){ const idx = selectedFocuses.indexOf(val); if(idx > -1) selectedFocuses.splice(idx,1); else selectedFocuses.push(val); updateFocusUI(); saveFocus(); }
+    async function saveFocus(){
+      const ready = await ensureProfile(); if(!ready) return;
+      await sb.from('profiles').upsert({ id: currentUser.id, focus_text: selectedFocuses.join(',') }, { onConflict:'id' });
+    }
+    function toggleFocusChip(val){
+      const idx = selectedFocuses.indexOf(val); if(idx > -1) selectedFocuses.splice(idx,1); else selectedFocuses.push(val);
+      updateFocusUI(); saveFocus();
+    }
     function updateFocusUI(){ document.querySelectorAll('.focus-chip').forEach(c => selectedFocuses.includes(c.dataset.val) ? c.classList.add('active') : c.classList.remove('active')); renderDashboard(); }
 
     async function syncHabits(){
       const ready = await ensureProfile();
-      if(!ready){ habits = []; return; }
+      if(!ready){
+        habits = [];
+        return;
+      }
+
       const { data, error } = await sb.from('habits').select('*').eq('user_id', currentUser.id);
-      if(error){ alert(error.message); habits = []; return; }
+      if(error){
+        alert(error.message);
+        habits = [];
+        return;
+      }
+
       const existingHabits = data || [];
-      const trackingCategories = categories.filter(c => ['MOVE','MIND','CREATE','SLOW'].includes((c.slug || '').toUpperCase()));
+      const trackingCategories = categories.filter(c => {
+        const slug = (c.slug || '').toUpperCase();
+        return ['MOVE','MIND','CREATE','SLOW'].includes(slug);
+      });
+
       const missingDefaults = [];
       const unexpectedDefaults = [];
+
       trackingCategories.forEach(cat => {
         const slug = (cat.slug || '').toUpperCase();
         const defaultsForCategory = DEFAULT_HABITS[slug] || [];
         const categoryHabits = existingHabits.filter(h => h.category_id === cat.id);
-        defaultsForCategory.forEach(title => { const exists = categoryHabits.some(h => (h.title || '').trim() === title); if(!exists) missingDefaults.push({ user_id: currentUser.id, category_id: cat.id, title, is_custom: false }); });
-        categoryHabits.forEach(h => { const isDefaultTitle = defaultsForCategory.includes((h.title || '').trim()); if(h.is_custom !== true && !isDefaultTitle) unexpectedDefaults.push(h); });
+
+        defaultsForCategory.forEach(title => {
+          const exists = categoryHabits.some(h => (h.title || '').trim() === title);
+          if(!exists){
+            missingDefaults.push({ user_id: currentUser.id, category_id: cat.id, title, is_custom: false });
+          }
+        });
+
+        categoryHabits.forEach(h => {
+          const isDefaultTitle = defaultsForCategory.includes((h.title || '').trim());
+          if(h.is_custom !== true && !isDefaultTitle){
+            unexpectedDefaults.push(h);
+          }
+        });
       });
-      for(const h of unexpectedDefaults){ await sb.from('habits').update({ is_custom: true }).eq('id', h.id).eq('user_id', currentUser.id); }
-      if(missingDefaults.length){ const { error: insertDefaultsError } = await sb.from('habits').insert(missingDefaults); if(insertDefaultsError){ alert(insertDefaultsError.message); return; } }
+
+      if(unexpectedDefaults.length){
+        for(const h of unexpectedDefaults){
+          await sb.from('habits').update({ is_custom: true }).eq('id', h.id).eq('user_id', currentUser.id);
+        }
+      }
+
+      if(missingDefaults.length){
+        const { error: insertDefaultsError } = await sb.from('habits').insert(missingDefaults);
+        if(insertDefaultsError){
+          alert(insertDefaultsError.message);
+          return;
+        }
+      }
+
       const refreshedSource = [...existingHabits, ...missingDefaults].map(h => ({ ...h }));
       const missingCustomFlag = refreshedSource.filter(h => typeof h.is_custom === 'undefined' || h.is_custom === null);
-      for(const h of missingCustomFlag){
-        const cat = categories.find(c => c.id === h.category_id);
-        const defaultsForCategory = DEFAULT_HABITS[(cat?.slug || '').toUpperCase()] || [];
-        const inferredCustom = !defaultsForCategory.includes((h.title || '').trim());
-        await sb.from('habits').update({ is_custom: inferredCustom }).eq('id', h.id).eq('user_id', currentUser.id);
+      if(missingCustomFlag.length){
+        for(const h of missingCustomFlag){
+          const cat = categories.find(c => c.id === h.category_id);
+          const defaultsForCategory = DEFAULT_HABITS[(cat?.slug || '').toUpperCase()] || [];
+          const inferredCustom = !defaultsForCategory.includes((h.title || '').trim());
+          await sb.from('habits').update({ is_custom: inferredCustom }).eq('id', h.id).eq('user_id', currentUser.id);
+        }
       }
+
       const testHabit = refreshedSource.find(h => (h.title || '').trim().toUpperCase() === 'ВРИ');
-      if(testHabit?.id){ await sb.from('check_ins').delete().eq('habit_id', testHabit.id); await sb.from('habits').delete().eq('id', testHabit.id).eq('user_id', currentUser.id); }
+      if(testHabit?.id){
+        await sb.from('check_ins').delete().eq('habit_id', testHabit.id);
+        await sb.from('habits').delete().eq('id', testHabit.id).eq('user_id', currentUser.id);
+      }
+
       const { data: fresh, error: freshError } = await sb.from('habits').select('*').eq('user_id', currentUser.id).order('created_at', { ascending:true });
-      if(freshError){ alert(freshError.message); habits = []; return; }
-      habits = (fresh || []).filter(h => { const cat = categories.find(c => c.id === h.category_id); return ['MOVE','MIND','CREATE','SLOW'].includes((cat?.slug || '').toUpperCase()); });
+      if(freshError){
+        alert(freshError.message);
+        habits = [];
+        return;
+      }
+      habits = (fresh || []).filter(h => {
+        const cat = categories.find(c => c.id === h.category_id);
+        const slug = (cat?.slug || '').toUpperCase();
+        return ['MOVE','MIND','CREATE','SLOW'].includes(slug);
+      });
+    }
+    async function addNewHabit(catId){
+      const ready = await ensureProfile(); if(!ready) return;
+      const title = prompt('Введіть назву своєї звички:');
+      if(!title) return;
+      const { error } = await sb.from('habits').insert({ user_id: currentUser.id, category_id: catId, title: title.trim(), is_custom:true });
+      if(error) return alert(error.message);
+      await syncHabits(); renderTracker();
+    }
+    async function editHabit(habitId){
+      const habit = habits.find(h => h.id === habitId && h.user_id === currentUser.id);
+      if(!habit || habit.is_custom !== true) return;
+      const nextTitle = prompt('Відредагуй назву звички:', habit.title || '');
+      if(nextTitle === null) return;
+      const cleanTitle = nextTitle.trim();
+      if(!cleanTitle) return alert('Назва звички не може бути порожньою');
+      const { error } = await sb.from('habits').update({ title: cleanTitle }).eq('id', habitId).eq('user_id', currentUser.id);
+      if(error) return alert(error.message);
+      await syncHabits(); renderTracker();
+    }
+    async function deleteHabit(habitId){
+      if(!confirm('Видалити цю звичку?')) return;
+      await sb.from('check_ins').delete().eq('habit_id', habitId);
+      const { error } = await sb.from('habits').delete().eq('id', habitId).eq('user_id', currentUser.id);
+      if(error) return alert(error.message);
+      await syncHabits(); await loadCheckIns(); renderAll();
     }
 
-    async function addNewHabit(catId){ const ready = await ensureProfile(); if(!ready) return; const title = prompt('Введіть назву своєї звички:'); if(!title) return; const { error } = await sb.from('habits').insert({ user_id: currentUser.id, category_id: catId, title: title.trim(), is_custom:true }); if(error) return alert(error.message); await syncHabits(); renderTracker(); }
-    async function editHabit(habitId){ const habit = habits.find(h => h.id === habitId && h.user_id === currentUser.id); if(!habit || habit.is_custom !== true) return; const nextTitle = prompt('Відредагуй назву звички:', habit.title || ''); if(nextTitle === null) return; const cleanTitle = nextTitle.trim(); if(!cleanTitle) return alert('Назва звички не може бути порожньою'); const { error } = await sb.from('habits').update({ title: cleanTitle }).eq('id', habitId).eq('user_id', currentUser.id); if(error) return alert(error.message); await syncHabits(); renderTracker(); }
-    async function deleteHabit(habitId){ if(!confirm('Видалити цю звичку?')) return; await sb.from('check_ins').delete().eq('habit_id', habitId); const { error } = await sb.from('habits').delete().eq('id', habitId).eq('user_id', currentUser.id); if(error) return alert(error.message); await syncHabits(); await loadCheckIns(); renderAll(); }
     async function loadCheckIns(){ const { data } = await sb.from('check_ins').select('*').eq('user_id', currentUser.id); checkIns = data || []; }
-    async function toggleCheck(habitId, day){ const dateStr = new Date(new Date().getFullYear(), new Date().getMonth(), day+1).toISOString().split('T')[0]; const exist = checkIns.find(c => c.habit_id === habitId && c.check_in_date === dateStr); if(exist) await sb.from('check_ins').delete().eq('id', exist.id); else await sb.from('check_ins').insert({ user_id:currentUser.id, habit_id:habitId, check_in_date:dateStr }); await loadCheckIns(); renderAll(); }
+    async function toggleCheck(habitId, day){
+      const dateStr = new Date(new Date().getFullYear(), new Date().getMonth(), day+1).toISOString().split('T')[0];
+      const exist = checkIns.find(c => c.habit_id === habitId && c.check_in_date === dateStr);
+      if(exist) await sb.from('check_ins').delete().eq('id', exist.id); else await sb.from('check_ins').insert({ user_id:currentUser.id, habit_id:habitId, check_in_date:dateStr });
+      await loadCheckIns(); renderAll();
+    }
 
     async function loadPosts(triggerNotifications = false){
       const previousPosts = [...posts];
@@ -1063,34 +1029,67 @@
       renderCommunity();
     }
 
-    async function loadReactions(){ const { data, error } = await sb.from('community_reactions').select('*'); if(error){ reactions = []; return; } reactions = data || []; }
-    function getUserLabelById(userId){ const user = mentionableUsers.find(u => u.id === userId); return user ? `@${user.handle}` : 'User'; }
+    async function loadReactions(){
+      const { data, error } = await sb.from('community_reactions').select('*');
+      if(error){
+        reactions = [];
+        return;
+      }
+      reactions = data || [];
+    }
+
+    function getUserLabelById(userId){
+      const user = mentionableUsers.find(u => u.id === userId);
+      return user ? `@${user.handle}` : 'User';
+    }
 
     function getPostReactions(postId){
       const rows = reactions.filter(r => r.post_id === postId);
       const grouped = {};
-      rows.forEach(r => { if(!grouped[r.emoji]) grouped[r.emoji] = []; grouped[r.emoji].push(r.user_id); });
-      return Object.entries(grouped).map(([emoji, userIds]) => ({ emoji, count: userIds.length, mine: userIds.includes(currentUser?.id), usersText: userIds.map(getUserLabelById).join(', ') }));
+      rows.forEach(r => {
+        if(!grouped[r.emoji]) grouped[r.emoji] = [];
+        grouped[r.emoji].push(r.user_id);
+      });
+      return Object.entries(grouped).map(([emoji, userIds]) => ({
+        emoji,
+        count: userIds.length,
+        mine: userIds.includes(currentUser?.id),
+        usersText: userIds.map(getUserLabelById).join(', ')
+      }));
     }
 
     async function toggleReaction(postId, emoji){
       if(!currentUser) return;
       const mine = reactions.find(r => r.post_id === postId && r.user_id === currentUser.id && r.emoji === emoji);
-      if(mine){ const { error } = await sb.from('community_reactions').delete().eq('id', mine.id); if(error) return alert(error.message); }
-      else { const { error } = await sb.from('community_reactions').insert({ post_id: postId, user_id: currentUser.id, emoji }); if(error) return alert(error.message); }
+      if(mine){
+        const { error } = await sb.from('community_reactions').delete().eq('id', mine.id);
+        if(error) return alert(error.message);
+      } else {
+        const { error } = await sb.from('community_reactions').insert({ post_id: postId, user_id: currentUser.id, emoji });
+        if(error) return alert(error.message);
+      }
       await loadReactions();
       renderCommunity();
     }
-
     function getSpaceStorageKey(space){ return `ek_read_${currentUser?.id || 'guest'}_${space}`; }
-    function getPostsForSpace(space){ const generalCategoryId = categories.find(c => (c.slug || '').toUpperCase() === 'GENERAL')?.id; return posts.filter(p => space === 'GENERAL' ? p.category_id === generalCategoryId : categories.find(c => c.id === p.category_id)?.slug === space); }
+    function getPostsForSpace(space){
+      const generalCategoryId = categories.find(c => (c.slug || '').toUpperCase() === 'GENERAL')?.id;
+      return posts.filter(p => { if(space === 'GENERAL') return p.category_id === generalCategoryId; return categories.find(c => c.id === p.category_id)?.slug === space; });
+    }
     function getUnreadCountForSpace(space){ const readAt = Number(localStorage.getItem(getSpaceStorageKey(space)) || 0); return getPostsForSpace(space).filter(p => p.user_id !== currentUser?.id && new Date(p.created_at || 0).getTime() > readAt).length; }
     function markSpaceAsRead(space){ const latestTs = getPostsForSpace(space).map(p => new Date(p.created_at || 0).getTime()).filter(Boolean).reduce((max, ts) => Math.max(max, ts), Date.now()); localStorage.setItem(getSpaceStorageKey(space), String(latestTs || Date.now())); }
-    function updateCommunityTabBadge(){ if(!currentUser) return; const spaces = ['GENERAL', ...categories.filter(cat => (cat.slug || '').toUpperCase() !== 'GENERAL').map(cat => cat.slug)]; const totalUnread = spaces.reduce((sum, space) => sum + getUnreadCountForSpace(space), 0); const badge = getEl('communityTabBadge'); if(!badge) return; badge.innerText = totalUnread; if(totalUnread > 0) badge.classList.remove('hidden'); else badge.classList.add('hidden'); }
-
+    function updateCommunityTabBadge(){
+      if(!currentUser) return;
+      const spaces = ['GENERAL', ...categories.filter(cat => (cat.slug || '').toUpperCase() !== 'GENERAL').map(cat => cat.slug)];
+      const totalUnread = spaces.reduce((sum, space) => sum + getUnreadCountForSpace(space), 0);
+      const badge = getEl('communityTabBadge');
+      if(!badge) return;
+      badge.innerText = totalUnread;
+      if(totalUnread > 0) badge.classList.remove('hidden');
+      else badge.classList.add('hidden');
+    }
     async function createPost(){
-      const ready = await ensureProfile();
-      if(!ready) return;
+      const ready = await ensureProfile(); if(!ready) return;
       const body = getEl('postInput').value.trim();
       const file = getEl('fileInput').files[0];
       if(!body && !file) return;
@@ -1109,43 +1108,32 @@
         const catId = selectedSpace === 'GENERAL' ? generalCategory?.id : (categories.find(c => c.slug === selectedSpace)?.id ?? null);
         if(!catId) return alert('Не знайдена категорія для цього чату. Перевір categories у Supabase.');
         if(editingPostId){
-          const payload = { body, category_id: catId };
-          if(url) payload.media_url = url;
+          const payload = { body, category_id: catId }; if(url) payload.media_url = url;
           const { error } = await sb.from('community_posts').update(payload).eq('id', editingPostId).eq('user_id', currentUser.id);
           if(error) return alert(error.message);
-          editingPostId = null;
-          getEl('sendBtn').innerText = 'Send';
-          getEl('cancelEditBtn').classList.add('hidden');
+          editingPostId = null; getEl('sendBtn').innerText = 'Send'; getEl('cancelEditBtn').classList.add('hidden');
         } else {
           const { error } = await sb.from('community_posts').insert({ user_id: currentUser.id, category_id: catId, body, media_url: url, user_email: currentUser.email });
           if(error) return alert(error.message);
         }
-        getEl('postInput').value = '';
-        closeMentionSuggestions();
-        clearSelectedFile();
-        await loadPosts();
-        updateCommunityTabBadge();
+        getEl('postInput').value = ''; closeMentionSuggestions(); clearSelectedFile(); await loadPosts(); updateCommunityTabBadge();
       } catch(e){ alert(e.message); }
     }
-
-    function startEditPost(postId){ const post = posts.find(p => p.id === postId && p.user_id === currentUser.id); if(!post) return; editingPostId = postId; getEl('postInput').value = post.body || ''; getEl('sendBtn').innerText = 'Update'; getEl('cancelEditBtn').classList.remove('hidden'); getEl('postInput').focus(); collapseMobileMenu(); }
+    function startEditPost(postId){ const post = posts.find(p => p.id === postId && p.user_id === currentUser.id); if(!post) return; editingPostId = postId; getEl('postInput').value = post.body || ''; getEl('sendBtn').innerText = 'Update'; getEl('cancelEditBtn').classList.remove('hidden'); getEl('postInput').focus(); }
     function cancelEditPost(){ editingPostId = null; getEl('postInput').value = ''; closeMentionSuggestions(); clearSelectedFile(); getEl('sendBtn').innerText = 'Send'; getEl('cancelEditBtn').classList.add('hidden'); }
     async function deletePost(postId){ if(!confirm('Видалити повідомлення?')) return; const { error } = await sb.from('community_posts').delete().eq('id', postId).eq('user_id', currentUser.id); if(error) return alert(error.message); if(editingPostId === postId) cancelEditPost(); await loadPosts(); }
 
     function getStreak(){
       const dates = [...new Set(checkIns.map(c => c.check_in_date))].sort().reverse();
-      let s = 0; let check = new Date().toISOString().split('T')[0];
+      let s = 0, check = new Date().toISOString().split('T')[0];
       for(let d of dates){ if(d === check || d === new Date(Date.now()-86400000).toISOString().split('T')[0]){ s++; check = new Date(new Date(d).getTime()-86400000).toISOString().split('T')[0]; } else break; }
       return s;
     }
-
     function getLevelMeta(totalDone){
       const levels = [{min:0,name:'SEED',label:'your start is already progress'},{min:8,name:'NOVICE',label:'you are building consistency'},{min:18,name:'ROOKIE',label:'small wins are stacking up'},{min:30,name:'EXPLORER',label:'you are finding your rhythm'},{min:45,name:'BUILDER',label:'your system is getting stronger'},{min:65,name:'STRIVER',label:'momentum is clearly visible'},{min:90,name:'WARRIOR',label:'you are showing real discipline'},{min:120,name:'ELITE',label:'high consistency unlocked'},{min:160,name:'MASTER',label:'this is next-level commitment'}];
-      let current = levels[0], next = null;
-      for(let i=0;i<levels.length;i++){ if(totalDone >= levels[i].min){ current = levels[i]; next = levels[i+1] || null; } }
+      let current = levels[0], next = null; for(let i=0;i<levels.length;i++){ if(totalDone >= levels[i].min){ current = levels[i]; next = levels[i+1] || null; } }
       return { ...current, next, leftToNext: next ? Math.max(0, next.min - totalDone) : 0 };
     }
-
     function makeRing(percent, variant='category', size=112){
       const safePercent = Math.max(0, Math.min(100, Number(percent)||0));
       const stroke=10, center=size/2, radius=center - stroke/2 - 1, circumference = 2*Math.PI*radius, dashoffset = circumference*(1-safePercent/100), progressClass = variant === 'total' ? 'ring-progress total' : 'ring-progress';
@@ -1159,23 +1147,22 @@
       const levelMeta = getLevelMeta(checkIns.length);
       getEl('levelPanel').innerHTML = `<div class="metric-kicker">Level</div><div class="metric-value">${levelMeta.name}</div><div class="metric-label">${levelMeta.next ? `${levelMeta.label} · ${levelMeta.leftToNext} to ${levelMeta.next.name}` : levelMeta.label}</div>`;
       const trackingCats = categories.filter(c => ['MOVE','MIND','CREATE','SLOW'].includes((c.slug || '').toUpperCase()));
-      const totalChecks = habits.length ? habits.length * 31 : 0;
-      const totalDone = checkIns.length;
-      const totalPerc = totalChecks ? Math.round((totalDone/totalChecks)*100) : 0;
+      const totalChecks = habits.length ? habits.length * 31 : 0; const totalDone = checkIns.length; const totalPerc = totalChecks ? Math.round((totalDone/totalChecks)*100) : 0;
       const totalCardHtml = `<div class="ring-card" style="min-height:260px; border-color: rgba(184,242,58,.4);">${makeRing(totalPerc,'total',140)}<div class="ring-meta"><div><div class="ring-title">TOTAL</div><div class="ring-copy">${totalDone} / ${totalChecks || 0} completed</div></div><div style="font-size:28px;">⚡</div></div></div>`;
       getEl('totalProgressWrap').innerHTML = totalCardHtml;
-      const mobileTotal = getEl('mobileTotalProgressWrap'); if(mobileTotal) mobileTotal.innerHTML = totalCardHtml;
-      const rewardReached = totalPerc >= 70; const rewardLeft = Math.max(0, 70 - totalPerc);
+      const mobileTotal = getEl('mobileTotalProgressWrap');
+      if(mobileTotal) mobileTotal.innerHTML = totalCardHtml;
+      const rewardReached = totalPerc >= 70, rewardLeft = Math.max(0, 70 - totalPerc);
       const rewardHtml = `<div class="card" style="margin-bottom:0; border-radius:28px; background:${rewardReached ? 'linear-gradient(135deg, #b8f23a, #d9ff7a)' : 'linear-gradient(135deg, #14141a, #0b0b10)'}; color:${rewardReached ? '#000' : '#fff'}; border:${rewardReached ? '1px solid rgba(184,242,58,.7)' : '1px solid rgba(255,255,255,.08)'};"><div style="display:flex; justify-content:space-between; gap:16px; align-items:center; flex-wrap:wrap;"><div><div style="font-size:12px; text-transform:uppercase; letter-spacing:.16em; font-weight:800; opacity:.8; margin-bottom:8px;">Reward Challenge</div><div style="font-size:28px; font-weight:800; letter-spacing:-.04em; line-height:1.05; margin-bottom:8px;">Зроби 70% загального трекінгу — і отримай у подарунок мерч</div><div style="font-size:15px; color:${rewardReached ? 'rgba(0,0,0,.72)' : 'rgba(255,255,255,.72)'};">${rewardReached ? 'Ціль досягнута. Час забирати свій подарунок.' : `Залишилось ще ${rewardLeft}% до reward milestone.`}</div></div><div style="font-size:42px;">${rewardReached ? '🎁' : '🏁'}</div></div></div>`;
       getEl('rewardBannerWrap').innerHTML = rewardHtml;
-      const mobileReward = getEl('mobileRewardBannerWrap'); if(mobileReward) mobileReward.innerHTML = rewardHtml;
+      const mobileReward = getEl('mobileRewardBannerWrap');
+      if(mobileReward) mobileReward.innerHTML = rewardHtml;
       getEl('ringsWrap').innerHTML = trackingCats.map(cat => { const hbits = habits.filter(h => h.category_id === cat.id); const done = checkIns.filter(c => hbits.some(h => h.id === c.habit_id)).length; const perc = hbits.length ? Math.round((done/(hbits.length*31))*100) : 0; const isFoc = selectedFocuses.includes(cat.slug); return `<div class="ring-card" style="${isFoc ? 'border-color: rgba(184,242,58,.7); box-shadow: inset 0 0 0 1px rgba(184,242,58,.22);' : ''}">${makeRing(perc, 'category', 112)}<div class="ring-meta"><div><div class="ring-title">${cat.slug}</div><div class="ring-copy">${isFoc ? 'focus enabled' : 'tracking progress'}</div></div><div style="font-size:28px;">${getMeta(cat.slug).emoji}</div></div></div>`; }).join('');
     }
 
     function scrollTrackersToToday(force = false, attempt = 0){
       const trackerWrap = getEl('trackerWrap');
       if(!trackerWrap) return;
-
       const shouldAutoAlign = window.innerWidth <= 768 || force;
       if(!shouldAutoAlign) return;
 
@@ -1183,32 +1170,29 @@
       if(!sections.length) return;
 
       let applied = false;
-
       sections.forEach(section => {
         const headCells = [...section.querySelectorAll('.tracker-head > div')];
-        const stickyCell = headCells[0];
-        const dayCells = headCells.slice(1, 32);
-        const percentCell = headCells[32];
-        const todayCell = dayCells[TODAY_DAY - 1];
+        const todayCell = headCells.find(cell => cell.classList.contains('today-cell'));
+        const stickyCell = section.querySelector('.tracker-head .habit-title-cell');
+        if(!todayCell || !stickyCell) return;
 
-        if(!stickyCell || !todayCell) return;
+        const stickyWidth = stickyCell.offsetWidth || 156;
+        const todayLeft = todayCell.offsetLeft || 0;
+        const todayWidth = todayCell.offsetWidth || 42;
 
-        const stickyWidth = stickyCell.getBoundingClientRect().width || 156;
-        const percentWidth = percentCell ? (percentCell.getBoundingClientRect().width || 68) : 68;
-        const viewportWidth = section.getBoundingClientRect().width || section.clientWidth || 0;
-        const visibleWidth = Math.max(120, viewportWidth - stickyWidth - percentWidth);
-
-        const todayCenter = todayCell.offsetLeft + (todayCell.offsetWidth || 42) / 2;
-        const desiredCenter = stickyWidth + visibleWidth * 0.52;
-        const targetLeft = Math.max(0, Math.round(todayCenter - desiredCenter));
-
+        const targetLeft = Math.max(0, todayLeft - stickyWidth - 8);
         section.scrollLeft = targetLeft;
         applied = true;
+
+        const stillHiddenOnRight = todayLeft + todayWidth > section.scrollLeft + section.clientWidth;
+        const hiddenOnLeft = todayLeft < section.scrollLeft + stickyWidth;
+        if(stillHiddenOnRight || hiddenOnLeft){
+          section.scrollLeft = Math.max(0, todayLeft - stickyWidth - 8);
+        }
       });
 
-      if(window.innerWidth <= 768 && attempt < 5){
-        const delays = [70, 140, 220, 320, 450];
-        setTimeout(() => scrollTrackersToToday(force, attempt + 1), delays[attempt] || 220);
+      if((!applied || attempt < 3) && window.innerWidth <= 768){
+        setTimeout(() => scrollTrackersToToday(force, attempt + 1), attempt === 0 ? 80 : 140);
       }
     }
 
@@ -1218,14 +1202,22 @@
         const hbits = habits.filter(h => h.category_id === cat.id);
         const defaultTitles = DEFAULT_HABITS[(cat.slug || '').toUpperCase()] || [];
         const defaultHabits = [];
-        defaultTitles.forEach(title => { const match = hbits.find(h => (h.title || '').trim() === title); if(match) defaultHabits.push(match); });
+        defaultTitles.forEach(title => {
+          const match = hbits.find(h => (h.title || '').trim() === title);
+          if(match) defaultHabits.push(match);
+        });
         const customHabits = hbits.filter(h => h.is_custom === true);
         const visibleHabits = [...defaultHabits, ...customHabits];
+
         return `<div class="category-row-header"><div class="category-title">${cat.slug}</div><div class="add-habit-btn" onclick="addNewHabit('${cat.id}')">+</div></div><div class="tracker-section" data-tracker-section="1"><div class="tracker-head"><div class="habit-title-cell">Habit</div>${Array.from({length:31},(_,i)=>`<div class="${i+1===TODAY_DAY?'today-cell':''}">${i+1}</div>`).join('')}<div>%</div></div>${visibleHabits.map(h => { const hChecks = checkIns.filter(c => c.habit_id === h.id); const isCustom = h.is_custom === true; return `<div class="tracker-row"><div class="habit-title-cell" style="display:flex; align-items:center; gap:10px; padding-right:12px;"><span class="habit-title-text">${h.title}</span>${isCustom ? `<span class="habit-actions"><button class="habit-action-btn edit" onclick="editHabit('${h.id}')">✎</button><button class="habit-action-btn delete" onclick="deleteHabit('${h.id}')">×</button></span>` : ''}</div>${Array.from({length:31},(_,i)=>{ const dStr = new Date(new Date().getFullYear(), new Date().getMonth(), i+2).toISOString().split('T')[0]; return `<div class="${i+1===TODAY_DAY?'today-cell':''}"><div class="checkbox ${hChecks.some(c => c.check_in_date === dStr) ? 'active' : ''}" onclick="toggleCheck('${h.id}', ${i+1})"></div></div>`; }).join('')}<div style="font-weight:800; color:var(--accent-lime)">${Math.round((hChecks.length/31)*100)}%</div></div>`; }).join('')}</div>`;
       }).join('');
+
       trackerWrap.querySelectorAll('[data-tracker-section="1"]').forEach(el => {
-        el.addEventListener('scroll', () => { trackerWrap.querySelectorAll('[data-tracker-section="1"]').forEach(other => { if(other !== el) other.scrollLeft = el.scrollLeft; }); }, { passive:true });
+        el.addEventListener('scroll', () => {
+          trackerWrap.querySelectorAll('[data-tracker-section="1"]').forEach(other => { if(other !== el) other.scrollLeft = el.scrollLeft; });
+        }, { passive:true });
       });
+
       requestAnimationFrame(() => scrollTrackersToToday(false, 0));
       setTimeout(() => scrollTrackersToToday(false, 1), 90);
     }
@@ -1237,38 +1229,76 @@
       const filtered = posts.filter(p => selectedSpace === 'GENERAL' ? p.category_id === generalCategoryId : categories.find(c => c.id === p.category_id)?.slug === selectedSpace);
       getEl('postsWrap').innerHTML = filtered.map(p => {
         const reactionItems = getPostReactions(p.id);
-        const reactionHtml = `<div style="margin-top:12px; padding-top:10px; border-top:1px solid rgba(255,255,255,.06);"><div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px;">${reactionItems.map(r => `<button onclick="toggleReaction('${p.id}','${r.emoji}')" title="${r.usersText || ''}" style="border:1px solid ${r.mine ? 'rgba(184,242,58,.55)' : 'rgba(255,255,255,.10)'}; background:${r.mine ? 'rgba(184,242,58,.16)' : 'rgba(255,255,255,.04)'}; color:#fff; border-radius:999px; padding:7px 12px; font-size:13px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-weight:700;">${r.emoji}<span style="opacity:.9;">${r.count}</span></button>`).join('')}</div><div style="display:flex; flex-wrap:wrap; gap:8px;">${QUICK_REACTIONS.map(emoji => `<button onclick="toggleReaction('${p.id}','${emoji}')" style="border:1px dashed rgba(255,255,255,.14); background:transparent; color:#fff; border-radius:999px; padding:6px 10px; font-size:13px; cursor:pointer; min-width:40px;">${emoji}</button>`).join('')}</div></div>`;
-        return `<div class="msg ${p.user_id===currentUser.id?'own':''}"><div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start; margin-bottom:6px;"><div style="font-size:10px; font-weight:800; opacity:.72; text-transform:uppercase; letter-spacing:.12em;">${p.user_email}</div>${p.user_id===currentUser.id ? `<div style="display:flex; gap:8px; flex-shrink:0;"><button onclick="startEditPost('${p.id}')" style="border:0; background:rgba(255,255,255,.12); color:#fff; border-radius:999px; padding:6px 10px; cursor:pointer; font-weight:700; font-size:12px;">Edit</button><button onclick="deletePost('${p.id}')" style="border:0; background:rgba(255,91,91,.18); color:#ff8d8d; border-radius:999px; padding:6px 10px; cursor:pointer; font-weight:700; font-size:12px;">Delete</button></div>` : ''}</div><div style="font-size:15px; line-height:1.45;">${renderPostBodyWithMentions(p.body || '')}</div>${p.media_url ? `<img src="${p.media_url}" style="width:100%; border-radius:16px; margin-top:12px;">` : ''}${reactionHtml}</div>`;
+        const reactionHtml = `
+          <div style="margin-top:12px; padding-top:10px; border-top:1px solid rgba(255,255,255,.06);">
+            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+              ${reactionItems.map(r => `<button onclick="toggleReaction('${p.id}','${r.emoji}')" title="${r.usersText || ''}" style="border:1px solid ${r.mine ? 'rgba(184,242,58,.55)' : 'rgba(255,255,255,.10)'}; background:${r.mine ? 'rgba(184,242,58,.16)' : 'rgba(255,255,255,.04)'}; color:#fff; border-radius:999px; padding:7px 12px; font-size:13px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-weight:700;">${r.emoji}<span style="opacity:.9;">${r.count}</span></button>`).join('')}
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:8px;">
+              ${['👍','🔥','❤️','😂','🎉','👏','🙌','😢','😞','🥺','😮','✅'].map(emoji => `<button onclick="toggleReaction('${p.id}','${emoji}')" style="border:1px dashed rgba(255,255,255,.14); background:transparent; color:#fff; border-radius:999px; padding:6px 10px; font-size:13px; cursor:pointer; min-width:40px;">${emoji}</button>`).join('')}
+            </div>
+          </div>`;
+        return `
+        <div class="msg ${p.user_id===currentUser.id?'own':''}">
+          <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start; margin-bottom:6px;"><div style="font-size:10px; font-weight:800; opacity:.72; text-transform:uppercase; letter-spacing:.12em;">${p.user_email}</div>${p.user_id===currentUser.id ? `<div style="display:flex; gap:8px; flex-shrink:0;"><button onclick="startEditPost('${p.id}')" style="border:0; background:rgba(255,255,255,.12); color:#fff; border-radius:999px; padding:6px 10px; cursor:pointer; font-weight:700; font-size:12px;">Edit</button><button onclick="deletePost('${p.id}')" style="border:0; background:rgba(255,91,91,.18); color:#ff8d8d; border-radius:999px; padding:6px 10px; cursor:pointer; font-weight:700; font-size:12px;">Delete</button></div>` : ''}</div>
+          <div style="font-size:15px; line-height:1.45;">${renderPostBodyWithMentions(p.body || '')}</div>
+          ${p.media_url ? `<img src="${p.media_url}" style="width:100%; border-radius:16px; margin-top:12px;">` : ''}
+          ${reactionHtml}
+        </div>`;
       }).join('');
       getEl('communityTitle').innerText = selectedSpace + ' CHAT';
       requestAnimationFrame(() => {
         const postsEl = getEl('postsWrap');
         if(postsEl) postsEl.scrollTop = postsEl.scrollHeight;
         const isCommunityActive = getEl('communityView')?.classList.contains('active') && !document.hidden;
-        if(isCommunityActive) markSpaceAsRead(selectedSpace);
+        if(isCommunityActive){
+          markSpaceAsRead(selectedSpace);
+        }
         updateCommunityTabBadge();
         renderCommunitySpacesOnly();
       });
     }
-
     function renderCommunitySpacesOnly(){
       const allSpaces = ['GENERAL', ...categories.filter(cat => (cat.slug || '').toUpperCase() !== 'GENERAL').map(cat => cat.slug)];
       getEl('spacesWrap').innerHTML = allSpaces.map(space => { const meta = space === 'GENERAL' ? {emoji:'💬'} : getMeta(space); const unread = getUnreadCountForSpace(space); return `<button class="space-btn ${selectedSpace===space?'active':''}" onclick="selectedSpace='${space}'; renderCommunity();"><span style="display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%;"><span>${meta.emoji} ${space}</span>${unread > 0 ? `<span style="min-width:22px; height:22px; border-radius:999px; background:var(--accent-lime); color:#000; display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; padding:0 6px;">${unread}</span>` : ''}</span></button>`; }).join('');
     }
-
     async function renderAdmin(){ if(currentUser?.email !== OWNER_EMAIL) return; const { data } = await sb.from('community_posts').select('category_id'); const s = {}; data?.forEach(p => { const c = categories.find(x => x.id === p.category_id); const slug = c ? c.slug : 'General'; s[slug] = (s[slug] || 0) + 1; }); getEl('adminStats').innerHTML = Object.entries(s).map(([slug,count]) => `<div class="card" style="padding:18px; margin-bottom:0;"><div style="font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.16em; font-weight:800; margin-bottom:8px;">${slug}</div><div style="font-size:40px; font-weight:800; letter-spacing:-.05em; line-height:1;">${count}</div></div>`).join(''); }
+
     function getNotificationStorageKey(){ return `ek_notifications_${currentUser?.id || 'guest'}`; }
     function getLastNotificationSeenKey(){ return `ek_notifications_seen_${currentUser?.id || 'guest'}`; }
-    function syncNotificationsUI(){ const btn = getEl('notificationsToggleBtn'); if(!btn) return; const enabled = localStorage.getItem(getNotificationStorageKey()) === '1'; const permission = typeof Notification !== 'undefined' ? Notification.permission : 'unsupported'; btn.innerText = enabled && permission === 'granted' ? '🔕 Вимкнути сповіщення' : '🔔 Увімкнути сповіщення'; }
-
+    function syncNotificationsUI(){
+      const btn = getEl('notificationsToggleBtn');
+      if(!btn) return;
+      const enabled = localStorage.getItem(getNotificationStorageKey()) === '1';
+      const permission = typeof Notification !== 'undefined' ? Notification.permission : 'unsupported';
+      btn.innerText = enabled && permission === 'granted' ? '🔕 Вимкнути сповіщення' : '🔔 Увімкнути сповіщення';
+    }
     async function toggleNotifications(){
       const key = getNotificationStorageKey();
       const enabled = localStorage.getItem(key) === '1';
-      if(enabled){ localStorage.setItem(key, '0'); syncNotificationsUI(); alert('Сповіщення вимкнено!'); return; }
-      if(typeof Notification === 'undefined'){ alert('Цей браузер не підтримує сповіщення.'); return; }
+
+      if(enabled){
+        localStorage.setItem(key, '0');
+        syncNotificationsUI();
+        alert('Сповіщення вимкнено!');
+        return;
+      }
+
+      if(typeof Notification === 'undefined'){
+        alert('Цей браузер не підтримує сповіщення.');
+        return;
+      }
+
       let permission = Notification.permission;
       if(permission !== 'granted') permission = await Notification.requestPermission();
-      if(permission !== 'granted'){ localStorage.setItem(key, '0'); syncNotificationsUI(); alert('Щоб отримувати сповіщення, дозволь їх у браузері.'); return; }
+
+      if(permission !== 'granted'){
+        localStorage.setItem(key, '0');
+        syncNotificationsUI();
+        alert('Щоб отримувати сповіщення, дозволь їх у браузері.');
+        return;
+      }
+
       await unlockAudio();
       localStorage.setItem(key, '1');
       const latestTs = posts.map(p => new Date(p.created_at || 0).getTime()).filter(Boolean).reduce((max, ts) => Math.max(max, ts), Date.now());
@@ -1280,25 +1310,46 @@
     function maybeNotifyAboutNewPosts(previousPosts, nextPosts){
       const enabled = localStorage.getItem(getNotificationStorageKey()) === '1';
       if(!enabled || typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+
       const previousIds = new Set(previousPosts.map(p => p.id));
       const newIncoming = nextPosts.filter(p => !previousIds.has(p.id) && p.user_id !== currentUser?.id);
       if(!newIncoming.length) return;
+
       const lastSeen = Number(localStorage.getItem(getLastNotificationSeenKey()) || 0);
       const freshIncoming = newIncoming.filter(p => new Date(p.created_at || 0).getTime() > lastSeen);
       if(!freshIncoming.length) return;
+
       const latest = freshIncoming[freshIncoming.length - 1];
       const category = categories.find(c => c.id === latest.category_id);
       const spaceName = category?.slug || 'GENERAL';
       const messageText = (latest.body || '').trim() || 'Нове зображення';
+
       playNotificationSound();
-      new Notification(`Нове повідомлення в ${spaceName}`, { body: `${latest.user_email || 'User'}: ${messageText.slice(0, 120)}`, tag: `community-${spaceName}` });
+      new Notification(`Нове повідомлення в ${spaceName}`, {
+        body: `${latest.user_email || 'User'}: ${messageText.slice(0, 120)}`,
+        tag: `community-${spaceName}`
+      });
+
       const latestTs = freshIncoming.map(p => new Date(p.created_at || 0).getTime()).reduce((max, ts) => Math.max(max, ts), lastSeen);
       localStorage.setItem(getLastNotificationSeenKey(), String(latestTs));
     }
 
-    function startNotificationsPolling(){ if(notificationsPoller) clearInterval(notificationsPoller); notificationsPoller = setInterval(() => { loadPosts(true); }, 15000); }
+    function startNotificationsPolling(){
+      if(notificationsPoller) clearInterval(notificationsPoller);
+      notificationsPoller = setInterval(() => {
+        loadPosts(true);
+      }, 15000);
+    }
+
     function renderAll(){ renderDashboard(); renderTracker(); renderCommunity(); renderAdmin(); updateCommunityTabBadge(); syncNotificationsUI(); }
-    function toggleDashboardHero(){ const hero = getEl('dashboardHero'); const btn = getEl('dashboardHeroToggle'); if(!hero || !btn) return; const collapsed = hero.classList.toggle('collapsed'); btn.innerText = collapsed ? '+' : '−'; }
+
+    function toggleDashboardHero(){
+      const hero = getEl('dashboardHero');
+      const btn = getEl('dashboardHeroToggle');
+      if(!hero || !btn) return;
+      const collapsed = hero.classList.toggle('collapsed');
+      btn.innerText = collapsed ? '+' : '−';
+    }
 
     document.addEventListener('click', unlockAudio, { passive: true });
     document.addEventListener('touchstart', unlockAudio, { passive: true });
