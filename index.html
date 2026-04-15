@@ -1175,24 +1175,41 @@
     function scrollTrackersToToday(force = false, attempt = 0){
       const trackerWrap = getEl('trackerWrap');
       if(!trackerWrap) return;
+
       const shouldAutoAlign = window.innerWidth <= 768 || force;
       if(!shouldAutoAlign) return;
+
       const sections = [...trackerWrap.querySelectorAll('[data-tracker-section="1"]')];
       if(!sections.length) return;
+
       let applied = false;
+
       sections.forEach(section => {
         const headCells = [...section.querySelectorAll('.tracker-head > div')];
         const todayCell = headCells.find(cell => cell.classList.contains('today-cell'));
         const stickyCell = section.querySelector('.tracker-head .habit-title-cell');
+        const percentCell = headCells[headCells.length - 1];
+
         if(!todayCell || !stickyCell) return;
+
         const stickyWidth = stickyCell.offsetWidth || 156;
+        const percentWidth = percentCell ? percentCell.offsetWidth || 68 : 68;
         const todayLeft = todayCell.offsetLeft || 0;
-        const targetLeft = Math.max(0, todayLeft - stickyWidth - 8);
+        const todayWidth = todayCell.offsetWidth || 42;
+        const viewportWidth = section.clientWidth || 0;
+        const usableWidth = Math.max(0, viewportWidth - stickyWidth - percentWidth);
+
+        const targetLeft = Math.max(
+          0,
+          todayLeft - stickyWidth - Math.max(16, (usableWidth / 2) - (todayWidth / 2))
+        );
+
         section.scrollLeft = targetLeft;
         applied = true;
       });
-      if((!applied || attempt < 3) && window.innerWidth <= 768){
-        setTimeout(() => scrollTrackersToToday(force, attempt + 1), attempt === 0 ? 80 : 140);
+
+      if((!applied || attempt < 4) && window.innerWidth <= 768){
+        setTimeout(() => scrollTrackersToToday(force, attempt + 1), attempt === 0 ? 80 : 160);
       }
     }
 
